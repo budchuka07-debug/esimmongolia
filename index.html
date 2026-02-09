@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>eSIM Mongolia</title>
+  <meta name="description" content="eSIM Mongolia — улсаа сонгоод дата/хугацаагаа сонго. " />
+
+  <style>
+    :root{
+      --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280;
+      --brand:#10b981; --border:#e5e7eb;
+      --shadow:0 12px 40px rgba(0,0,0,.12);
+      --r:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text); }
+    a{ color:inherit; }
+    .wrap{ max-width:1100px; margin:0 auto; padding:16px; }
+    .nav{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0; }
+    .right{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid var(--border); background:#fff; color:var(--text);
+      padding:10px 12px; border-radius:12px; font-weight:900; cursor:pointer;
+      text-decoration:none;
+    }
+    .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
+    .pill{
+      border:1px solid var(--border); background:#fff; padding:8px 10px; border-radius:999px;
+      font-weight:900; cursor:pointer;
+    }
+    .pill.active{ background:var(--brand); color:#fff; border-color:var(--brand); }
+    h1{ font-size:22px; margin:14px 0 6px; }
+    h2{ font-size:18px; margin:18px 0 10px; }
+    .sub{ color:var(--muted); font-size:13px; line-height:1.5; }
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:12px 0 10px; }
+    .search{ width:min(420px, 78vw); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
+    .select{ border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:#fff; font-weight:900; }
+
+    .grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:var(--r);
+      padding:14px; box-shadow:0 1px 0 rgba(0,0,0,.02);
+    }
+    .cardHead{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .name{ font-weight:900; }
+    .note{ margin-top:10px; font-size:13px; }
+
+    .featuredGrid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+    .featuredCard{ background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:14px; box-shadow:var(--shadow); }
+    .featuredCard h3{ margin:10px 0 4px; font-size:16px; }
+    .imgWrap img{ width:100%; height:160px; object-fit:cover; border-radius:14px; display:block; }
+
+    details{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 14px; }
+    summary{ cursor:pointer; font-weight:900; }
+
+    .footer{ margin-top:22px; background:#0b1220; color:#e5e7eb; border-radius:18px; padding:18px; }
+    .footer a{ color:#e5e7eb; }
+
+    /* Modal */
+    .bd{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:99998; }
+    .md{
+      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:min(640px,92vw); background:#fff; border-radius:18px; box-shadow:var(--shadow);
+      display:none; z-index:99999; overflow:hidden;
+    }
+    .md header{ padding:14px 16px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .close{ border:0; background:transparent; font-size:22px; cursor:pointer; color:var(--muted); }
+    .md .body{ padding:14px 16px; line-height:1.65; }
+    .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap; }
+
+    /* Toast */
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background:#111827; color:#fff; padding:10px 12px; border-radius:12px;
+      box-shadow:0 10px 26px rgba(0,0,0,.25);
+      display:none; z-index:100000;
+      font-weight:800; font-size:13px;
+    }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns:1fr; }
+      .featuredGrid{ grid-template-columns:1fr; }
+      .imgWrap img{ height:170px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <!-- Navbar Logo: eSIMMongolia Page (ID ашигласан) -->
+      <a href="https://www.facebook.com/profile.php?id=61587287992719"
+         target="_blank"
+         style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;font-weight:900;letter-spacing:.2px">
+        <img src="https://graph.facebook.com/61587287992719/picture?type=large"
+             alt="eSIMMongolia"
+             style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+        <span>eSIM Mongolia</span>
+      </a>
+
+      <div class="right">
+        <span class="sub" style="font-weight:900">📞 90283039</span>
+        <a class="btn" href="#pricing">Үнэ</a>
+        <a class="btn" href="#faq">FAQ</a>
+        <button class="btn primary" id="quickChinaBtn" type="button">🇨🇳 China</button>
+      </div>
+    </div>
+
+    <h1>Аяллын eSIM — улсаа сонгоод дата/хугацаагаа сонго</h1>
+    <div class="sub">
+      Та аял — бидэнд датагaa даатга. <b>eSIMMongolia</b> таньтай хамт, таны хэрэглээг тасралтгүй хангана.<br>
+      ✈️ Эдгээр улсууд руу аялахыг хүсвэл <b><a href="https://www.facebook.com/chukatravel" target="_blank">ChukaTravel</a></b> page руу хандана уу.
+    </div>
+
+    <!-- ⭐ Featured (3 images - online URLs) -->
+    <h2>⭐ Онцлох багцууд</h2>
+    <div class="featuredGrid">
+      <div class="featuredCard">
+        <div class="imgWrap">
+          <img src="https://images.unsplash.com/photo-1549692520-acc6669e2f0c?auto=format&fit=crop&w=1200&q=80"
+               alt="China eSIM" loading="lazy">
+        </div>
+        <h3>🇨🇳 Хятад eSIM</h3>
+        <p class="sub">Facebook, Google VPN-гүй (HK routed)</p>
+        <button class="btn primary" type="button" onclick="quickOpen('cn')">Үнэ харах</button>
+      </div>
+
+      <div class="featuredCard">
+        <div class="imgWrap">
+          <img src="https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1200&q=80"
+               alt="Asia eSIM" loading="lazy">
+        </div>
+        <h3>🌏 Asia (10 улс)</h3>
+        <p class="sub">Азийн 10 улсад ажиллана</p>
+        <button class="btn primary" type="button" onclick="quickOpen('asia10')">Үнэ харах</button>
+      </div>
+
+      <div class="featuredCard">
+        <div class="imgWrap">
+          <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"
+               alt="Global eSIM" loading="lazy">
+        </div>
+        <h3>🌍 Global (66 улс)</h3>
+        <p class="sub">Дэлхийн 66 улсад ажиллана</p>
+        <button class="btn primary" type="button" onclick="quickOpen('global66')">Үнэ харах</button>
+      </div>
+    </div>
+
+    <!-- Pricing -->
+    <h2 id="pricing">🌍 Улс / Бүс сонгоод үнэ бодоорой</h2>
+
+    <div class="controls">
+      <input id="q" class="search" placeholder="Улс хайх… (Japan, Europe, USA, Global гэх мэт)" />
+      <select id="days" class="select"></select>
+      <button class="btn" id="clear" type="button">Clear</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <!-- FAQ -->
+    <h2 id="faq">FAQ</h2>
+    <div style="display:grid; gap:10px;">
+      <details>
+        <summary>Хятад eSIM үнэхээр Facebook/Google нээх үү?</summary>
+        <div class="sub" style="margin-top:8px">
+          “Хятад” дээр тэмдэглэсэн HK routed багц бол VPN-гүй нээх боломжтой. Эцсийн баталгаажуулалтыг чатаар хийнэ.
+        </div>
+      </details>
+      <details>
+        <summary>ҮЙЛЧИЛГЭЭНИЙ НӨХЦӨЛ
+
+Ерөнхий зүйл
+
+Энэхүү үйлчилгээний нөхцөл нь esimmongolia вэб сайтаар дамжуулан eSIM үйлчилгээ авахтай холбоотой хэрэглэгч болон amarsim.mn вэб сайт хоорондын харилцааг зохицуулна. Хэрэглэгч eSIM үйлчилгээг авахын өмнө энэхүү Нөхцөлийг анхааралтай уншиж, зөвшөөрсөн байна. Вэб сайтаар үйлчилгээ авах, захиалга өгөх, эсвэл eSIM идэвхжүүлэх нь уг  нөхцөлийг хүлээн зөвшөөрснийг илэрхийлнэ.
+
+1. eSIM үйлчилгээний тодорхойлолт
+
+eSIM нь биет SIM карт шаардлагагүй, дижитал хэлбэрийн SIM карт бөгөөд вэб сайтаар дамжуулан QR код ашиглан гадаад улсад дата үйлчилгээ ашиглах боломжийг олгодог технологи юм.
+eSIM үйлчилгээ нь гадаад улсад дата ашиглах (2G/3G/4G/5G) үйлчилгээг хамарна.
+eSIM-г зөвхөн eSIM технологийг дэмждэг төхөөрөмж дээр (жишээ: iPhone XS ба түүнээс хойш, Samsung Galaxy S20 ба түүнээс хойш) ашиглана.
+2. Үйлчилгээ авахад тавигдах шаардлага
+
+2.1. Төхөөрөмжийн нийцтэй байдал: Хэрэглэгчийн утас eSIM-г дэмждэг байх ёстой. Шалгахын тулд *#06# дугаарт залгаж, EID код гарч ирвэл тухайн утас eSIM-г дэмждэг гэдгийн харуулна.
+2.2. Интернет холболт: eSIM идэвхжүүлэхэд Wi-Fi холболт эсвэл утасныхаа дата холболтыг идэвхижүүлсэн байхшаардлагатай.
+2.3. Бүртгэл: Хэрэглэгч esimmongolia вэб сайтад бүртгүүлсэнээр тус үйлчилгээг ашиглах боломжтой болно. 
+
+3. Хэрэглэгчийн үүрэг
+
+Таньд илгээсэн дата үйлчилгээний QR кодыг бусадтай хуваалцахгүй, нууцлалыг хадгална.
+Хувийн мэдээллийг үнэн зөв оруулсанаар таньд гадаадад ашиглах дата и-симний мэдээлэл үнэн зөв очих боломжтой гэдгийг анхаарна уу 
+eSIM идэвхжүүлэхэд таны гар утас интернет холболттой /Wifi холболт эсвэл гар утасны датаг идэвхижүүлсэн/ байх шаардлагатай.
+Худалдан авсан eSIM-ийн хүчинтэй хугацаа дууссан эсвэл хэрэглээгүй үлдэгдэлд буцаан олголт хийгдэхгүй.
+Хэрэглэгч утаснаасаа QR код устгах, дахин суулгах боломжгүй болгох, eSIM-ийг буруу төхөөрөмж дээр идэвхжүүлэх тохиолдолд буцаан олголт хийх боломжгүй
+Хэрэглэгч симээ ашиглаж эхэлсэн тохиолдолд буцаан олголт хийгдэх боломжгүй
+4. Үйлчилгээ үзүүлэгчийн хариуцлага
+
+Дата сим ашиглах QR кодыг хэрэглэгчийн бүртгүүлсэн имэйл хаяг руу эсвэл QR кодын линкийг хэрэглэгчийн бүртгүүлсэн гар утас руу илгээнэ.
+eSIM үйлчилгээний тасралтгүй, найдвартай ажиллагааг хангана.
+Хэрэглэгчийн хувийн мэдээллийн нууцлалыг Монгол Улсын хууль тогтоомжийн дагуу хамгаална.
+Вэб сайтын мэдээлэл, үнэ,, хугацааны үнэн зөв байдлыг хариуцна.
+5. Нууцлал ба аюулгүй байдал
+
+Хэрэглэгчийн имэйл хаяг, гар утасны дугаар, төлбөрийн мэдээллийг зөвхөн үйлчилгээ үзүүлэх зорилгоор ашиглана.
+Вэб сайт нь зөвшөөрөлгүй хандлагаас хамгаалагдсан бөгөөд хэрэглэгчийн мэдээллийн аюулгүй байдлыг хангана.
+6. Санал гомдол
+
+Хэрэглэгч үйлчилгээний талаар санал, гомдлоо  esimmongolia, 90283039 дугаарт холбогдох эсвэл  WhatsApp  үйлчилгээгээр илгээнэ.
+7. Холбоо барих
+
+Лавлах дугаар: +976-90283039
+Вэбсайт: esimmongolia.com</summary>
+        <div class="sub" style="margin-top:8px">
+          <b>“Хятад явах уу? Facebook, Google VPN-гүй — QR код 5 минутанд.”</b>
+        </div>
+      </details>
+    </div>
+
+    <div class="footer">
+      <div style="font-weight:900;font-size:16px">eSIMMongolia</div>
+      <div style="opacity:.9;margin-top:6px">📞 Холбоо барих: <b>90283039</b></div>
+      <div style="opacity:.9;margin-top:8px">
+        ✈️ Хятад, Тайланд, Япон, Солонгос болон бусад улс руу аялах бол 👉
+        <a href="https://www.facebook.com/chukatravel" target="_blank"><b>ChukaTravel Facebook Page</b></a>
+      </div>
+      <div style="opacity:.75;margin-top:10px">© 2026 eSIMMongolia</div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">Хууллаа ✅</div>
+
+  <!-- Modal -->
+  <div class="bd" id="bd"></div>
+  <div class="md" id="md" role="dialog" aria-modal="true">
+    <header>
+      <b id="ttl">Үнийн санал</b>
+      <button class="close" id="x" type="button" aria-label="Close">×</button>
+    </header>
+
+    <div class="body">
+      <div id="out"></div>
+
+      <!-- Data selector -->
+      <div style="margin-top:12px">
+        <div class="sub" style="margin-bottom:8px">Дата сонгох</div>
+        <div id="dataChips" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="pill" data-plan="1" type="button">1GB</button>
+          <button class="pill" data-plan="2" type="button">2GB</button>
+          <button class="pill" data-plan="3" type="button">3GB</button>
+          <button class="pill" data-plan="unl" type="button">Unlimited</button>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="sub">эсвэл</span>
+          <select id="modalPlan" class="select">
+            <option value="1">1GB</option>
+            <option value="2">2GB</option>
+            <option value="3">3GB</option>
+            <option value="unl">Unlimited</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Day chips + dropdown -->
+      <div style="margin-top:12px">
+        <div class="sub" style="margin-bottom:8px">Хоног сонгох</div>
+
+        <div id="dayChips" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="pill" data-d="1"  type="button">1</button>
+          <button class="pill" data-d="3"  type="button">3</button>
+          <button class="pill" data-d="5"  type="button">5</button>
+          <button class="pill" data-d="7"  type="button">7</button>
+          <button class="pill" data-d="10" type="button">10</button>
+          <button class="pill" data-d="15" type="button">15</button>
+          <button class="pill" data-d="30" type="button">30</button>
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="sub">эсвэл</span>
+          <select id="modalDays" class="select"></select>
+        </div>
+      </div>
+
+            <div class="actions" style="justify-content:space-between">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" id="payQpay" type="button">QPay-р төлөх</button>
+          <button class="btn" id="checkPayment" type="button">Төлбөр шалгах</button>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn" id="cancel" type="button">Болих</button>
+          <!-- Захиалах: Messenger рүү үсрэхгүй. Сонголтыг хуулж өгнө. -->
+          <button class="btn" id="order" type="button">Захиалгын мэдээлэл хуулна</button>
+        </div>
+      </div>
+
+      <div id="qpayBox" style="margin-top:12px"></div>
+
+      <div id="chatBtns" style="margin-top:10px; display:none; gap:10px; flex-wrap:wrap">
+        <a class="btn primary" id="goWhatsapp" target="_blank" rel="noopener">WhatsApp руу бичих</a>
+        <a class="btn" id="goMessenger" target="_blank" rel="noopener">Facebook Page руу бичих</a>
+      </div>
+
+      <div class="sub" style="margin-top:10px">
+        * Дүн нь сонгосон хоног/датагаар автоматаар шинэчлэгдэнэ.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // CONFIG (дотоод тооцоо – хэрэглэгчид харуулахгүй)
+    // =========================
+    const PROFIT = 0.30;        // ашиг (UI дээр бичихгүй)
+    const DAILY_DISC = 0.005;   // өдөр бүр 0.5% хямдрал
+    const MAX_DISC = 0.15;      // max 15%
+
+    // =========================
+    // DATA (суурь үнэ = 1GB / 1 өдөр, MNT)
+    // + Unlimited-ийн суурь үнэ (unl_mnt) байвал яг түүгээр бодно
+    // =========================
+    const ESIM_BASES = [
+      { id:"asia10",  name:"Asia (10 улс)",   flag:"🌏", base_mnt:3000, unl_mnt:7500, note:"Азийн 10 улсад ажиллана" },
+      { id:"eu_multi",name:"Европ (EU – олон улс)", flag:"🇪🇺", base_mnt:3800, unl_mnt:8800, note:"Европын олон улсад ажиллана (баримжаа)" },
+      { id:"global66",name:"Global (66 улс)", flag:"🌍", base_mnt:5000, unl_mnt:9500, note:"Дэлхийн 66 улсад ажиллана" },
+
+      { id:"cn", name:"Хятад",      iso:"CN", base_mnt:2000, unl_mnt:6500, note:"Facebook, Google VPN-гүй (HK routed)" },
+      { id:"jp", name:"Япон",       iso:"JP", base_mnt:2000, unl_mnt:6000 },
+      { id:"sg", name:"Сингапур",   iso:"SG", base_mnt:700,  unl_mnt:3500 },
+      { id:"my", name:"Малайз",     iso:"MY", base_mnt:1030, unl_mnt:4200 },
+      { id:"id", name:"Индонез",    iso:"ID", base_mnt:2052, unl_mnt:6400 },
+      { id:"th", name:"Тайланд",    iso:"TH", base_mnt:1240, unl_mnt:4800 },
+      { id:"vn", name:"Вьетнам",    iso:"VN", base_mnt:1133, unl_mnt:4500 },
+      { id:"us", name:"АНУ (USA)",  iso:"US", base_mnt:1700, unl_mnt:6200 },
+
+      { id:"de", name:"Герман",     iso:"DE", base_mnt:2000, unl_mnt:6800 },
+      { id:"fr", name:"Франц",      iso:"FR", base_mnt:2000, unl_mnt:6800 },
+      { id:"it", name:"Итали",      iso:"IT", base_mnt:1900, unl_mnt:6500 },
+      { id:"es", name:"Испани",     iso:"ES", base_mnt:1900, unl_mnt:6500 },
+      { id:"gb", name:"Их Британи", iso:"GB", base_mnt:2200, unl_mnt:7200 }
+    ];
+
+    // =========================
+    // Helpers
+    // =========================
+    const fmt = n => new Intl.NumberFormat('mn-MN').format(Math.round(n)) + "₮";
+
+    function flagFromISO(iso){
+      if(!iso) return "";
+      const cc = iso.toUpperCase();
+      if(!/^[A-Z]{2}$/.test(cc)) return "";
+      const A = 0x1F1E6;
+      return String.fromCodePoint(...[...cc].map(c => A + c.charCodeAt(0) - 65));
+    }
+    function itemFlag(item){
+      return item.flag || flagFromISO(item.iso) || "";
+    }
+
+    function calc(basePerDay, days){
+      const disc = Math.min((days - 1) * DAILY_DISC, MAX_DISC);
+      const baseCalc = basePerDay * days * (1 - disc);
+      const sell = baseCalc * (1 + PROFIT);
+      return { sell };
+    }
+
+    function planLabel(p){
+      return (p === "unl") ? "Unlimited" : (p + "GB");
+    }
+
+    // Unlimited суурь үнэ байхгүй бол түр баримжаа: 1GB * 4
+    function baseForPlan(item, plan){
+      if(plan === "unl"){
+        return item.unl_mnt ?? Math.round(item.base_mnt * 4);
+      }
+      return item.base_mnt * Number(plan); // 1/2/3
+    }
+
+    function showToast(msg="Хууллаа ✅"){
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      clearTimeout(showToast._tm);
+      showToast._tm = setTimeout(()=> t.style.display="none", 1400);
+    }
+
+    // =========================
+    // DOM
+    // =========================
+    const grid = document.getElementById("grid");
+    const q = document.getElementById("q");
+    const daysEl = document.getElementById("days");
+
+    const bd = document.getElementById("bd");
+    const md = document.getElementById("md");
+    const ttl = document.getElementById("ttl");
+    const out = document.getElementById("out");
+    const orderBtn = document.getElementById("order");
+
+    const modalDaysEl = document.getElementById("modalDays");
+    const dayChips = document.getElementById("dayChips");
+
+    const modalPlanEl = document.getElementById("modalPlan");
+    const dataChips = document.getElementById("dataChips");
+
+    // Fill days 1..30 (page)
+    for(let d=1; d<=30; d++){
+      const opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = d + " өдөр";
+      daysEl.appendChild(opt);
+    }
+    daysEl.value = "7";
+
+    // Fill modal days 1..30
+    for(let d=1; d<=30; d++){
+      const opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = d + " өдөр";
+      modalDaysEl.appendChild(opt);
+    }
+
+    let currentItem = null;
+    let currentPlan = "1";
+
+    function setActiveDays(days){
+      dayChips.querySelectorAll(".pill").forEach(b=>{
+        b.classList.toggle("active", Number(b.dataset.d) === Number(days));
+      });
+    }
+    function setActivePlan(plan){
+      currentPlan = plan;
+      modalPlanEl.value = plan;
+      dataChips.querySelectorAll(".pill").forEach(b=>{
+        b.classList.toggle("active", b.dataset.plan === String(plan));
+      });
+    }
+
+    function updateModalPrice(){
+      if(!currentItem) return;
+
+      const days = Number(modalDaysEl.value) || 7;
+      const plan = String(modalPlanEl.value || currentPlan || "1");
+
+      const basePerDay = baseForPlan(currentItem, plan);
+      const r = calc(basePerDay, days);
+
+      ttl.textContent = `${itemFlag(currentItem)} ${currentItem.name} – ${planLabel(plan)} • ${days} өдөр`;
+
+      out.innerHTML = `
+        Суурь үнэ (${planLabel(plan)}/1өдөр): <b>${fmt(basePerDay)}</b><br/>
+        Таны сонгосон дүн: <b style="font-size:18px">${fmt(r.sell)}</b>
+        ${currentItem.note ? `<div style="margin-top:10px"><b>Тайлбар:</b> ${currentItem.note}</div>` : ``}
+      `;
+
+      setActiveDays(days);
+      setActivePlan(plan);
+    }
+
+    function openModal(item){
+      currentItem = item;
+      modalDaysEl.value = String(Number(daysEl.value) || 7);
+      setActivePlan("1");
+      updateModalPrice();
+      bd.style.display="block";
+      md.style.display="block";
+    }
+
+    function closeModal(){
+      bd.style.display="none";
+      md.style.display="none";
+    }
+
+    // Featured helpers
+    window.quickOpen = function(id){
+      const item = ESIM_BASES.find(x => x.id === id) || ESIM_BASES[0];
+      openModal(item);
+      return false;
+    };
+
+    // Modal events
+    document.getElementById("x").onclick = closeModal;
+    document.getElementById("cancel").onclick = closeModal;
+    bd.onclick = closeModal;
+    document.addEventListener("keydown", e => { if(e.key==="Escape") closeModal(); });
+
+    dayChips.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-d]");
+      if(!btn) return;
+      modalDaysEl.value = btn.dataset.d;
+      updateModalPrice();
+    });
+    modalDaysEl.addEventListener("change", updateModalPrice);
+
+    dataChips.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-plan]");
+      if(!btn) return;
+      setActivePlan(btn.dataset.plan);
+      updateModalPrice();
+    });
+    modalPlanEl.addEventListener("change", ()=>{
+      setActivePlan(modalPlanEl.value);
+      updateModalPrice();
+    });
+
+    // Захиалах: Messenger рүү үсрэхгүй — сонголтыг clipboard-д хуулна
+    orderBtn.addEventListener("click", async ()=>{
+      if(!currentItem) return;
+      const days = Number(modalDaysEl.value) || 7;
+      const plan = String(modalPlanEl.value || currentPlan || "1");
+      const basePerDay = baseForPlan(currentItem, plan);
+      const r = calc(basePerDay, days);
+
+      const msg =
+`Захиалга:
+Улс/Бүс: ${itemFlag(currentItem)} ${currentItem.name}
+Дата: ${planLabel(plan)}
+Хугацаа: ${days} өдөр
+Дүн: ${fmt(r.sell)}
+Утас: 90283039
+Facebook: https://www.facebook.com/profile.php?id=61587287992719`;
+
+      try{
+        await navigator.clipboard.writeText(msg);
+        showToast("Захиалгын мэдээлэл хууллаа ✅");
+      }catch(err){
+        // fallback: select text
+        const tmp = document.createElement("textarea");
+        tmp.value = msg;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        tmp.remove();
+        showToast("Хууллаа ✅");
+      }
+    });
+
+    // Page controls
+    document.getElementById("clear").onclick = ()=>{ q.value=""; render(); };
+    q.addEventListener("input", render);
+    daysEl.addEventListener("change", render);
+
+    document.getElementById("quickChinaBtn").addEventListener("click", ()=>{
+      const item = ESIM_BASES.find(x => x.id === "cn") || ESIM_BASES[0];
+      openModal(item);
+    });
+
+    function render(){
+      const query = (q.value || "").trim().toLowerCase();
+      const days = Number(daysEl.value) || 7;
+
+      const list = ESIM_BASES
+        .filter(x => !query || (x.name || "").toLowerCase().includes(query))
+        .map(x => {
+          const price = calc(baseForPlan(x, "1"), days).sell; // 1GB default
+          return {...x, price};
+        });
+
+      grid.innerHTML = list.map(x => `
+        <div class="card">
+          <div class="cardHead">
+            <div>
+              <div class="name">${itemFlag(x)} ${x.name}</div>
+              <div class="sub">Үнэ (${days} өдөр • 1GB): <b>${fmt(x.price)}</b></div>
+            </div>
+            <button class="btn primary" type="button" data-id="${x.id}">Үнэ харах</button>
+          </div>
+          ${x.note ? `<div class="note">${x.note}</div>` : ``}
+        </div>
+      `).join("");
+
+      grid.querySelectorAll("button[data-id]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.getAttribute("data-id");
+          const item = ESIM_BASES.find(i => i.id === id);
+          if(item) openModal(item);
+        });
+      });
+    }
+
+
+    // =========================
+    // QPay integration (Netlify Functions)
+    // =========================
+    const qpayBtn = document.getElementById("payQpay");
+    const qpayBox = document.getElementById("qpayBox");
+    const chatBtns = document.getElementById("chatBtns");
+    const goMessenger = document.getElementById("goMessenger");
+    const goWhatsapp = document.getElementById("goWhatsapp");
+    const checkBtn = document.getElementById("checkPayment");
+
+    // FB Page (таны одоогийн линк)
+    const FB_PAGE_URL = "https://www.facebook.com/profile.php?id=61587287992719";
+    // WhatsApp дугаар (улсын кодтой)
+    const WHATSAPP_NUMBER = "97690283039";
+
+    // Invoice + message state
+    window._invoiceId = null;
+    window._orderMsg = null;
+
+    function buildOrderSummary(){
+      if(!currentItem) return null;
+
+      const days = Number(modalDaysEl.value) || 7;
+      const plan = String(modalPlanEl.value || currentPlan || "1");
+      const basePerDay = baseForPlan(currentItem, plan);
+      const r = calc(basePerDay, days);
+
+      const orderId = "ESIM_" + Date.now();
+      const desc = `${itemFlag(currentItem)} ${currentItem.name} • ${planLabel(plan)} • ${days} өдөр`;
+
+      const msg =
+`Сайн байна уу 👋
+Би QPay-р төлбөрөө төлсөн.
+Order: ${orderId}
+Багц: ${desc}
+Дүн: ${fmt(r.sell)}
+Утас: 90283039`;
+
+      return { orderId, desc, amount: Math.round(r.sell), msg };
+    }
+
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        try{
+          const tmp = document.createElement("textarea");
+          tmp.value = text;
+          document.body.appendChild(tmp);
+          tmp.select();
+          document.execCommand("copy");
+          tmp.remove();
+          return true;
+        }catch(e2){
+          return false;
+        }
+      }
+    }
+
+    function resetPayUI(){
+      qpayBox.innerHTML = "";
+      chatBtns.style.display = "none";
+      window._invoiceId = null;
+      window._orderMsg = null;
+      goMessenger.href = FB_PAGE_URL;
+      goWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}`;
+    }
+
+    // Clear pay UI when modal opens
+    const _openModal = openModal;
+    openModal = function(item){
+      _openModal(item);
+      resetPayUI();
+    };
+
+    qpayBtn.addEventListener("click", async () => {
+      const s = buildOrderSummary();
+      if(!s) return;
+
+      resetPayUI();
+      qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
+
+      try{
+        const res = await fetch("/.netlify/functions/qpay-create-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: s.orderId,
+            amount: s.amount,
+            description: s.desc
+          })
+        });
+
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || "QPay error");
+
+        const payUrl = data.urls?.qPay || data.urls?.qpay || "";
+        window._invoiceId = data.invoice_id || null;
+
+        // Update message with invoice id if we have it
+        const msg2 = window._invoiceId ? (s.msg + `\nInvoice: ${window._invoiceId}`) : s.msg;
+        window._orderMsg = msg2;
+
+        // Copy message to clipboard (so FB Page дээр paste хийхэд амар)
+        await copyToClipboard(msg2);
+
+        // Build chat links
+        goMessenger.href = FB_PAGE_URL;
+        goWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg2)}`;
+
+        qpayBox.innerHTML = `
+          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+            <b>QPay төлбөр</b><br/>
+            <div class="sub" style="margin-top:6px">
+              1) <b>QPay нээж төлнө</b> → 2) <b>Төлбөр шалгах</b> дарна → 3) WhatsApp/Page-р бичнэ
+            </div>
+            <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+              <a href="${payUrl}" target="_blank" rel="noopener" class="btn primary">QPay нээж төлөх</a>
+            </div>
+            ${window._invoiceId ? `<div class="sub" style="margin-top:10px">Invoice ID: <b>${window._invoiceId}</b></div>` : ``}
+            <div class="sub" style="margin-top:8px">
+              (FB Page руу ороход мессеж аль хэдийн clipboard-д хуулсан байгаа ✅)
+            </div>
+          </div>
+        `;
+      }catch(e){
+        qpayBox.innerHTML = "❌ QPay нэхэмжлэл үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.";
+      }
+    });
+
+    checkBtn.addEventListener("click", async () => {
+      if(!window._invoiceId){
+        alert("Эхлээд QPay-р төлөх дээр дарж invoice үүсгэнэ үү.");
+        return;
+      }
+
+      qpayBox.innerHTML = "⏳ Төлбөр шалгаж байна...";
+
+      try{
+        const res = await fetch("/.netlify/functions/qpay-check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invoice_id: window._invoiceId })
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || "Check error");
+
+        if(data.paid){
+          showToast("✅ Төлбөр амжилттай орсон");
+          chatBtns.style.display = "flex";
+          qpayBox.innerHTML = `
+            <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+              <b>✅ Төлбөр амжилттай</b>
+              <div class="sub" style="margin-top:8px">
+                Одоо WhatsApp эсвэл Facebook Page-ээр “Төллөө” гэж илгээнэ үү.
+              </div>
+            </div>
+          `;
+          if(window._orderMsg) await copyToClipboard(window._orderMsg);
+        }else{
+          qpayBox.innerHTML = `
+            <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+              <b>⏳ Төлбөр хараахан ороогүй</b>
+              <div class="sub" style="margin-top:8px">Хэдэн секунд хүлээгээд дахин “Төлбөр шалгах” дарна уу.</div>
+            </div>
+          `;
+        }
+      }catch(e){
+        qpayBox.innerHTML = "❌ Төлбөр шалгахад алдаа гарлаа. Дахин оролдоно уу.";
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
