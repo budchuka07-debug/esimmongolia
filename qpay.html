@@ -62,21 +62,25 @@
   </div>
 
 <script>
-  const $ = (id) => document.getElementById(id);
-  const logEl = $("log");
-  const outEl = $("out");
-  const statusEl = $("status");
+<script>
+async function createInvoice() {
+  const amount = document.getElementById("amount").value;
+  const orderId = document.getElementById("order_id").value;
+  const description = document.getElementById("description").value;
+  const contact = document.getElementById("contact").value;
 
-  let lastInvoice = null;
+  const res = await fetch("/.netlify/functions/qpay-create-invoice", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      amount: Number(amount),
+      orderId: orderId,
+      description: description,
+      contact: contact
+    })
+}
+</script>
 
-  function log(obj) {
-    const text = (typeof obj === "string") ? obj : JSON.stringify(obj, null, 2);
-    logEl.textContent = text;
-  }
-
-  function setStatus(text, kind="") {
-    statusEl.textContent = text || "";
-    statusEl.className = kind ? kind : "muted";
   }
 
   function renderOutput(data) {
@@ -218,3 +222,4 @@
 </script>
 </body>
 </html>
+
