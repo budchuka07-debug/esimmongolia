@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QPay — Нэхэмжлэл үүсгэх</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:860px;margin:24px auto;padding:0 16px;line-height:1.4}
+    .card{border:1px solid #e5e7eb;border-radius:14px;padding:16px;margin:12px 0}
+    label{display:block;font-size:14px;margin:10px 0 6px}
+    input,textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;font-size:15px}
+    button{padding:10px 14px;border:0;border-radius:10px;background:#111827;color:#fff;font-weight:600;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .muted{color:#6b7280;font-size:13px}
+    pre{background:#0b1020;color:#e5e7eb;padding:12px;border-radius:12px;overflow:auto}
+    a{color:#2563eb}
+    .ok{color:#059669;font-weight:600}
+    .err{color:#dc2626;font-weight:600}
+  </style>
+</head>
+<body>
+  <h1>QPay — Нэхэмжлэл үүсгэх</h1>
+  <p class="muted">
+    Энэ хуудас Netlify Function руу дуудлага хийгээд нэхэмжлэл (QR) үүсгэнэ.
+    Endpoint: <code>/.netlify/functions/qpay-create-invoice</code>
+  </p>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Дүн (₮)</label>
+        <input id="amount" type="number" inputmode="numeric" value="1000" />
+      </div>
+      <div>
+        <label>Захиалгын дугаар (order_id)</label>
+        <input id="orderId" type="text" placeholder="Ж: ORD-1001" />
+      </div>
+    </div>
+
+    <label>Тайлбар</label>
+    <input id="description" type="text" value="eSIM худалдан авалт" />
+
+    <label>Имэйл/утас (заавал биш)</label>
+    <input id="customer" type="text" placeholder="customer@email.com эсвэл 99xxxxxx" />
+
+    <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap">
+      <button id="btnCreate">Нэхэмжлэл үүсгэх</button>
+      <button id="btnCheck" disabled>Төлбөр шалгах</button>
+      <span id="status" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Гаралт</h3>
+    <div id="out"></div>
+  </div>
+
+  <div class="card">
+    <h3>Log / Алдаа</h3>
+    <pre id="log">(хоосон)</pre>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const logEl = $("log");
+  const outEl = $("out");
+  const statusEl = $("status");
+
+  let lastInvoice = null;
+
+  function log(obj) {
+    const text = (typeof obj === "string") ? obj : JSON.stringify(obj, null, 2);
+    logEl.textContent = text;
+  }
+
+  function setStatus(text, kind="") {
+    statusEl.textContent = text || "";
+    statusEl.className = kind ? kind : "muted";
+  }
+
+  function renderOutput(data) {
+    outEl.innerHTML = "";
+    if (!data) return;
+
+    const wrap = document.createElement("div");
+
+    // common possibilities (QPay API янз бүрээр ирж болно)
+    const invoiceId = data.invoice_id || data.invoiceId || data.id || data.invoice?.invoice_id;
+    const qrText   = data.qr_text || data.qrText || data.qr || data.invoice?.qr_text;
+    const qrImage  = data.qr_image || data.qrImage || data.qr_img || data.invoice?.qr_image;
+    const deeplink = data.deeplink || data.qpay_deeplink || data.link || data.invoice?.deeplink;
+
+    if (invoiceId) {
+      const p = document.createElement("p");
+      p.innerHTML = `<b>Invoice ID:</b> <code>${invoiceId}</code>`;
+      wrap.appendChild(p);
+    }
+
+    if (deeplink) {
+      const p = document.createElement("p");
+      p.innerHTML = `<b>Deeplink:</b> <a href="${deeplink}" target="_blank" rel="noreferrer">${deeplink}</a>`;
+      wrap.appendChild(p);
+    }
+
+    if (qrText) {
+      const p = document.createElement("p");
+      p.innerHTML = `<b>QR Text:</b> <code style="word-break:break-all">${qrText}</code>`;
+      wrap.appendChild(p);
+    }
+
+    if (qrImage) {
+      const img = document.createElement("img");
+      img.src = qrImage;
+      img.alt = "QPay QR";
+      img.style.maxWidth = "320px";
+      img.style.border = "1px solid #e5e7eb";
+      img.style.borderRadius = "12px";
+      wrap.appendChild(img);
+    }
+
+    // fallback: show whole payload
+    const details = document.createElement("details");
+    details.style.marginTop = "10px";
+    const summary = document.createElement("summary");
+    summary.textContent = "Raw response";
+    details.appendChild(summary);
+    const pre = document.createElement("pre");
+    pre.textContent = JSON.stringify(data, null, 2);
+    details.appendChild(pre);
+    wrap.appendChild(details);
+
+    outEl.appendChild(wrap);
+  }
+
+  async function postJson(url, payload) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await res.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
+
+    if (!res.ok) {
+      const err = { http_status: res.status, ...data };
+      throw err;
+    }
+    return data;
+  }
+
+  $("btnCreate").addEventListener("click", async () => {
+    setStatus("Нэхэмжлэл үүсгэж байна...");
+    $("btnCreate").disabled = true;
+    $("btnCheck").disabled = true;
+    outEl.innerHTML = "";
+    log("(ажиллаж байна...)");
+
+    const amount = Number($("amount").value || 0);
+    const orderId = $("orderId").value?.trim() || ("ORD-" + Date.now());
+    const description = $("description").value?.trim() || "Payment";
+    const customer = $("customer").value?.trim() || "";
+
+    const payload = { amount, order_id: orderId, description, customer };
+
+    try {
+      const data = await postJson("/.netlify/functions/qpay-create-invoice", payload);
+      lastInvoice = data;
+
+      log(data);
+      renderOutput(data);
+
+      setStatus("Амжилттай үүслээ", "ok");
+      $("btnCheck").disabled = false;
+    } catch (e) {
+      log(e);
+      renderOutput(e);
+      setStatus("Алдаа гарлаа", "err");
+    } finally {
+      $("btnCreate").disabled = false;
+    }
+  });
+
+  $("btnCheck").addEventListener("click", async () => {
+    setStatus("Шалгаж байна...");
+    $("btnCheck").disabled = true;
+    log("(шалгаж байна...)");
+
+    // invoice_id-г data дотроос олж авах гэж оролдоно
+    const invoiceId =
+      lastInvoice?.invoice_id ||
+      lastInvoice?.invoiceId ||
+      lastInvoice?.id ||
+      lastInvoice?.invoice?.invoice_id;
+
+    if (!invoiceId) {
+      log({ error: "invoice_id олдсонгүй. Raw response-оос invoice_id байгаа эсэхийг шалга." });
+      setStatus("invoice_id олдсонгүй", "err");
+      $("btnCheck").disabled = false;
+      return;
+    }
+
+    try {
+      const data = await postJson("/.netlify/functions/qpay-check", { invoice_id: invoiceId });
+      log(data);
+      renderOutput(data);
+      setStatus("Шалгалт OK", "ok");
+    } catch (e) {
+      log(e);
+      renderOutput(e);
+      setStatus("Шалгалтын алдаа", "err");
+    } finally {
+      $("btnCheck").disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
