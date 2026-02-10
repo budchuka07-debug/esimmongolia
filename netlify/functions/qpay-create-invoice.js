@@ -10,6 +10,13 @@ export async function handler(event) {
     }
 
     // Access token авах (Postman collection дээр Basic auth ашиглаж байна)
+    console.log("ENV CHECK", {
+  hasUser: !!process.env.QPAY_USERNAME,
+  hasPass: !!process.env.QPAY_PASSWORD,
+  hasInvoiceCode: !!process.env.QPAY_INVOICE_CODE,
+  hasBaseUrl: !!process.env.QPAY_BASE_URL,
+});
+
     const user = process.env.QPAY_USERNAME;
     const pass = process.env.QPAY_PASSWORD;
     const basic = Buffer.from(`${user}:${pass}`).toString("base64");
