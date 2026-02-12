@@ -32,6 +32,8 @@ export async function handler(event) {
       const t = await authRes.text();
       return { statusCode: 502, body: JSON.stringify({ error: "Auth failed", detail: t }) };
     }
+console.log("TOKEN STATUS:", tr.status);
+console.log("TOKEN BODY:", JSON.stringify(t));
 
     const authData = await authRes.json();
     const access_token = authData.access_token;
