@@ -96,18 +96,10 @@
       .installGrid{ grid-template-columns:1fr; }
     }
 
-
     /* ===== QPay Scroll Fix ===== */
-    #qpayBox{
-      max-height: 55vh;        /* дэлгэцийн 55% */
-      overflow-y: auto;        /* ↓ scroll */
-      padding-right: 6px;      /* scrollbar зай */
-      -webkit-overflow-scrolling: touch;
-    }
-    #qpayBox img{
-      max-width: 100%;
-      height: auto;
-    }
+    #qpayBox{ max-height:55vh; overflow-y:auto; padding-right:6px; -webkit-overflow-scrolling:touch; }
+    #qpayBox img{ max-width:100%; height:auto; }
+
 </style>
 </head>
 <body>
@@ -566,7 +558,19 @@ Facebook: https://www.facebook.com/profile.php?id=61587287992719`;
       q.value = "";
       render();
     };
-    q.addEventListener("input", render);
+
+    // Auto open pricing modal from ?plan=cn|asia10|global66
+    (function(){
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const plan = params.get("plan");
+        if(plan && typeof window.quickOpen === "function"){
+          setTimeout(() => window.quickOpen(plan), 300);
+        }
+      }catch(e){}
+    })();
+
+q.addEventListener("input", render);
     daysEl.addEventListener("change", render);
 
     document.getElementById("quickChinaBtn").addEventListener("click", ()=>{
@@ -813,17 +817,7 @@ checkBtn.addEventListener("click", async () => {
 });
 
     render();
-
-    // Auto open pricing modal from ?plan=cn|asia10|global66
-    (function(){
-      try{
-        const params = new URLSearchParams(window.location.search);
-        const plan = params.get('plan');
-        if(plan && typeof window.quickOpen === 'function'){
-          setTimeout(() => window.quickOpen(plan), 300);
-        }
-      }catch(e){}
-    })();
-  </script>
+</script>
 </body>
 </html>
+
