@@ -62,9 +62,21 @@
     /* Modal */
     .bd{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:99998; }
     .md{
-      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-      width:min(640px,92vw); background:#fff; border-radius:18px; box-shadow:var(--shadow);
-      display:none; z-index:99999; overflow:hidden;
+     .md{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%, -50%);
+  width:min(640px,92vw);
+  max-height:92vh;          /* 🔥 Дэлгэцэнд багтана */
+  background:#fff;
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  display:none;
+  z-index:99999;
+  overflow:hidden;          /* scroll-г body дээр өгнө */
+}
+
     }
     .md header{ padding:14px 16px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:10px; }
     .close{ border:0; background:transparent; font-size:22px; cursor:pointer; color:var(--muted); }
