@@ -60,15 +60,31 @@
     .footer a{ color:#e5e7eb; }
 
     /* Modal */
-    .bd{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:99998; }
-    .md{
-      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-      width:min(640px,92vw); background:#fff; border-radius:18px; box-shadow:var(--shadow);
-      display:none; z-index:99999; overflow:hidden;
-    }
-    .md header{ padding:14px 16px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:10px; }
-    .close{ border:0; background:transparent; font-size:22px; cursor:pointer; color:var(--muted); }
-    .md .body{ padding:14px 16px; line-height:1.65; }
+  /* Modal */
+.bd{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:99998; }
+
+/* ✅ Desktop дээр тасрахгүй болгох modal */
+.md{
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(760px, 96vw);
+  max-height: 92vh;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  display: none;
+  z-index: 99999;
+  overflow: hidden;
+}
+
+.md .body{
+  padding: 14px 16px;
+  line-height: 1.65;
+  max-height: calc(92vh - 60px);
+  overflow-y: auto;
+}
+
     .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap; }
 
     /* Toast */
