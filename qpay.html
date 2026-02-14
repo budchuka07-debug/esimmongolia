@@ -23,6 +23,9 @@
     .ok{color:#16a34a;font-weight:800}
     pre{background:#0b1020;color:#e5e7eb;padding:14px;border-radius:12px;overflow:auto}
     .small{font-size:13px;color:#667}
+    .qrWrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+    .qrCanvas{padding:12px;border:1px solid #e7e7ef;border-radius:14px;background:#fff}
+    .qrMeta{min-width:260px;flex:1}
   </style>
 </head>
 <body>
@@ -62,7 +65,10 @@
 
     <div class="card">
       <h2 style="margin:0 0 10px">Гаралт</h2>
+
+      <!-- ✅ QR зураг энд гарна -->
       <div id="qrBox" style="display:none;margin:10px 0 12px"></div>
+
       <details>
         <summary style="cursor:pointer;font-weight:800">Raw response</summary>
         <pre id="raw">—</pre>
@@ -73,108 +79,164 @@
     </div>
   </div>
 
-<script>
-  const $ = (id) => document.getElementById(id);
+  <!-- ✅ QR library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
-  const form = $("form");
-  const statusEl = $("status");
-  const rawEl = $("raw");
-  const logEl = $("log");
-  const qrBox = $("qrBox");
-  const btnCheck = $("btnCheck");
+  <script>
+    const $ = (id) => document.getElementById(id);
 
-  let lastInvoiceId = null;
+    const form = $("form");
+    const statusEl = $("status");
+    const rawEl = $("raw");
+    const logEl = $("log");
+    const qrBox = $("qrBox");
+    const btnCheck = $("btnCheck");
 
-  function setStatus(text, ok=false){
-    statusEl.textContent = text || "";
-    statusEl.className = ok ? "ok" : "err";
-  }
+    let lastInvoiceId = null;
 
-  function log(obj){
-    logEl.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
-  }
-
-  async function postJSON(url, data){
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const text = await res.text();
-    let json = null;
-    try { json = JSON.parse(text); } catch(e) {}
-    return { ok: res.ok, status: res.status, text, json };
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const amount = Number($("amount").value);
-    const orderId = ($("orderId").value || "").trim();
-    const description = ($("description").value || "").trim();
-    const contact = ($("contact").value || "").trim();
-
-    if (!amount || !orderId){
-      setStatus("amount болон orderId заавал бөглөнө.");
-      return;
+    function setStatus(text, ok=false){
+      statusEl.textContent = text || "";
+      statusEl.className = ok ? "ok" : "err";
     }
 
-    setStatus("Ажиллаж байна...");
-    qrBox.style.display = "none";
-    qrBox.innerHTML = "";
-    rawEl.textContent = "—";
-    log("Calling qpay-create-invoice...");
-
-    const payload = { amount, orderId, description, contact };
-
-    const r = await postJSON("/.netlify/functions/qpay-create-invoice", payload);
-
-    rawEl.textContent = r.text;
-
-    if (!r.ok){
-      setStatus("Алдаа гарлаа");
-      log({ http_status: r.status, error: r.json?.error || "Request failed", detail: r.json?.detail || r.text });
-      return;
+    function log(obj){
+      logEl.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
     }
 
-    setStatus("Амжилттай ✅", true);
-    log(r.json || r.text);
+    async function postJSON(url, data){
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const text = await res.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch(e) {}
+      return { ok: res.ok, status: res.status, text, json };
+    }
 
-    const data = r.json || {};
-    lastInvoiceId = data.invoice_id || null;
+    // ✅ QPay response-оос QR-д оруулах хамгийн боломжит утгыг олж авах
+    function extractQrValue(data){
+      if (!data || typeof data !== "object") return null;
 
-    // QR текст/линк гаргах (QPay-ийн хариунаас шалтгаална)
-    const qrText = data.qr_text || data.qr || data.qrCode || data.qr_code;
-    if (qrText){
+      // хамгийн түгээмэл нэрүүд
+      const direct =
+        data.qr_text ||
+        data.qr ||
+        data.qrCode ||
+        data.qr_code ||
+        data.qrText ||
+        data.qr_string;
+
+      if (direct) return String(direct);
+
+      // заримдаа urls array ирдэг
+      const url0 = data.urls?.[0]?.link || data.urls?.[0]?.url;
+      if (url0) return String(url0);
+
+      // заримдаа deep link-үүд
+      const deep =
+        data.deeplink ||
+        data.deep_link ||
+        data.qpay_url ||
+        data.payment_url;
+
+      if (deep) return String(deep);
+
+      return null;
+    }
+
+    // ✅ QR-ийг зураг болгож гаргах
+    function renderQr(qrValue, invoiceId){
       qrBox.style.display = "block";
       qrBox.innerHTML = `
-        <div style="font-weight:800;margin-bottom:6px">QR текст:</div>
-        <pre style="margin:0">${String(qrText)}</pre>
+        <div class="qrWrap">
+          <div class="qrCanvas" id="qrCanvas"></div>
+          <div class="qrMeta">
+            <div style="font-weight:800;margin-bottom:6px">Invoice ID:</div>
+            <div style="margin-bottom:12px">${invoiceId ? invoiceId : "—"}</div>
+            <div style="font-weight:800;margin-bottom:6px">QR value:</div>
+            <pre style="margin:0">${qrValue}</pre>
+          </div>
+        </div>
       `;
+
+      // canvas render
+      new QRCode(document.getElementById("qrCanvas"), {
+        text: qrValue,
+        width: 240,
+        height: 240,
+        correctLevel: QRCode.CorrectLevel.M
+      });
     }
 
-    btnCheck.disabled = !lastInvoiceId;
-  });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  btnCheck.addEventListener("click", async () => {
-    if (!lastInvoiceId) return;
+      const amount = Number($("amount").value);
+      const orderId = ($("orderId").value || "").trim();
+      const description = ($("description").value || "").trim();
+      const contact = ($("contact").value || "").trim();
 
-    setStatus("Шалгаж байна...");
-    rawEl.textContent = "—";
-    log("Calling qpay-check...");
+      if (!amount || !orderId){
+        setStatus("amount болон orderId заавал бөглөнө.");
+        return;
+      }
 
-    const r = await postJSON("/.netlify/functions/qpay-check", { invoice_id: lastInvoiceId });
-    rawEl.textContent = r.text;
+      setStatus("Ажиллаж байна...");
+      qrBox.style.display = "none";
+      qrBox.innerHTML = "";
+      rawEl.textContent = "—";
+      log("Calling qpay-create-invoice...");
 
-    if (!r.ok){
-      setStatus("Шалгах үед алдаа гарлаа");
-      log({ http_status: r.status, error: r.json?.error || "Request failed", detail: r.json?.detail || r.text });
-      return;
-    }
+      const payload = { amount, orderId, description, contact };
 
-    setStatus("Шалгалт OK ✅", true);
-    log(r.json || r.text);
-  });
-</script>
+      const r = await postJSON("/.netlify/functions/qpay-create-invoice", payload);
+      rawEl.textContent = r.text;
+
+      if (!r.ok){
+        setStatus("Алдаа гарлаа");
+        log({ http_status: r.status, error: r.json?.error || "Request failed", detail: r.json?.detail || r.text });
+        return;
+      }
+
+      const data = r.json || {};
+      lastInvoiceId = data.invoice_id || null;
+
+      setStatus("Амжилттай ✅", true);
+      log(data);
+
+      const qrValue = extractQrValue(data);
+
+      if (qrValue){
+        renderQr(qrValue, lastInvoiceId);
+      } else {
+        qrBox.style.display = "block";
+        qrBox.innerHTML = `<div class="err">QR value олдсонгүй. Raw response-оо шалгана уу.</div>`;
+      }
+
+      btnCheck.disabled = !lastInvoiceId;
+    });
+
+    btnCheck.addEventListener("click", async () => {
+      if (!lastInvoiceId) return;
+
+      setStatus("Шалгаж байна...");
+      rawEl.textContent = "—";
+      log("Calling qpay-check...");
+
+      const r = await postJSON("/.netlify/functions/qpay-check", { invoice_id: lastInvoiceId });
+      rawEl.textContent = r.text;
+
+      if (!r.ok){
+        setStatus("Шалгах үед алдаа гарлаа");
+        log({ http_status: r.status, error: r.json?.error || "Request failed", detail: r.json?.detail || r.text });
+        return;
+      }
+
+      setStatus("Шалгалт OK ✅", true);
+      log(r.json || r.text);
+    });
+  </script>
 </body>
 </html>
