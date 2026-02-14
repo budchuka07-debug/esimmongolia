@@ -7,6 +7,48 @@
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>eSIM Mongolia</title>
 <meta content="eSIM Mongolia — улсаа сонгоод дата/хугацаагаа сонго. " name="description"/>
+    /* ================= QPay Modal FIX ================= */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.modal .card {
+  width: min(980px, 96vw);
+  max-height: 92vh;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.modal .body {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(92vh - 70px);
+}
+
+/* QR бүтэн харагдах */
+#qpayQr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+}
+
+#qpayQr canvas,
+#qpayQr img {
+  width: min(360px, 85vw);
+  height: auto;
+  max-width: 100%;
+}
+
 <style>
     :root{
       --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280;
