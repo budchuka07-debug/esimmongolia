@@ -4,10 +4,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
- <title>eSIM Mongolia | Хятад, Ази, Global гадаад дата eSIM</title>
-
-<meta name="description" content="Монголчуудын гадаадад зориулсан хямд eSIM дата багц. Хятад 7 хоног, Asia 10 улс, Global 66 улс. Шууд QR кодоор идэвхжүүлнэ.">
-
+  <title>eSIM Mongolia</title>
+  <meta name="description" content="eSIM Mongolia — улсаа сонгоод дата/хугацаагаа сонго. " />
 
   <style>
     :root{
@@ -62,31 +60,15 @@
     .footer a{ color:#e5e7eb; }
 
     /* Modal */
-  /* Modal */
-.bd{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:99998; }
-
-/* ✅ Desktop дээр тасрахгүй болгох modal */
-.md{
-  position: fixed;
-  inset: 0;
-  margin: auto;
-  width: min(760px, 96vw);
-  max-height: 92vh;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: var(--shadow);
-  display: none;
-  z-index: 99999;
-  overflow: hidden;
-}
-
-.md .body{
-  padding: 14px 16px;
-  line-height: 1.65;
-  max-height: calc(92vh - 60px);
-  overflow-y: auto;
-}
-
+    .bd{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:99998; }
+    .md{
+      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:min(640px,92vw); background:#fff; border-radius:18px; box-shadow:var(--shadow);
+      display:none; z-index:99999; overflow:hidden;
+    }
+    .md header{ padding:14px 16px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .close{ border:0; background:transparent; font-size:22px; cursor:pointer; color:var(--muted); }
+    .md .body{ padding:14px 16px; line-height:1.65; }
     .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap; }
 
     /* Toast */
@@ -127,21 +109,11 @@
       </div>
     </div>
 
-    <h1>Монголчуудын гадаадад зориулсан eSIM дата багц</h1>
-    <p>
-Хятад, Солонгос, Япон, Тайланд, Ази болон Global 66 улсад ажиллах 
-гадаад дата eSIM багцууд. QR кодоор 5 минутанд идэвхжүүлнэ.
-</p>
-
+    <h1>Аяллын eSIM — улсаа сонгоод дата/хугацаагаа сонго</h1>
     <div class="sub">
       Та аял — бидэнд датагaa даатга. <b>eSIMMongolia</b> таньтай хамт, таны хэрэглээг тасралтгүй хангана.<br>
       ✈️ Эдгээр улсууд руу аялахыг хүсвэл <b><a href="https://www.facebook.com/chukatravel" target="_blank">ChukaTravel</a></b> page руу хандана уу.
     </div>
-<div class="sub" style="margin-top:10px">
-  Түргэн холбоос: 
-  <a href="/china-esim.html"><b>Хятад eSIM</b></a> ·
-  <a href="/asia-esim.html"><b>Asia 10 улс eSIM</b></a>
-</div>
 
     <!-- ⭐ Featured (3 images - online URLs) -->
     <h2>⭐ Онцлох багцууд</h2>
@@ -153,7 +125,7 @@
         </div>
         <h3>🇨🇳 Хятад eSIM</h3>
         <p class="sub">Facebook, Google VPN-гүй (HK routed)</p>
-        <a class="btn primary" href="/china-esim.html">Үнэ харах</a>
+        <button class="btn primary" type="button" onclick="quickOpen('cn')">Үнэ харах</button>
       </div>
 
       <div class="featuredCard">
@@ -163,7 +135,7 @@
         </div>
         <h3>🌏 Asia (10 улс)</h3>
         <p class="sub">Азийн 10 улсад ажиллана</p>
-        <a class="btn primary" href="/asia-esim.html">Үнэ харах</a>
+        <button class="btn primary" type="button" onclick="quickOpen('asia10')">Үнэ харах</button>
       </div>
 
       <div class="featuredCard">
@@ -173,8 +145,7 @@
         </div>
         <h3>🌍 Global (66 улс)</h3>
         <p class="sub">Дэлхийн 66 улсад ажиллана</p>
-        <button class="btn primary" type="<a class="btn primary" href="/global-esim.html">Үнэ харах</a>
-">Үнэ харах</button>
+        <button class="btn primary" type="button" onclick="quickOpen('global66')">Үнэ харах</button>
       </div>
     </div>
 
@@ -271,15 +242,6 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
 
     <div class="body">
       <div id="out"></div>
-<!-- ✅ Email input (eSIM илгээх) -->
-<div style="margin-top:12px">
-  <div class="sub" style="margin-bottom:6px">eSIM илгээх и-мэйл</div>
-  <input id="custEmail"
-         class="search"
-         type="email"
-         placeholder="name@gmail.com"
-         style="width:100%">
-</div>
 
       <!-- Data selector -->
       <div style="margin-top:12px">
@@ -699,9 +661,6 @@ qpayBtn.addEventListener("click", async () => {
 
   const orderId = "ESIM_" + Date.now();
   const desc = `${itemFlag(currentItem)} ${currentItem.name} • ${planLabel(plan)} • ${days} өдөр`;
-window._orderId = orderId;
-window._desc = desc;
-window._amountText = fmt(r.sell);
 
   resetPayUI();
   qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
@@ -782,33 +741,6 @@ Invoice: ${window._invoiceId || "-"}`;
     console.error("QPay create invoice error:", e);
   }
 });
-async function sendPaidEmail({ to, orderId, desc, amount, invoiceId }) {
-  const html = `
-    <div style="font-family:Arial;line-height:1.6">
-      <h2>✅ Төлбөр амжилттай</h2>
-      <p><b>Order:</b> ${orderId}</p>
-      <p><b>Багц:</b> ${desc}</p>
-      <p><b>Дүн:</b> ${amount}</p>
-      <p><b>Invoice:</b> ${invoiceId}</p>
-      <hr/>
-      <p>Таны eSIM мэдээллийг удахгүй илгээнэ.</p>
-    </div>
-  `;
-
-  const res = await fetch("/.netlify/functions/send-esim-email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      to,
-      subject: "✅ Төлбөр баталгаажлаа — eSIM Mongolia",
-      html
-    })
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error("Email send error");
-  return data;
-}
 
 checkBtn.addEventListener("click", async () => {
 
@@ -853,6 +785,14 @@ checkBtn.addEventListener("click", async () => {
 });
 
     render();
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const plan = params.get("plan");
+  if (plan && typeof quickOpen === "function") {
+    setTimeout(() => quickOpen(plan), 300);
+  }
+})();
+
   </script>
 </body>
 </html>
