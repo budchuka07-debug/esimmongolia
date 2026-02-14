@@ -769,6 +769,33 @@ Invoice: ${window._invoiceId || "-"}`;
     console.error("QPay create invoice error:", e);
   }
 });
+async function sendPaidEmail({ to, orderId, desc, amount, invoiceId }) {
+  const html = `
+    <div style="font-family:Arial;line-height:1.6">
+      <h2>✅ Төлбөр амжилттай</h2>
+      <p><b>Order:</b> ${orderId}</p>
+      <p><b>Багц:</b> ${desc}</p>
+      <p><b>Дүн:</b> ${amount}</p>
+      <p><b>Invoice:</b> ${invoiceId}</p>
+      <hr/>
+      <p>Таны eSIM мэдээллийг удахгүй илгээнэ.</p>
+    </div>
+  `;
+
+  const res = await fetch("/.netlify/functions/send-esim-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      to,
+      subject: "✅ Төлбөр баталгаажлаа — eSIM Mongolia",
+      html
+    })
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error("Email send error");
+  return data;
+}
 
 checkBtn.addEventListener("click", async () => {
 
