@@ -60,42 +60,64 @@
     .footer a{ color:#e5e7eb; }
 
     /* Modal */
-    .bd{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:99998; }
-    .md{
-     .md{
+   /* Modal (FULL scroll - зөв хувилбар) */
+.bd{
   position:fixed;
-  left:50%;
-  top:50%;
-  transform:translate(-50%, -50%);
-  width:min(640px,92vw);
-  max-height:92vh;          /* 🔥 Дэлгэцэнд багтана */
-  background:#fff;
-  border-radius:18px;
-  box-shadow:var(--shadow);
+  inset:0;
+  background:rgba(0,0,0,.45);
   display:none;
-  z-index:99999;
-  overflow:hidden;          /* scroll-г body дээр өгнө */
+  z-index:99998;
 }
 
-    }
-    .md header{ padding:14px 16px; border-bottom:1px solid #eef2f7; display:flex; justify-content:space-between; align-items:center; gap:10px; }
-    .close{ border:0; background:transparent; font-size:22px; cursor:pointer; color:var(--muted); }
-    ..md{
+.md{
   position:fixed;
   left:50%;
   top:50%;
   transform:translate(-50%, -50%);
   width:min(640px,92vw);
-  max-height:92vh;          /* 🔥 Дэлгэцэнд багтана */
+  max-height:92vh;
   background:#fff;
   border-radius:18px;
   box-shadow:var(--shadow);
   display:none;
   z-index:99999;
-  overflow:hidden;          /* scroll-г body дээр өгнө */
+  overflow:hidden; /* scroll-г body дээр өгнө */
 }
- }
-    .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap; }
+
+.md header{
+  padding:14px 16px;
+  border-bottom:1px solid #eef2f7;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.close{
+  border:0;
+  background:transparent;
+  font-size:22px;
+  cursor:pointer;
+  color:var(--muted);
+}
+
+.md .body{
+  padding:14px 16px;
+  line-height:1.65;
+
+  /* ✅ Том цонхон дээр scroll */
+  max-height:calc(92vh - 70px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
 
     /* Toast */
     .toast{
