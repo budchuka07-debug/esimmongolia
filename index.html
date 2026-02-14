@@ -1,13 +1,13 @@
 
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="mn">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>eSIM Mongolia</title>
-  <meta name="description" content="eSIM Mongolia — улсаа сонгоод дата/хугацаагаа сонго. " />
-
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>eSIM Mongolia</title>
+<meta content="eSIM Mongolia — улсаа сонгоод дата/хугацаагаа сонго. " name="description"/>
+<style>
     :root{
       --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280;
       --brand:#10b981; --border:#e5e7eb;
@@ -85,92 +85,117 @@
       .featuredGrid{ grid-template-columns:1fr; }
       .imgWrap img{ height:170px; }
     }
-  </style>
+  
+
+    /* Install guide */
+    .installGrid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
+    .installCard{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; }
+    .installImg{ width:100%; height:180px; object-fit:cover; border-radius:12px; display:block; }
+    .installList{ padding-left:18px; margin:0; color:var(--text); }
+    @media (max-width: 900px){
+      .installGrid{ grid-template-columns:1fr; }
+    }
+</style>
 </head>
-
 <body>
-  <div class="wrap">
-    <div class="nav">
-      <!-- Navbar Logo: eSIMMongolia Page (ID ашигласан) -->
-      <a href="https://www.facebook.com/profile.php?id=61587287992719"
-         target="_blank"
-         style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;font-weight:900;letter-spacing:.2px">
-        <img src="https://graph.facebook.com/61587287992719/picture?type=large"
-             alt="eSIMMongolia"
-             style="width:40px;height:40px;border-radius:50%;object-fit:cover">
-        <span>eSIM Mongolia</span>
-      </a>
-
-      <div class="right">
-        <span class="sub" style="font-weight:900">📞 90283039</span>
-        <a class="btn" href="#pricing">Үнэ</a>
-        <a class="btn" href="#faq">FAQ</a>
-        <button class="btn primary" id="quickChinaBtn" type="button">🇨🇳 China</button>
-      </div>
-    </div>
-
-    <h1>Аяллын eSIM — улсаа сонгоод дата/хугацаагаа сонго</h1>
-    <div class="sub">
-      Та аял — бидэнд датагaa даатга. <b>eSIMMongolia</b> таньтай хамт, таны хэрэглээг тасралтгүй хангана.<br>
+<div class="wrap">
+<div class="nav">
+<!-- Navbar Logo: eSIMMongolia Page (ID ашигласан) -->
+<a href="https://www.facebook.com/profile.php?id=61587287992719" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;font-weight:900;letter-spacing:.2px" target="_blank">
+<img alt="eSIMMongolia" src="https://graph.facebook.com/61587287992719/picture?type=large" style="width:40px;height:40px;border-radius:50%;object-fit:cover"/>
+<span>eSIM Mongolia</span>
+</a>
+<div class="right">
+<span class="sub" style="font-weight:900">📞 90283039</span>
+<a class="btn" href="#pricing">Үнэ</a>
+<a class="btn" href="#faq">FAQ</a>
+<button class="btn primary" id="quickChinaBtn" type="button">🇨🇳 China</button>
+</div>
+</div>
+<h1>Аяллын eSIM — улсаа сонгоод дата/хугацаагаа сонго</h1>
+<div class="sub">
+      Та аял — бидэнд датагaa даатга. <b>eSIMMongolia</b> таньтай хамт, таны хэрэглээг тасралтгүй хангана.<br/>
       ✈️ Эдгээр улсууд руу аялахыг хүсвэл <b><a href="https://www.facebook.com/chukatravel" target="_blank">ChukaTravel</a></b> page руу хандана уу.
     </div>
+<!-- ⭐ Featured (3 images - online URLs) -->
+<h2>⭐ Онцлох багцууд</h2>
+<div class="featuredGrid">
+<div class="featuredCard">
+<div class="imgWrap">
+<img alt="China eSIM" loading="lazy" src="https://images.unsplash.com/photo-1549692520-acc6669e2f0c?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"/>
+</div>
+<h3>🇨🇳 Хятад eSIM</h3>
+<p class="sub">Facebook, Google VPN-гүй (HK routed)</p>
+<a class="btn primary" href="/china-esim.html">Багцын дэлгэрэнгүй</a>
+</div>
+<div class="featuredCard">
+<div class="imgWrap">
+<img alt="Asia eSIM" loading="lazy" src="https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"/>
+</div>
+<h3>🌏 Asia (10 улс)</h3>
+<p class="sub">Азийн 10 улсад ажиллана</p>
+<a class="btn primary" href="/asia-esim.html">Багцын дэлгэрэнгүй</a>
+</div>
+<div class="featuredCard">
+<div class="imgWrap">
+<img alt="Global eSIM" loading="lazy" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"/>
+</div>
+<h3>🌍 Global (66 улс)</h3>
+<p class="sub">Дэлхийн 66 улсад ажиллана</p>
+<a class="btn primary" href="/global-esim.html">Багцын дэлгэрэнгүй</a>
+</div>
+</div>
+<!-- Pricing -->
+<h2 id="pricing">🌍 Улс / Бүс сонгоод үнэ бодоорой</h2>
+<div class="controls">
+<input class="search" id="q" placeholder="Улс хайх… (Japan, Europe, USA, Global гэх мэт)"/>
+<select class="select" id="days"></select>
+<button class="btn" id="clear" type="button">Clear</button>
+</div>
+<div class="grid" id="grid"></div>
+<!-- FAQ -->
 
-    <!-- ⭐ Featured (3 images - online URLs) -->
-    <h2>⭐ Онцлох багцууд</h2>
-    <div class="featuredGrid">
-      <div class="featuredCard">
-        <div class="imgWrap">
-          <img src="https://images.unsplash.com/photo-1549692520-acc6669e2f0c?auto=format&fit=crop&w=1200&q=80"
-               alt="China eSIM" loading="lazy">
-        </div>
-        <h3>🇨🇳 Хятад eSIM</h3>
-        <p class="sub">Facebook, Google VPN-гүй (HK routed)</p>
-        <button class="btn primary" type="button" onclick="quickOpen('cn')">Үнэ харах</button>
-      </div>
-
-      <div class="featuredCard">
-        <div class="imgWrap">
-          <img src="https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1200&q=80"
-               alt="Asia eSIM" loading="lazy">
-        </div>
-        <h3>🌏 Asia (10 улс)</h3>
-        <p class="sub">Азийн 10 улсад ажиллана</p>
-        <button class="btn primary" type="button" onclick="quickOpen('asia10')">Үнэ харах</button>
-      </div>
-
-      <div class="featuredCard">
-        <div class="imgWrap">
-          <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"
-               alt="Global eSIM" loading="lazy">
-        </div>
-        <h3>🌍 Global (66 улс)</h3>
-        <p class="sub">Дэлхийн 66 улсад ажиллана</p>
-        <button class="btn primary" type="button" onclick="quickOpen('global66')">Үнэ харах</button>
-      </div>
-    </div>
-
-    <!-- Pricing -->
-    <h2 id="pricing">🌍 Улс / Бүс сонгоод үнэ бодоорой</h2>
-
-    <div class="controls">
-      <input id="q" class="search" placeholder="Улс хайх… (Japan, Europe, USA, Global гэх мэт)" />
-      <select id="days" class="select"></select>
-      <button class="btn" id="clear" type="button">Clear</button>
-    </div>
-
-    <div class="grid" id="grid"></div>
-
-    <!-- FAQ -->
-    <h2 id="faq">FAQ</h2>
-    <div style="display:grid; gap:10px;">
-      <details>
-        <summary>Хятад eSIM үнэхээр Facebook/Google нээх үү?</summary>
-        <div class="sub" style="margin-top:8px">
+<section class="card" id="install" style="margin-top:16px">
+<h2 style="margin-top:0">📱 eSIM суулгах заавар</h2>
+<div class="sub">QR кодоо авмагц 2–3 минутын дотор суулгана. Wi‑Fi байх үедээ суулгаарай.</div>
+<div class="installGrid" style="margin-top:14px">
+<div class="installCard">
+<img alt="iPhone eSIM install" class="installImg" loading="lazy" src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"/>
+<h3 style="margin:12px 0 8px">🍎 iPhone</h3>
+<ol class="installList">
+<li>Settings → Cellular (Mobile Data)</li>
+<li>Add eSIM / Add Cellular Plan</li>
+<li>Use QR Code → QR код уншуулна</li>
+<li>Cellular Data = eSIM гэж сонгоно</li>
+</ol>
+</div>
+<div class="installCard">
+<img alt="Android eSIM install" class="installImg" loading="lazy" src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"/>
+<h3 style="margin:12px 0 8px">🤖 Android</h3>
+<ol class="installList">
+<li>Settings → Network &amp; Internet</li>
+<li>SIMs / SIM manager → Add eSIM</li>
+<li>Scan QR code → QR код уншуулна</li>
+<li>Mobile data-г eSIM дээр асаана</li>
+</ol>
+</div>
+</div>
+<div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+<a class="btn primary" href="https://esimmongolia.com/?plan=cn">Хятад үнэ бодох</a>
+<a class="btn" href="https://esimmongolia.com/?plan=asia10">Asia үнэ бодох</a>
+<a class="btn" href="https://esimmongolia.com/?plan=global66">Global үнэ бодох</a>
+</div>
+</section>
+<h2 id="faq">FAQ</h2>
+<div style="display:grid; gap:10px;">
+<details>
+<summary>Хятад eSIM үнэхээр Facebook/Google нээх үү?</summary>
+<div class="sub" style="margin-top:8px">
           “Хятад” дээр тэмдэглэсэн HK routed багц бол VPN-гүй нээх боломжтой. Эцсийн баталгаажуулалтыг чатаар хийнэ.
         </div>
-      </details>
-      <details>
-        <summary>ҮЙЛЧИЛГЭЭНИЙ НӨХЦӨЛ
+</details>
+<details>
+<summary>ҮЙЛЧИЛГЭЭНИЙ НӨХЦӨЛ
 
 Ерөнхий зүйл
 
@@ -212,104 +237,91 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
 
 Лавлах дугаар: +976-90283039
 Вэбсайт: esimmongolia.com</summary>
-        <div class="sub" style="margin-top:8px">
-          <b>“Хятад явах уу? Facebook, Google VPN-гүй — QR код 5 минутанд.”</b>
-        </div>
-      </details>
-    </div>
-
-    <div class="footer">
-      <div style="font-weight:900;font-size:16px">eSIMMongolia</div>
-      <div style="opacity:.9;margin-top:6px">📞 Холбоо барих: <b>90283039</b></div>
-      <div style="opacity:.9;margin-top:8px">
+<div class="sub" style="margin-top:8px">
+<b>“Хятад явах уу? Facebook, Google VPN-гүй — QR код 5 минутанд.”</b>
+</div>
+</details>
+</div>
+<div class="footer">
+<div style="font-weight:900;font-size:16px">eSIMMongolia</div>
+<div style="opacity:.9;margin-top:6px">📞 Холбоо барих: <b>90283039</b></div>
+<div style="opacity:.9;margin-top:8px">
         ✈️ Хятад, Тайланд, Япон, Солонгос болон бусад улс руу аялах бол 👉
         <a href="https://www.facebook.com/chukatravel" target="_blank"><b>ChukaTravel Facebook Page</b></a>
-      </div>
-      <div style="opacity:.75;margin-top:10px">© 2026 eSIMMongolia</div>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast">Хууллаа ✅</div>
-
-  <!-- Modal -->
-  <div class="bd" id="bd"></div>
-  <div class="md" id="md" role="dialog" aria-modal="true">
-    <header>
-      <b id="ttl">Үнийн санал</b>
-      <button class="close" id="x" type="button" aria-label="Close">×</button>
-    </header>
-
-    <div class="body">
-      <div id="out"></div>
-
-      <!-- Data selector -->
-      <div style="margin-top:12px">
-        <div class="sub" style="margin-bottom:8px">Дата сонгох</div>
-        <div id="dataChips" style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="pill" data-plan="1" type="button">1GB</button>
-          <button class="pill" data-plan="2" type="button">2GB</button>
-          <button class="pill" data-plan="3" type="button">3GB</button>
-          <button class="pill" data-plan="unl" type="button">Unlimited</button>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <span class="sub">эсвэл</span>
-          <select id="modalPlan" class="select">
-            <option value="1">1GB</option>
-            <option value="2">2GB</option>
-            <option value="3">3GB</option>
-            <option value="unl">Unlimited</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Day chips + dropdown -->
-      <div style="margin-top:12px">
-        <div class="sub" style="margin-bottom:8px">Хоног сонгох</div>
-
-        <div id="dayChips" style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="pill" data-d="1"  type="button">1</button>
-          <button class="pill" data-d="3"  type="button">3</button>
-          <button class="pill" data-d="5"  type="button">5</button>
-          <button class="pill" data-d="7"  type="button">7</button>
-          <button class="pill" data-d="10" type="button">10</button>
-          <button class="pill" data-d="15" type="button">15</button>
-          <button class="pill" data-d="30" type="button">30</button>
-        </div>
-
-        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <span class="sub">эсвэл</span>
-          <select id="modalDays" class="select"></select>
-        </div>
-      </div>
-
-            <div class="actions" style="justify-content:space-between">
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn primary" id="payQpay" type="button">QPay-р төлөх</button>
-          <button class="btn" id="checkPayment" type="button">Төлбөр шалгах</button>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn" id="cancel" type="button">Болих</button>
-          <!-- Захиалах: Messenger рүү үсрэхгүй. Сонголтыг хуулж өгнө. -->
-          <button class="btn" id="order" type="button">Захиалгын мэдээлэл хуулна</button>
-        </div>
-      </div>
-
-      <div id="qpayBox" style="margin-top:12px"></div>
-
-      <div id="chatBtns" style="margin-top:10px; display:none; gap:10px; flex-wrap:wrap">
-        <a class="btn primary" id="goWhatsapp" target="_blank" rel="noopener">WhatsApp руу бичих</a>
-        <a class="btn" id="goMessenger" target="_blank" rel="noopener">Facebook Page руу бичих</a>
-      </div>
-
-      <div class="sub" style="margin-top:10px">
+</div>
+<div style="opacity:.75;margin-top:10px">© 2026 eSIMMongolia</div>
+</div>
+</div>
+<!-- Toast -->
+<div class="toast" id="toast">Хууллаа ✅</div>
+<!-- Modal -->
+<div class="bd" id="bd"></div>
+<div aria-modal="true" class="md" id="md" role="dialog">
+<header>
+<b id="ttl">Үнийн санал</b>
+<button aria-label="Close" class="close" id="x" type="button">×</button>
+</header>
+<div class="body">
+<div id="out"></div>
+<!-- Data selector -->
+<div style="margin-top:12px">
+<div class="sub" style="margin-bottom:8px">Дата сонгох</div>
+<div id="dataChips" style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="pill" data-plan="1" type="button">1GB</button>
+<button class="pill" data-plan="2" type="button">2GB</button>
+<button class="pill" data-plan="3" type="button">3GB</button>
+<button class="pill" data-plan="unl" type="button">Unlimited</button>
+</div>
+<div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<span class="sub">эсвэл</span>
+<select class="select" id="modalPlan">
+<option value="1">1GB</option>
+<option value="2">2GB</option>
+<option value="3">3GB</option>
+<option value="unl">Unlimited</option>
+</select>
+</div>
+</div>
+<!-- Day chips + dropdown -->
+<div style="margin-top:12px">
+<div class="sub" style="margin-bottom:8px">Хоног сонгох</div>
+<div id="dayChips" style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="pill" data-d="1" type="button">1</button>
+<button class="pill" data-d="3" type="button">3</button>
+<button class="pill" data-d="5" type="button">5</button>
+<button class="pill" data-d="7" type="button">7</button>
+<button class="pill" data-d="10" type="button">10</button>
+<button class="pill" data-d="15" type="button">15</button>
+<button class="pill" data-d="30" type="button">30</button>
+</div>
+<div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<span class="sub">эсвэл</span>
+<select class="select" id="modalDays"></select>
+</div>
+</div>
+<div class="actions" style="justify-content:space-between">
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button class="btn primary" id="payQpay" type="button">QPay-р төлөх</button>
+<button class="btn" id="checkPayment" type="button">Төлбөр шалгах</button>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+<button class="btn" id="cancel" type="button">Болих</button>
+<!-- Захиалах: Messenger рүү үсрэхгүй. Сонголтыг хуулж өгнө. -->
+<button class="btn" id="order" type="button">Захиалгын мэдээлэл хуулна</button>
+</div>
+</div>
+<div id="qpayBox" style="margin-top:12px"></div>
+<div id="chatBtns" style="margin-top:10px; display:none; gap:10px; flex-wrap:wrap">
+<a class="btn primary" id="goWhatsapp" rel="noopener" target="_blank">WhatsApp руу бичих</a>
+<a class="btn" id="goMessenger" rel="noopener" target="_blank">Facebook Page руу бичих</a>
+</div>
+<div class="sub" style="margin-top:10px">
         * Дүн нь сонгосон хоног/датагаар автоматаар шинэчлэгдэнэ.
       </div>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
     // =========================
     // CONFIG (дотоод тооцоо – хэрэглэгчид харуулахгүй)
     // =========================
@@ -537,7 +549,18 @@ Facebook: https://www.facebook.com/profile.php?id=61587287992719`;
     });
 
     // Page controls
-    document.getElementById("clear").onclick = ()=>{ q.value=""; render(); };
+    document.getElementById("clear").onclick = ()=>{ q.value=""; render();
+
+    // Auto open pricing modal from ?plan=cn|asia10|global66
+    (function(){
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const plan = params.get('plan');
+        if(plan && typeof window.quickOpen === 'function'){
+          setTimeout(() => window.quickOpen(plan), 300);
+        }
+      }catch(e){}
+    })(); };
     q.addEventListener("input", render);
     daysEl.addEventListener("change", render);
 
@@ -785,14 +808,17 @@ checkBtn.addEventListener("click", async () => {
 });
 
     render();
-(function () {
-  const params = new URLSearchParams(window.location.search);
-  const plan = params.get("plan");
-  if (plan && typeof quickOpen === "function") {
-    setTimeout(() => quickOpen(plan), 300);
-  }
-})();
 
+    // Auto open pricing modal from ?plan=cn|asia10|global66
+    (function(){
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const plan = params.get('plan');
+        if(plan && typeof window.quickOpen === 'function'){
+          setTimeout(() => window.quickOpen(plan), 300);
+        }
+      }catch(e){}
+    })();
   </script>
 </body>
 </html>
