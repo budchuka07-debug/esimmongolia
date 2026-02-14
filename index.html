@@ -686,6 +686,9 @@ qpayBtn.addEventListener("click", async () => {
 
   const orderId = "ESIM_" + Date.now();
   const desc = `${itemFlag(currentItem)} ${currentItem.name} • ${planLabel(plan)} • ${days} өдөр`;
+window._orderId = orderId;
+window._desc = desc;
+window._amountText = fmt(r.sell);
 
   resetPayUI();
   qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
