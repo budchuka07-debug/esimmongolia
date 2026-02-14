@@ -3,13 +3,44 @@
 
 <html lang="mn">
 <head>
+ <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>eSIM Mongolia</title>
-<meta content="eSIM Mongolia — улсаа сонгоод дата/хугацаагаа сонго. " name="description"/>
-    /* ================= QPay Modal FIX ================= */
+<meta name="description" content="eSIM Mongolia ..."/>
+
+<style>
+
+/* ===== QPay Modal FIX ===== */
 
 .modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.modal .card {
+  width: min(980px, 96vw);
+  max-height: 92vh;
+  background: #fff;
+  border-radius: 18px;
+}
+
+.modal .body {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(92vh - 70px);
+}
+
+</style>
+
+</head>
+{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.35);
