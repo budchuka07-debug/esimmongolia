@@ -612,16 +612,36 @@ function extractPayUrl(data){
 }
 
 function extractQrValue(data){
+  // Prefer raw qr text / deep link that QPay apps can open.
   return (
     data?.qr_text ||
+    data?.qrText ||
+    data?.qr_string ||
+    data?.qrString ||
     data?.qr ||
     data?.qrCode ||
     data?.qr_code ||
-    data?.qrText ||
-    data?.qr_string ||
+    // Sometimes qr text lives under "result"
+    data?.result?.qr_text ||
+    data?.result?.qrText ||
+    data?.result?.qr_string ||
+    // Fallback to any payable deep link
     extractPayUrl(data)
   );
 }
+
+function extractQrImage(data){
+  // Base64 QR image (no prefix) returned by some QPay endpoints
+  return (
+    data?.qr_image ||
+    data?.qrImage ||
+    data?.qr_img ||
+    data?.qrImg ||
+    data?.result?.qr_image ||
+    data?.result?.qrImage
+  );
+}
+
 
 function resetPayUI(){
   qpayBox.innerHTML = "";
@@ -661,6 +681,7 @@ qpayBtn.addEventListener("click", async () => {
 
     const payUrl = extractPayUrl(data);
     const qrValue = extractQrValue(data);
+    const qrImage = extractQrImage(data);
 
     window._invoiceId = data.invoice_id || null;
 
@@ -678,32 +699,46 @@ Invoice: ${window._invoiceId || "-"}`;
     goWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
     qpayBox.innerHTML = `
-      <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-        <b>QPay төлбөр</b>
-
-        ${window._invoiceId ? `<div class="sub" style="margin-top:6px">Invoice ID: <b>${window._invoiceId}</b></div>` : ""}
-
-        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
-          ${payUrl ? `<a href="${payUrl}" target="_blank" class="btn primary">QPay нээж төлөх</a>` : ""}
-        </div>
-
-        <div style="margin-top:14px;display:flex;gap:14px;flex-wrap:wrap">
-          <div id="qpayQr" style="padding:12px;border:1px solid #e5e7eb;border-radius:14px;background:#fff"></div>
-        </div>
+      <div style="
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        padding:14px;
+        background:#fff;
+        border-radius:16px;
+      ">
+        <div id="qpayQr"></div>
       </div>
     `;
 
-    if(qrValue){
-      const qrDiv = document.getElementById("qpayQr");
+    const qrDiv = document.getElementById("qpayQr");
+    if(qrImage){
+      // Render base64 PNG QR image if provided
+      const img = document.createElement("img");
+      img.alt = "QPay QR";
+      img.style.width = "360px";
+      img.style.height = "360px";
+      img.src = String(qrImage).startsWith("data:")
+        ? String(qrImage)
+        : `data:image/png;base64,${String(qrImage)}`;
+      qrDiv.innerHTML = "";
+      qrDiv.appendChild(img);
+    }else if(qrValue){
+      // Generate QR from text / deep link
+      qrDiv.innerHTML = "";
       new QRCode(qrDiv, {
         text: String(qrValue),
-        width: 220,
-        height: 220
+        width: 360,
+        height: 360
       });
+    }else{
+      qrDiv.innerHTML = "<div class='sub'>⚠️ QR мэдээлэл ирсэнгүй. Доорх 'QPay нээж төлөх' линкээр төлж болно.</div>";
     }
 
   }catch(e){
-    qpayBox.innerHTML = "❌ QPay нэхэмжлэл үүсгэхэд алдаа гарлаа.";
+    const msg = (e && e.message) ? e.message : String(e);
+    qpayBox.innerHTML = `❌ QPay нэхэмжлэл үүсгэхэд алдаа гарлаа.<div class="sub" style="margin-top:6px">Дэлгэрэнгүй: <b>${msg}</b></div>`;
+    console.error("QPay create invoice error:", e);
   }
 });
 
