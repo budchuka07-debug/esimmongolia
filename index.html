@@ -144,10 +144,9 @@
       .installGrid{ grid-template-columns:1fr; }
     }
 
-    /* ===== QPay Scroll Fix ===== */
-    #qpayBox{ max-height:55vh; overflow-y:auto; padding-right:6px; -webkit-overflow-scrolling:touch; }
+    /* ===== QPay Box (no inner scroll; modal body scrolls) ===== */
+    #qpayBox{ max-height:none; overflow:visible; padding-right:0; }
     #qpayBox img{ max-width:100%; height:auto; }
-
 </style>
 </head>
 <body>
@@ -542,7 +541,6 @@ function closeModal(){
   md.style.display="none";
 }
 
-}
 
 
     // Featured helpers
@@ -817,7 +815,9 @@ qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
 
     window._invoiceId = data.invoice_id || null;
 
-    const msg =
+    
+    startAutoCheck();
+const msg =
 `Сайн байна уу 👋
 Би QPay-р төлбөрөө төлсөн.
 Order: ${orderId}
