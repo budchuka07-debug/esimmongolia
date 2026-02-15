@@ -727,6 +727,44 @@ function extractQrImage(data){
   );
 }
 
+function startAutoCheck(){
+  if(!window._invoiceId) return;
+
+  if(paymentInterval){
+    clearInterval(paymentInterval);
+  }
+
+  paymentInterval = setInterval(async () => {
+    try{
+      const res = await fetch("/.netlify/functions/qpay-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_id: window._invoiceId })
+      });
+
+      const data = await res.json();
+      if(!res.ok) return;
+
+      if(data.paid){
+        clearInterval(paymentInterval);
+        paymentInterval = null;
+
+        chatBtns.style.display = "flex";
+        qpayBox.innerHTML = `
+          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+            <b style="color:green">✅ Төлбөр амжилттай</b>
+            <div class="sub" style="margin-top:8px">
+              WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
+            </div>
+          </div>
+        `;
+      }
+
+    }catch(e){
+      console.error("Auto check error:", e);
+    }
+  }, 5000); // 5 секунд тутам шалгана
+}
 
 function resetPayUI(){
   qpayBox.innerHTML = "";
