@@ -810,14 +810,9 @@ qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
     if(!res.ok) throw new Error(data.error || "QPay error");
 
    const payUrl = extractPayUrl(data);
+const qrValue = extractQrValue(data);   // 🔥 ЖИНХЭНЭ QR TEXT
+const qrImage = extractQrImage(data);   // 🔥 Хэрэв base64 image ирвэл
 
-// 🔥 QR-г зөвхөн QPay invoice link-ээс үүсгэнэ
-const qrValue = payUrl;
-
-const qrImage = null; // image ашиглахгүй
-
-
-    window._invoiceId = data.invoice_id || null;
 
     
     startAutoCheck();
