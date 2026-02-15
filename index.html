@@ -725,6 +725,7 @@ function extractQrImage(data){
 
 function resetPayUI(){
   qpayBox.innerHTML = "";
+  qpayBox.style.display = "none";     // ✅ нэм
   chatBtns.style.display = "none";
   window._invoiceId = null;
   window._orderMsg = null;
