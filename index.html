@@ -676,8 +676,11 @@ const checkBtn = document.getElementById("checkPayment");
 const FB_PAGE_URL = "https://www.facebook.com/profile.php?id=61587287992719";
 const WHATSAPP_NUMBER = "97690283039";
 
+
 window._invoiceId = null;
 window._orderMsg = null;
+
+let paymentInterval = null;   // ✅ нэм
 
 function extractPayUrl(data){
   if(!data) return "";
