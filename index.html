@@ -867,6 +867,19 @@ Invoice: ${window._invoiceId || "-"}`;
         width: 360,
         height: 360
       });
+        if(payUrl){
+  qpayBox.insertAdjacentHTML("beforeend", `
+    <div style="margin-top:12px;text-align:center">
+      <a class="btn primary" href="${payUrl}" target="_blank">
+        QPay нээж төлөх
+      </a>
+      <div class="sub" style="margin-top:6px">
+        QR уншихгүйгээр шууд QPay-р нээж төлж болно.
+      </div>
+    </div>
+  `);
+}
+
     }else{
       qrDiv.innerHTML = "<div class='sub'>⚠️ QR мэдээлэл ирсэнгүй. Доорх 'QPay нээж төлөх' линкээр төлж болно.</div>";
     }
