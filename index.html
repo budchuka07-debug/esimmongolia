@@ -746,7 +746,9 @@ qpayBtn.addEventListener("click", async () => {
   const desc = `${itemFlag(currentItem)} ${currentItem.name} • ${planLabel(plan)} • ${days} өдөр`;
 
   resetPayUI();
-  qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
+qpayBox.style.display = "block";      // ✅ нэм
+qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
+
 
   try{
     const res = await fetch("/.netlify/functions/qpay-create-invoice", {
