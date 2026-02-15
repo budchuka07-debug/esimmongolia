@@ -532,10 +532,16 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
       md.style.display="block";
     }
 
-    function closeModal(){
-  resetPayUI();                       // ✅ нэм
+function closeModal(){
+  if(paymentInterval){
+    clearInterval(paymentInterval);
+    paymentInterval = null;
+  }
+  resetPayUI();
   bd.style.display="none";
   md.style.display="none";
+}
+
 }
 
 
