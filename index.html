@@ -533,9 +533,11 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
     }
 
     function closeModal(){
-      bd.style.display="none";
-      md.style.display="none";
-    }
+  resetPayUI();                       // ✅ нэм
+  bd.style.display="none";
+  md.style.display="none";
+}
+
 
     // Featured helpers
     window.quickOpen = function(id){
