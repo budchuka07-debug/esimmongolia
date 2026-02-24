@@ -419,71 +419,104 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
     const MAX_DISC = 0.15;      // max 15%
 
     // =========================
-    // DATA (суурь үнэ = 1GB / 1 өдөр, MNT)
-    // + Unlimited-ийн суурь үнэ (unl_mnt) байвал яг түүгээр бодно
+    
     // =========================
-    const ESIM_BASES = [
-      { id:"asia10",  name:"Asia (10 улс)",   flag:"🌏", base_mnt:3000, unl_mnt:7500, note:"Азийн 10 улсад ажиллана" },
-      { id:"eu_multi",name:"Европ (EU – олон улс)", flag:"🇪🇺", base_mnt:3800, unl_mnt:8800, note:"Европын олон улсад ажиллана (баримжаа)" },
-      { id:"global66",name:"Global (66 улс)", flag:"🌍", base_mnt:5000, unl_mnt:9500, note:"Дэлхийн 66 улсад ажиллана" },
-
-      { id:"cn", name:"Хятад",      iso:"CN", base_mnt:2000, unl_mnt:6500, note:"Facebook, Google VPN-гүй (HK routed)" },
-      { id:"jp", name:"Япон",       iso:"JP", base_mnt:2000, unl_mnt:6000 },
-      { id:"sg", name:"Сингапур",   iso:"SG", base_mnt:700,  unl_mnt:3500 },
-      { id:"my", name:"Малайз",     iso:"MY", base_mnt:1030, unl_mnt:4200 },
-      { id:"id", name:"Индонез",    iso:"ID", base_mnt:2052, unl_mnt:6400 },
-      { id:"th", name:"Тайланд",    iso:"TH", base_mnt:1240, unl_mnt:4800 },
-      { id:"vn", name:"Вьетнам",    iso:"VN", base_mnt:1133, unl_mnt:4500 },
-      { id:"us", name:"АНУ (USA)",  iso:"US", base_mnt:1700, unl_mnt:6200 },
-
-      { id:"de", name:"Герман",     iso:"DE", base_mnt:2000, unl_mnt:6800 },
-      { id:"fr", name:"Франц",      iso:"FR", base_mnt:2000, unl_mnt:6800 },
-      { id:"it", name:"Итали",      iso:"IT", base_mnt:1900, unl_mnt:6500 },
-      { id:"es", name:"Испани",     iso:"ES", base_mnt:1900, unl_mnt:6500 },
-      { id:"gb", name:"Их Британи", iso:"GB", base_mnt:2200, unl_mnt:7200 }
-    ];
-
+    // DYNAMIC DATA (Airhub plans → auto countries)
+    // USD→MNT: 1 USD = 3566₮
+    // Markup: China/Korea 35%, others 30%
     // =========================
-    // Helpers
-    // =========================
-    const fmt = n => new Intl.NumberFormat('mn-MN').format(Math.round(n)) + "₮";
+    const USD_RATE = 3566;
 
-    function flagFromISO(iso){
-      if(!iso) return "";
-      const cc = iso.toUpperCase();
-      if(!/^[A-Z]{2}$/.test(cc)) return "";
+    function calculateMNT(usd, country){
+      const u = Number(usd || 0);
+      const markup = (country === "China" || country === "South Korea" || country === "Korea South") ? 1.35 : 1.30;
+      return Math.round((u * USD_RATE * markup) / 100) * 100; // 100₮ rounding
+    }
+
+    // CountryName → ISO2 (flag)
+    const COUNTRY_CODE = {
+      "China":"CN",
+      "South Korea":"KR",
+      "Korea South":"KR",
+      "Japan":"JP",
+      "Thailand":"TH",
+      "Vietnam":"VN",
+      "Malaysia":"MY",
+      "Singapore":"SG",
+      "Indonesia":"ID",
+      "Philippines":"PH",
+      "Taiwan":"TW",
+      "Hong Kong":"HK",
+      "Macao":"MO",
+      "Macau":"MO",
+      "United States":"US",
+      "Canada":"CA",
+      "Mexico":"MX",
+      "Turkey":"TR",
+      "Germany":"DE",
+      "France":"FR"
+    };
+
+    function flagEmojiFromCode(code){
+      if(!code || String(code).length !== 2) return "🏳️";
+      const cc = String(code).toUpperCase();
       const A = 0x1F1E6;
-      return String.fromCodePoint(...[...cc].map(c => A + c.charCodeAt(0) - 65));
-    }
-    function itemFlag(item){
-      return item.flag || flagFromISO(item.iso) || "";
+      return String.fromCodePoint(A + (cc.charCodeAt(0) - 65), A + (cc.charCodeAt(1) - 65));
     }
 
-    function calc(basePerDay, days){
-      const disc = Math.min((days - 1) * DAILY_DISC, MAX_DISC);
-      const baseCalc = basePerDay * days * (1 - disc);
-      const sell = baseCalc * (1 + PROFIT);
-      return { sell };
+    function flagForCountryName(countryName){
+      const code = COUNTRY_CODE[countryName];
+      return code ? flagEmojiFromCode(code) : "🏳️";
     }
 
-    function planLabel(p){
-      return (p === "unl") ? "Unlimited" : (p + "GB");
+    function isUnlimitedPlan(p){
+      const name = String((p && p.planName) || "").toLowerCase();
+      if(name.includes("unlimited")) return true;
+      const cap = String((p && p.capacity) || "").toLowerCase();
+      if(cap.includes("unlimited")) return true;
+      return false;
     }
 
-    // Unlimited суурь үнэ байхгүй бол түр баримжаа: 1GB * 4
-    function baseForPlan(item, plan){
-      if(plan === "unl"){
-        return item.unl_mnt ?? Math.round(item.base_mnt * 4);
-      }
-      return item.base_mnt * Number(plan); // 1/2/3
+    function sortPlansForUI(plans){
+      return (plans || []).slice().sort((a,b)=>{
+        const aUn = isUnlimitedPlan(a);
+        const bUn = isUnlimitedPlan(b);
+        if(aUn !== bUn) return aUn ? 1 : -1; // unlimited last
+        return Number(a.price) - Number(b.price);
+      });
     }
 
-    function showToast(msg="Хууллаа ✅"){
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.style.display = "block";
-      clearTimeout(showToast._tm);
-      showToast._tm = setTimeout(()=> t.style.display="none", 1400);
+    function groupByCountry(plans){
+      const map = {};
+      (plans || []).forEach(p=>{
+        const c = p.countryName || "Unknown";
+        if(!map[c]) map[c] = [];
+        map[c].push(p);
+      });
+      return map;
+    }
+
+    // =========================
+    // STATE
+    // =========================
+    let ALL_PLANS = [];
+    let GROUPED = {};
+    let currentCountry = null;
+    let currentPlans = [];
+    let currentPlan = null; // selected plan object
+
+    // =========================
+    // HELPERS (format)
+    // =========================
+    function fmt(n){
+      return new Intl.NumberFormat('mn-MN').format(Number(n || 0)) + "₮";
+    }
+
+    function travelRequirement(p){
+      const t = String((p && p.travel_date) || "").toLowerCase();
+      if(t.includes("no need")) return "No Need";
+      if(t.includes("need") || t.includes("required") || t.includes("mandatory")) return "Required";
+      return (p && p.travel_date) ? p.travel_date : "Unknown";
     }
 
     // =========================
@@ -505,225 +538,232 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
     const modalPlanEl = document.getElementById("modalPlan");
     const dataChips = document.getElementById("dataChips");
 
-    // Fill days 1..30 (page)
-    for(let d=1; d<=30; d++){
-      const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = d + " өдөр";
-      daysEl.appendChild(opt);
-    }
-    daysEl.value = "7";
+    // Hide legacy UI blocks (we use plan dropdown + list)
+    try{
+      if(modalDaysEl && modalDaysEl.parentElement) modalDaysEl.parentElement.style.display = "none";
+      if(dayChips && dayChips.parentElement) dayChips.parentElement.style.display = "none";
+      if(dataChips && dataChips.parentElement) dataChips.parentElement.style.display = "none";
+    }catch(e){}
 
-    // Fill modal days 1..30
-    for(let d=1; d<=30; d++){
-      const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = d + " өдөр";
-      modalDaysEl.appendChild(opt);
-    }
-
-    let currentItem = null;
-    let currentPlan = "1";
-
-    function setActiveDays(days){
-      dayChips.querySelectorAll(".pill").forEach(b=>{
-        b.classList.toggle("active", Number(b.dataset.d) === Number(days));
-      });
-    }
-    function setActivePlan(plan){
-      currentPlan = plan;
-      modalPlanEl.value = plan;
-      dataChips.querySelectorAll(".pill").forEach(b=>{
-        b.classList.toggle("active", b.dataset.plan === String(plan));
-      });
+    // =========================
+    // TOAST
+    // =========================
+    function showToast(msg){
+      const t = document.getElementById("toast");
+      if(!t) return;
+      t.textContent = msg;
+      t.style.display="block";
+      clearTimeout(showToast._tm);
+      showToast._tm = setTimeout(()=> t.style.display="none", 1400);
     }
 
-    function updateModalPrice(){
-      if(!currentItem) return;
-
-      const days = Number(modalDaysEl.value) || 7;
-      const plan = String(modalPlanEl.value || currentPlan || "1");
-
-      const basePerDay = baseForPlan(currentItem, plan);
-      const r = calc(basePerDay, days);
-
-      ttl.textContent = `${itemFlag(currentItem)} ${currentItem.name} – ${planLabel(plan)} • ${days} өдөр`;
-
-      out.innerHTML = `
-        Суурь үнэ (${planLabel(plan)}/1өдөр): <b>${fmt(basePerDay)}</b><br/>
-        Таны сонгосон дүн: <b style="font-size:18px">${fmt(r.sell)}</b>
-        ${currentItem.note ? `<div style="margin-top:10px"><b>Тайлбар:</b> ${currentItem.note}</div>` : ``}
-      `;
-
-      setActiveDays(days);
-      setActivePlan(plan);
+    // =========================
+    // LOAD PLANS (Netlify Function)
+    // expects: { getInformation: [...] }
+    // =========================
+    async function loadPlans(){
+      try{
+        const res = await fetch("/.netlify/functions/getPlans");
+        const data = await res.json();
+        ALL_PLANS = data.getInformation || [];
+        GROUPED = groupByCountry(ALL_PLANS);
+        render();
+      }catch(err){
+        console.error(err);
+        if(grid){
+          grid.innerHTML = `<div class="card"><div class="name">Алдаа</div><div class="sub">Plan татаж чадсангүй. /.netlify/functions/getPlans ажиллаж байгаа эсэхээ шалгаарай.</div></div>`;
+        }
+      }
     }
 
-    function openModal(item){
-      currentItem = item;
-      modalDaysEl.value = String(Number(daysEl.value) || 7);
-      setActivePlan("1");
-      updateModalPrice();
+    // =========================
+    // RENDER (countries)
+    // Uses days filter: show "From" based on selected days if available
+    // =========================
+    function render(){
+      const query = (q && q.value ? q.value : "").trim().toLowerCase();
+      const days = Number(daysEl && daysEl.value ? daysEl.value : 7) || 7;
+
+      const countries = Object.keys(GROUPED || {}).filter(c => {
+        if(!query) return true;
+        return String(c).toLowerCase().includes(query);
+      }).sort((a,b)=>a.localeCompare(b));
+
+      if(!grid) return;
+
+      grid.innerHTML = countries.map(country => {
+        const plansAll = GROUPED[country] || [];
+        const dayMatched = plansAll.filter(p => String(p.vaildity) === String(days));
+        const candidate = (dayMatched.length ? dayMatched : plansAll);
+
+        const normal = candidate.filter(p => !isUnlimitedPlan(p));
+        const base = (normal.length ? normal : candidate);
+
+        const minUSD = Math.min(...base.map(p => Number(p.price)));
+        const minMNT = calculateMNT(minUSD, country);
+        const flag = flagForCountryName(country);
+
+        const safeCountry = String(country).replace(/'/g, "\\'");
+        return `
+          <div class="card">
+            <div class="cardHead">
+              <div>
+                <div class="name">${flag} ${country}</div>
+                <div class="sub">From <b>${fmt(minMNT)}</b></div>
+              </div>
+              <button class="btn primary" onclick="openCountry('${safeCountry}')">Багц харах</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================
+    // MODAL (plans per country)
+    // Unlimited goes last
+    // =========================
+    function openCountry(country){
+      currentCountry = country;
+      const plansRaw = GROUPED[country] || [];
+      currentPlans = sortPlansForUI(plansRaw);
+
+      if(modalPlanEl){
+        modalPlanEl.innerHTML = currentPlans.map(p => {
+          const mnt = calculateMNT(p.price, country);
+          const unBadge = isUnlimitedPlan(p) ? " • Unlimited" : "";
+          const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
+          const dur = (p.vaildity && p.validityType) ? `${p.vaildity}${p.validityType}` : "";
+          const meta = [cap, dur].filter(Boolean).join(" / ");
+          const label = `${meta ? meta + " — " : ""}${fmt(mnt)}${unBadge}`;
+          return `<option value="${p.planCode}">${label}</option>`;
+        }).join('');
+      }
+
+      currentPlan = currentPlans.find(p => !isUnlimitedPlan(p)) || currentPlans[0] || null;
+      if(modalPlanEl && currentPlan) modalPlanEl.value = currentPlan.planCode;
+
+      updateModal();
+
       bd.style.display="block";
       md.style.display="block";
     }
 
-function closeModal(){
-  if(paymentInterval){
-    clearInterval(paymentInterval);
-    paymentInterval = null;
-  }
-  resetPayUI();
-  bd.style.display="none";
-  md.style.display="none";
-}
+    function closeModal(){
+      bd.style.display="none";
+      md.style.display="none";
+    }
 
+    function updateModal(){
+      if(!currentCountry) return;
+      const flag = flagForCountryName(currentCountry);
 
+      const selectedCode = modalPlanEl ? String(modalPlanEl.value || "") : "";
+      currentPlan = currentPlans.find(p => String(p.planCode) === selectedCode) || currentPlan;
 
-    // Featured helpers
-    window.quickOpen = function(id){
-      const item = ESIM_BASES.find(x => x.id === id) || ESIM_BASES[0];
-      openModal(item);
-      return false;
-    };
+      ttl.textContent = `${flag} ${currentCountry} – eSIM багцууд`;
 
-    // Modal events
-    document.getElementById("x").onclick = closeModal;
-    document.getElementById("cancel").onclick = closeModal;
-    bd.onclick = closeModal;
-    document.addEventListener("keydown", e => { if(e.key==="Escape") closeModal(); });
+      const rows = currentPlans.map(p => {
+        const mnt = calculateMNT(p.price, currentCountry);
+        const selected = currentPlan && String(currentPlan.planCode) === String(p.planCode);
+        const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
+        const dur = (p.vaildity && p.validityType) ? `${p.vaildity} ${p.validityType}` : "";
+        const meta = [cap, dur].filter(Boolean).join(" • ");
+        const travel = travelRequirement(p);
+        const un = isUnlimitedPlan(p) ? `<span class="pill" style="margin-left:8px">Unlimited</span>` : "";
 
-    dayChips.addEventListener("click", (e)=>{
-      const btn = e.target.closest("button[data-d]");
-      if(!btn) return;
-      modalDaysEl.value = btn.dataset.d;
-      updateModalPrice();
-    });
-    modalDaysEl.addEventListener("change", updateModalPrice);
+        const safeCode = String(p.planCode).replace(/'/g, "\\'");
+        return `
+          <div style="border-bottom:1px solid #eee;padding:10px 0;${selected ? "background:#fafafa" : ""}">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+              <div style="min-width:0">
+                <div style="font-weight:700">${p.planName}${un}</div>
+                <div class="sub" style="margin-top:4px">${meta}${meta ? " • " : ""}TravelDate: ${travel}</div>
+                <div style="margin-top:6px;font-size:18px"><b>${fmt(mnt)}</b></div>
+              </div>
+              <button class="btn" type="button" onclick="selectPlan('${safeCode}')">${selected ? "Сонгосон" : "Сонгох"}</button>
+            </div>
+          </div>
+        `;
+      }).join("");
 
-    dataChips.addEventListener("click", (e)=>{
-      const btn = e.target.closest("button[data-plan]");
-      if(!btn) return;
-      setActivePlan(btn.dataset.plan);
-      updateModalPrice();
-    });
-    modalPlanEl.addEventListener("change", ()=>{
-      setActivePlan(modalPlanEl.value);
-      updateModalPrice();
-    });
+      out.innerHTML = rows;
 
-    // Захиалах: Messenger рүү үсрэхгүй — сонголтыг clipboard-д хуулна
-    orderBtn.addEventListener("click", async ()=>{
-      if(!currentItem) return;
-      const days = Number(modalDaysEl.value) || 7;
-      const plan = String(modalPlanEl.value || currentPlan || "1");
-      const basePerDay = baseForPlan(currentItem, plan);
-      const r = calc(basePerDay, days);
+      if(orderBtn){
+        orderBtn.disabled = !currentPlan;
+      }
+    }
 
-      const msg =
+    function selectPlan(planCode){
+      if(modalPlanEl) modalPlanEl.value = String(planCode);
+      updateModal();
+    }
+
+    if(modalPlanEl){
+      modalPlanEl.addEventListener("change", updateModal);
+    }
+
+    window.openCountry = openCountry;
+    window.selectPlan = selectPlan;
+
+    // =========================
+    // ORDER BUTTON (copy message)
+    // =========================
+    if(orderBtn){
+      orderBtn.addEventListener("click", async ()=>{
+        if(!currentPlan || !currentCountry) return;
+
+        const mnt = calculateMNT(currentPlan.price, currentCountry);
+        const travel = travelRequirement(currentPlan);
+
+        const msg =
 `Захиалга:
-Улс/Бүс: ${itemFlag(currentItem)} ${currentItem.name}
-Дата: ${planLabel(plan)}
-Хугацаа: ${days} өдөр
-Дүн: ${fmt(r.sell)}
+Улс: ${flagForCountryName(currentCountry)} ${currentCountry}
+Багц: ${currentPlan.planName}
+PlanCode: ${currentPlan.planCode}
+Хугацаа: ${currentPlan.vaildity} ${currentPlan.validityType}
+Дата: ${(currentPlan.capacity || "")}${(currentPlan.capacityUnit || "")}
+TravelDate: ${travel}
+Дүн: ${fmt(mnt)}
 Утас: 90283039
 Facebook: https://www.facebook.com/profile.php?id=61587287992719`;
 
-      try{
-        await navigator.clipboard.writeText(msg);
-        showToast("Захиалгын мэдээлэл хууллаа ✅");
-      }catch(err){
-        // fallback: select text
-        const tmp = document.createElement("textarea");
-        tmp.value = msg;
-        document.body.appendChild(tmp);
-        tmp.select();
-        document.execCommand("copy");
-        tmp.remove();
-        showToast("Хууллаа ✅");
-      }
-    });
-
-    // Page controls
-    document.getElementById("clear").onclick = () => {
-      q.value = "";
-      render();
-    };
-
-    // Auto open pricing modal from ?plan=cn|asia10|global66
-    (function(){
-      try{
-        const params = new URLSearchParams(window.location.search);
-        const plan = params.get("plan");
-        if(plan && typeof window.quickOpen === "function"){
-          setTimeout(() => window.quickOpen(plan), 300);
+        try{
+          await navigator.clipboard.writeText(msg);
+          showToast("Захиалгын мэдээлэл хууллаа ✅");
+        }catch(err){
+          const tmp = document.createElement("textarea");
+          tmp.value = msg;
+          document.body.appendChild(tmp);
+          tmp.select();
+          document.execCommand("copy");
+          tmp.remove();
+          showToast("Хууллаа ✅");
         }
-      }catch(e){}
-    })();
-
-q.addEventListener("input", render);
-    daysEl.addEventListener("change", render);
-
-    document.getElementById("quickChinaBtn").addEventListener("click", ()=>{
-      const item = ESIM_BASES.find(x => x.id === "cn") || ESIM_BASES[0];
-      openModal(item);
-    });
-
-    function render(){
-      const query = (q.value || "").trim().toLowerCase();
-      const days = Number(daysEl.value) || 7;
-
-      const list = ESIM_BASES
-        .filter(x => !query || (x.name || "").toLowerCase().includes(query))
-        .map(x => {
-          const price = calc(baseForPlan(x, "1"), days).sell; // 1GB default
-          return {...x, price};
-        });
-
-      grid.innerHTML = list.map(x => `
-        <div class="card">
-          <div class="cardHead">
-            <div>
-              <div class="name">${itemFlag(x)} ${x.name}</div>
-              <div class="sub">Үнэ (${days} өдөр • 1GB): <b>${fmt(x.price)}</b></div>
-            </div>
-            <button class="btn primary" type="button" data-id="${x.id}">Үнэ харах</button>
-          </div>
-          ${x.note ? `<div class="note">${x.note}</div>` : ``}
-        </div>
-      `).join("");
-
-      grid.querySelectorAll("button[data-id]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-id");
-          const item = ESIM_BASES.find(i => i.id === id);
-          if(item) openModal(item);
-        });
       });
     }
 
+    // Page controls
+    const clearBtn = document.getElementById("clear");
+    if(clearBtn){
+      clearBtn.onclick = () => {
+        if(q) q.value = "";
+        render();
+      };
+    }
 
-    // =========================
-    // // =========================
-// QPay integration (Netlify Functions)
-// =========================
-const qpayBtn = document.getElementById("payQpay");
-const qpayBox = document.getElementById("qpayBox");
-const chatBtns = document.getElementById("chatBtns");
-const goMessenger = document.getElementById("goMessenger");
-const goWhatsapp = document.getElementById("goWhatsapp");
-const checkBtn = document.getElementById("checkPayment");
+    if(q) q.addEventListener("input", render);
+    if(daysEl) daysEl.addEventListener("change", render);
 
-const FB_PAGE_URL = "https://www.facebook.com/profile.php?id=61587287992719";
-const WHATSAPP_NUMBER = "97690283039";
+    const quickChinaBtn = document.getElementById("quickChinaBtn");
+    if(quickChinaBtn){
+      quickChinaBtn.addEventListener("click", ()=> openCountry("China"));
+    }
+
+    // Start
+    loadPlans();
 
 
-window._invoiceId = null;
-window._orderMsg = null;
-
-let paymentInterval = null;   // ✅ нэм
-
-function extractPayUrl(data){
+    function extractPayUrl(data){
   if(!data) return "";
 
   if (Array.isArray(data.urls)) {
