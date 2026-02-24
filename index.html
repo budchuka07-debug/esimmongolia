@@ -760,6 +760,90 @@ Facebook: https://www.facebook.com/profile.php?id=61587287992719`;
     }
 
     // Start
+    // =========================
+    // QPAY BUTTON (create invoice)
+    // =========================
+    const qpayBtn = document.getElementById("payQpay");
+    if(qpayBtn){
+      qpayBtn.addEventListener("click", async () => {
+        if(!currentPlan || !currentCountry) return;
+
+        const orderId = "AIRHUB_" + Date.now();
+        const flag = flagForCountryName(currentCountry);
+        const desc = `${flag} ${currentCountry} • ${currentPlan.planName} • PlanCode:${currentPlan.planCode}`;
+
+        // Amount in MNT with markup rules
+        const amount = Math.round(calculateMNT(currentPlan.price, currentCountry));
+
+        resetPayUI();
+        qpayBox.style.display = "block";
+        qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
+
+        try{
+          const res = await fetch("/.netlify/functions/qpay-create-invoice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId,
+              amount,
+              description: desc
+            })
+          });
+
+          const data = await res.json();
+          if(!res.ok) throw new Error(data.error || "QPay error");
+
+          // Save invoice id for auto-check
+          window._invoiceId = extractInvoiceId(data);
+          const payUrl = extractPayUrl(data);
+          const qrValue = extractQrValue(data);
+          const qrImage = extractQrImage(data);
+
+          startAutoCheck();
+
+          const msg =
+`Сайн байна уу 👋
+Би QPay-р төлбөрөө төлсөн.
+Order: ${orderId}
+Улс: ${flag} ${currentCountry}
+Багц: ${currentPlan.planName}
+PlanCode: ${currentPlan.planCode}
+Дүн: ${fmt(amount)}
+Invoice: ${window._invoiceId || "-"}`;
+
+          window._orderMsg = msg;
+          goMessenger.href = FB_PAGE_URL;
+          goWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+
+          // Render QR
+          const qrImgHtml = qrImage
+            ? `<img alt="QPay QR" src="data:image/png;base64,${qrImage}" style="max-width:320px;width:100%;height:auto;border-radius:14px;border:1px solid #e5e7eb" />`
+            : "";
+
+          const qrLinkHtml = payUrl
+            ? `<div style="margin-top:10px"><a class="btn primary" href="${payUrl}" target="_blank" rel="noopener">QPay линк нээх</a></div>`
+            : "";
+
+          qpayBox.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+              ${qrImgHtml || ""}
+              ${(!qrImgHtml && qrValue) ? `<div class="sub">QR (text): ${qrValue}</div>` : ""}
+              ${qrLinkHtml || ""}
+              <div class="sub" style="text-align:center;max-width:520px">
+                Төлбөр ормогц автоматаар шалгана. Төлсөн бол доорх товчоор “Төллөө” гэж бичээрэй.
+              </div>
+            </div>
+          `;
+        }catch(e){
+          console.error(e);
+          qpayBox.innerHTML = `<div style="border:1px solid #fee2e2;background:#fff1f2;border-radius:14px;padding:12px">
+            <b>❌ QPay алдаа</b>
+            <div class="sub" style="margin-top:6px">${String(e.message || e)}</div>
+          </div>`;
+        }
+      });
+    }
+
     loadPlans();
 
 
@@ -807,6 +891,22 @@ function extractQrImage(data){
     data?.result?.qrImage
   );
 }
+
+function extractInvoiceId(data){
+  return (
+    data?.invoice_id ||
+    data?.invoiceId ||
+    data?.invoiceID ||
+    data?.result?.invoice_id ||
+    data?.result?.invoiceId ||
+    data?.data?.invoice_id ||
+    data?.data?.invoiceId ||
+    data?.invoice?.id ||
+    data?.invoice?.invoice_id ||
+    null
+  );
+}
+
 
 function startAutoCheck(){
   if(!window._invoiceId) return;
