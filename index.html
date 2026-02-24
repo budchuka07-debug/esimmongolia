@@ -763,6 +763,7 @@ Facebook: https://www.facebook.com/profile.php?id=61587287992719`;
     // =========================
     // QPAY BUTTON (create invoice)
     // =========================
+    let paymentInterval = null;
     const qpayBtn = document.getElementById("payQpay");
     if(qpayBtn){
       qpayBtn.addEventListener("click", async () => {
