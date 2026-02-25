@@ -1066,48 +1066,53 @@ Invoice: ${window._invoiceId || "-"}`;
   }
 });
 
-checkBtn.addEventListener("click", async () => {
 
-  if(!window._invoiceId){
-    alert("Эхлээд QPay-р төлөх дээр дарна уу.");
-    return;
-  }
+const checkBtn = document.getElementById("checkBtn");
 
-  qpayBox.innerHTML = "⏳ Төлбөр шалгаж байна...";
+if (checkBtn) {
+  checkBtn.addEventListener("click", async () => {
 
-  try{
-    const res = await fetch("/.netlify/functions/qpay-check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ invoice_id: window._invoiceId })
-    });
-
-    const data = await res.json();
-    if(!res.ok) throw new Error();
-
-    if(data.paid){
-      chatBtns.style.display = "flex";
-      qpayBox.innerHTML = `
-        <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-          <b>✅ Төлбөр амжилттай</b>
-          <div class="sub" style="margin-top:8px">
-            WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
-          </div>
-        </div>
-      `;
-    }else{
-      qpayBox.innerHTML = `
-        <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-          <b>⏳ Төлбөр хараахан ороогүй</b>
-        </div>
-      `;
+    if (!window._invoiceId) {
+      alert("Эхлээд QPay-р төлөх дээр дарна уу.");
+      return;
     }
 
-  }catch(e){
-    qpayBox.innerHTML = "❌ Төлбөр шалгахад алдаа гарлаа.";
-  }
-});
+    qpayBox.innerHTML = "⏳ Төлбөр шалгаж байна...";
 
+    try {
+      const res = await fetch("/.netlify/functions/qpay-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_id: window._invoiceId })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error();
+
+      if (data.paid) {
+        chatBtns.style.display = "flex";
+        qpayBox.innerHTML = `
+          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+            <b>✅ Төлбөр амжилттай</b>
+            <div style="margin-top:8px">
+              WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
+            </div>
+          </div>
+        `;
+      } else {
+        qpayBox.innerHTML = `
+          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+            <b>⏳ Төлбөр хараахан ороогүй</b>
+          </div>
+        `;
+      }
+
+    } catch (e) {
+      qpayBox.innerHTML = "❌ Төлбөр шалгахад алдаа гарлаа.";
+    }
+
+  });
+}
     render();
 </script>
     <section style="padding:60px 20px;text-align:center;background:#f6f7fb;">
