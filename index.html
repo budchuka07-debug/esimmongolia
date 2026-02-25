@@ -211,6 +211,11 @@
 }
 .selectBtn:hover{filter:brightness(.95)}
 .selectBtn.selected{background:#111827;border-color:#111827}
+
+/* Modal choose button */
+#md .chooseBtn{background:#16a34a;color:#fff;border:1px solid #16a34a;font-weight:800;}
+#md .chooseBtn:hover{filter:brightness(0.95);}
+#md .chooseBtn.isSelected{background:#e5e7eb;color:#111;border-color:#d1d5db;}
 </style>
 </head>
 <body>
@@ -683,7 +688,7 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
     // MODAL (plans per country)
     // Unlimited goes last
     // =========================
-    async function openCountry(country, code){
+    async function openCountry(country){
       currentCountry = country;
 
       // 1) Эхлээд cache (GROUPED) дотроос хайна
@@ -809,7 +814,7 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
                 <div class="sub" style="margin-top:4px">${meta}${meta ? " • " : ""}TravelDate: ${travel}</div>
                 <div style="margin-top:6px;font-size:18px"><b>${fmt(mnt)}</b></div>
               </div>
-              <button class="btn" type="button" onclick="selectPlan('${safeCode}')">${selected ? "Сонгосон" : "Сонгох"}</button>
+              <button class="btn chooseBtn ${selected ? "isSelected" : ""}" type="button" onclick="selectPlan('${safeCode}')">${selected ? "Сонгосон" : "Сонгох"}</button>
             </div>
           </div>
         `;
