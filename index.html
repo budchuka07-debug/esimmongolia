@@ -267,10 +267,8 @@
 <h2 id="pricing">🌍 Улс / Бүс сонгоод үнэ бодоорой</h2>
 <div class="controls">
 <input class="search" id="q" placeholder="Улс хайх… (Japan, Europe, USA, Global гэх мэт)"/>
-<select class="select" id="days"></select>
 <button class="btn" id="clear" type="button">Clear</button>
 </div>
-<div class="grid" id="grid"></div>
 <!-- FAQ -->
 
 <section class="card" id="install" style="margin-top:16px">
@@ -443,316 +441,342 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <script>
-    // =========================
-    // CONFIG (дотоод тооцоо – хэрэглэгчид харуулахгүй)
-    // =========================
-    const PROFIT = 0.30;        // ашиг (UI дээр бичихгүй)
-    const DAILY_DISC = 0.005;   // өдөр бүр 0.5% хямдрал
-    const MAX_DISC = 0.15;      // max 15%
+/* =========================
+   eSIM Mongolia - CLEANED UI LOGIC
+   - Countries list from /.netlify/functions/getCountries
+   - Plans for selected country from /.netlify/functions/getPlans?code=XX
+   - Single QPay flow (no duplicate listeners)
+========================= */
 
-    // =========================
-    
-    // =========================
-    // DYNAMIC DATA (Airhub plans → auto countries)
-    // USD→MNT: 1 USD = 3566₮
-    // Markup: China/Korea 35%, others 30%
-    // =========================
-    const USD_RATE = 3566;
+// =========================
+// CONFIG
+// =========================
+const USD_RATE = 3566;
 
-    function calculateMNT(usd, country){
-      const u = Number(usd || 0);
-      const markup = (country === "China" || country === "South Korea" || country === "Korea South") ? 1.35 : 1.30;
-      return Math.round((u * USD_RATE * markup) / 100) * 100; // 100₮ rounding
-    }
+// China/Korea 35%, others 30%
+function calculateMNT(usd, countryName){
+  const u = Number(usd || 0);
+  const c = String(countryName || "");
+  const markup = (c === "China" || c === "South Korea" || c === "Korea South") ? 1.35 : 1.30;
+  return Math.round((u * USD_RATE * markup) / 100) * 100; // 100₮ rounding
+}
 
-    // CountryName → ISO2 (flag)
-    const COUNTRY_CODE = {
-      "China":"CN",
-      "South Korea":"KR",
-      "Korea South":"KR",
-      "Japan":"JP",
-      "Thailand":"TH",
-      "Vietnam":"VN",
-      "Malaysia":"MY",
-      "Singapore":"SG",
-      "Indonesia":"ID",
-      "Philippines":"PH",
-      "Taiwan":"TW",
-      "Hong Kong":"HK",
-      "Macao":"MO",
-      "Macau":"MO",
-      "United States":"US",
-      "Canada":"CA",
-      "Mexico":"MX",
-      "Turkey":"TR",
-      "Germany":"DE",
-      "France":"FR"
-    };
+function fmt(n){
+  return new Intl.NumberFormat('mn-MN').format(Number(n || 0)) + "₮";
+}
 
-    function flagEmojiFromCode(code){
-      if(!code || String(code).length !== 2) return "🏳️";
-      const cc = String(code).toUpperCase();
-      const A = 0x1F1E6;
-      return String.fromCodePoint(A + (cc.charCodeAt(0) - 65), A + (cc.charCodeAt(1) - 65));
-    }
+function isUnlimitedPlan(p){
+  const name = String((p && p.planName) || "").toLowerCase();
+  if(name.includes("unlimited")) return true;
+  const cap = String((p && p.capacity) || "").toLowerCase();
+  if(cap.includes("unlimited")) return true;
+  return false;
+}
 
-    function flagForCountryName(countryName){
-      const code = COUNTRY_CODE[countryName];
-      return code ? flagEmojiFromCode(code) : "🏳️";
-    }
+function travelRequirement(p){
+  const t = String((p && p.travel_date) || "").toLowerCase();
+  if(t.includes("no need")) return "No Need";
+  if(t.includes("need") || t.includes("required") || t.includes("mandatory")) return "Required";
+  return (p && p.travel_date) ? p.travel_date : "Unknown";
+}
 
-    function isUnlimitedPlan(p){
-      const name = String((p && p.planName) || "").toLowerCase();
-      if(name.includes("unlimited")) return true;
-      const cap = String((p && p.capacity) || "").toLowerCase();
-      if(cap.includes("unlimited")) return true;
-      return false;
-    }
+function sortPlansForUI(plans){
+  return (plans || []).slice().sort((a,b)=>{
+    const aUn = isUnlimitedPlan(a);
+    const bUn = isUnlimitedPlan(b);
+    if(aUn !== bUn) return aUn ? 1 : -1; // unlimited last
+    return Number(a.price) - Number(b.price);
+  });
+}
 
-    function sortPlansForUI(plans){
-      return (plans || []).slice().sort((a,b)=>{
-        const aUn = isUnlimitedPlan(a);
-        const bUn = isUnlimitedPlan(b);
-        if(aUn !== bUn) return aUn ? 1 : -1; // unlimited last
-        return Number(a.price) - Number(b.price);
-      });
-    }
+// =========================
+// DOM
+// =========================
+const qInput = document.getElementById("q");
+const clearBtn = document.getElementById("clear");
 
-    function groupByCountry(plans){
-      const map = {};
-      (plans || []).forEach(p=>{
-        const c = p.countryName || "Unknown";
-        if(!map[c]) map[c] = [];
-        map[c].push(p);
-      });
-      return map;
-    }
+const countriesBox = document.getElementById("countries");
 
-    // =========================
-    // STATE
-    // =========================
-    let ALL_PLANS = [];
-    let GROUPED = {};
-    let currentCountry = null;
-    let currentPlans = [];
-    let currentPlan = null; // selected plan object
+const bd = document.getElementById("bd");
+const md = document.getElementById("md");
+const ttl = document.getElementById("ttl");
+const out = document.getElementById("out");
+const orderBtn = document.getElementById("order");
 
-    // =========================
-    // HELPERS (format)
-    // =========================
-    function fmt(n){
-      return new Intl.NumberFormat('mn-MN').format(Number(n || 0)) + "₮";
-    }
+const modalPlanEl = document.getElementById("modalPlan");
 
-    function travelRequirement(p){
-      const t = String((p && p.travel_date) || "").toLowerCase();
-      if(t.includes("no need")) return "No Need";
-      if(t.includes("need") || t.includes("required") || t.includes("mandatory")) return "Required";
-      return (p && p.travel_date) ? p.travel_date : "Unknown";
-    }
+const qpayBox = document.getElementById("qpayBox");
+const chatBtns = document.getElementById("chatBtns");
+const goWhatsapp = document.getElementById("goWhatsapp");
+const goMessenger = document.getElementById("goMessenger");
 
-    // =========================
-    // DOM
-    // =========================
-    const grid = document.getElementById("grid");
-    const q = document.getElementById("q");
-    const daysEl = document.getElementById("days");
+const qpayBtn = document.getElementById("payQpay");
+const checkPaymentBtn = document.getElementById("checkPayment");
 
-    const bd = document.getElementById("bd");
-    const md = document.getElementById("md");
-    const ttl = document.getElementById("ttl");
-    const out = document.getElementById("out");
-    const orderBtn = document.getElementById("order");
+const quickChinaBtn = document.getElementById("quickChinaBtn");
 
-    const modalDaysEl = document.getElementById("modalDays");
-    const dayChips = document.getElementById("dayChips");
+// =========================
+// Continent tabs
+// =========================
+let ALL_COUNTRIES = [];
+let currentContinent = "All";
 
-    const modalPlanEl = document.getElementById("modalPlan");
-    const dataChips = document.getElementById("dataChips");
+function normalizeContinent(raw){
+  const s = String(raw || "").toLowerCase();
+  if (s.includes("asia")) return "Asia";
+  if (s.includes("europe")) return "Europe";
+  if (s.includes("africa")) return "Africa";
+  if (s.includes("america")) return "America";
+  if (s.includes("north")) return "America";
+  if (s.includes("south")) return "America";
+  if (s.includes("oceania") || s.includes("australia")) return "Oceania";
+  return "Other";
+}
 
-    // Hide legacy UI blocks (we use plan dropdown + list)
-    try{
-      if(modalDaysEl && modalDaysEl.parentElement) modalDaysEl.parentElement.style.display = "none";
-      if(dayChips && dayChips.parentElement) dayChips.parentElement.style.display = "none";
-      if(dataChips && dataChips.parentElement) dataChips.parentElement.style.display = "none";
-    }catch(e){}
+window.setContinent = function setContinent(c){
+  currentContinent = c || "All";
+  // highlight buttons (simple)
+  const tabs = document.getElementById("continentTabs");
+  if(tabs){
+    [...tabs.querySelectorAll("button")].forEach(b=>{
+      b.classList.remove("pill","active");
+      b.classList.add("pill");
+      // active by comparing onclick text isn't reliable; use label matching
+      const txt = (b.textContent || "").toLowerCase();
+      const target = String(currentContinent).toLowerCase();
+      const isAll = target === "all" && (txt.includes("бүгд") || txt.includes("all"));
+      const isMatch = txt.includes(target.toLowerCase());
+      if(isAll || isMatch) b.classList.add("active");
+    });
+  }
+  renderCountries();
+};
 
-    // =========================
-    // TOAST
-    // =========================
-    function showToast(msg){
-      const t = document.getElementById("toast");
-      if(!t) return;
-      t.textContent = msg;
-      t.style.display="block";
-      clearTimeout(showToast._tm);
-      showToast._tm = setTimeout(()=> t.style.display="none", 1400);
-    }
+// =========================
+// STATE (plans / selection)
+// =========================
+let currentCountry = null;   // { code, name, flag, continent }
+let currentPlans = [];
+let currentPlan = null;
+let paymentInterval = null;
 
-    // =========================
-    // LOAD PLANS (Netlify Function)
-    // expects: { getInformation: [...] }
-    // =========================
-    async function loadPlans(){
-      try{
-        const res = await fetch("/.netlify/functions/getPlans");
-        const data = await res.json();
-        ALL_PLANS = data.getInformation || [];
-        GROUPED = groupByCountry(ALL_PLANS);
-        render();
-      }catch(err){
-        console.error(err);
-        if(grid){
-          grid.innerHTML = `<div class="card"><div class="name">Алдаа</div><div class="sub">Plan татаж чадсангүй. /.netlify/functions/getPlans ажиллаж байгаа эсэхээ шалгаарай.</div></div>`;
-        }
-      }
-    }
+const FB_PAGE_URL = "https://m.me/esimmongolia";
+const WHATSAPP_NUMBER = "97690283039";
 
-    // =========================
-    // RENDER (countries)
-    // Uses days filter: show "From" based on selected days if available
-    // =========================
-    function render(){
-      const query = (q && q.value ? q.value : "").trim().toLowerCase();
-      const days = Number(daysEl && daysEl.value ? daysEl.value : 7) || 7;
+// =========================
+// Toast
+// =========================
+function showToast(msg){
+  const t = document.getElementById("toast");
+  if(!t) return;
+  t.textContent = msg;
+  t.style.display="block";
+  clearTimeout(showToast._tm);
+  showToast._tm = setTimeout(()=> t.style.display="none", 1400);
+}
 
-      const countries = Object.keys(GROUPED || {}).filter(c => {
-        if(!query) return true;
-        return String(c).toLowerCase().includes(query);
-      }).sort((a,b)=>a.localeCompare(b));
+// =========================
+// Modal open/close
+// =========================
+function openModal(){
+  bd.style.display = "block";
+  md.style.display = "block";
+}
+function closeModal(){
+  bd.style.display = "none";
+  md.style.display = "none";
+  // hide payment UI when closing
+  resetPayUI();
+}
 
-      if(!grid) return;
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-close]")) closeModal();
+  if (e.target.id === "bd") closeModal();
+});
 
-      grid.innerHTML = countries.map(country => {
-        const plansAll = GROUPED[country] || [];
-        const dayMatched = plansAll.filter(p => String(p.vaildity) === String(days));
-        const candidate = (dayMatched.length ? dayMatched : plansAll);
+// =========================
+// Countries render
+// =========================
+function countryMatchesQuery(c, query){
+  if(!query) return true;
+  const q = query.toLowerCase();
+  return String(c.name || "").toLowerCase().includes(q)
+      || String(c.code || "").toLowerCase().includes(q)
+      || String(c.continent || "").toLowerCase().includes(q);
+}
 
-        const normal = candidate.filter(p => !isUnlimitedPlan(p));
-        const base = (normal.length ? normal : candidate);
+function renderCountries(){
+  if(!countriesBox) return;
 
-        const minUSD = Math.min(...base.map(p => Number(p.price)));
-        const minMNT = calculateMNT(minUSD, country);
-        const flag = flagForCountryName(country);
+  const query = (qInput && qInput.value ? qInput.value : "").trim().toLowerCase();
 
-        const safeCountry = String(country).replace(/'/g, "\\'");
-        return `
-          <div class="card">
-            <div class="cardHead">
-              <div>
-                <div class="name">${flag} ${country}</div>
-                <div class="sub">From <b>${fmt(minMNT)}</b></div>
-              </div>
-              <button class="btn primary" onclick="openCountry('${safeCountry}')">Багц харах</button>
-            </div>
+  let list = (ALL_COUNTRIES || []).slice();
+
+  if(currentContinent !== "All"){
+    list = list.filter(c => normalizeContinent(c.continent) === currentContinent);
+  }
+
+  if(query){
+    list = list.filter(c => countryMatchesQuery(c, query));
+  }
+
+  // sort by name
+  list.sort((a,b)=> String(a.name||"").localeCompare(String(b.name||"")));
+
+  if(!list.length){
+    countriesBox.innerHTML = `<div class="card"><div class="name">Олдсонгүй</div><div class="sub">Хайлтаа өөрчилж үзээрэй.</div></div>`;
+    return;
+  }
+
+  countriesBox.innerHTML = list.map(c => {
+    const from = (c.fromPrice != null) ? fmt(c.fromPrice) : "-";
+    return `
+      <div class="card" style="cursor:pointer" data-code="${String(c.code||"")}" data-name="${String(c.name||"")}" data-flag="${String(c.flag||"")}">
+        <div class="cardHead">
+          <div>
+            <div class="name">${c.flag ? c.flag + " " : ""}${c.name || c.code}</div>
+            <div class="sub">From <b>${from}</b></div>
           </div>
-        `;
-      }).join('');
+          <button class="btn primary" type="button">Багц харах</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  // attach listeners once via delegation
+}
+
+countriesBox?.addEventListener("click", (e) => {
+  const card = e.target.closest("[data-code]");
+  if(!card) return;
+  const code = card.getAttribute("data-code");
+  const name = card.getAttribute("data-name");
+  const flag = card.getAttribute("data-flag");
+  openCountryPlans({ code, name, flag });
+});
+
+// =========================
+// Load countries (single source of truth)
+// =========================
+async function loadCountries(){
+  try{
+    const res = await fetch("/.netlify/functions/getCountries", { cache:"no-store" });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data?.error || "getCountries error");
+    ALL_COUNTRIES = Array.isArray(data.countries) ? data.countries : [];
+    renderCountries();
+  }catch(err){
+    console.error(err);
+    if(countriesBox){
+      countriesBox.innerHTML = `<div class="card"><div class="name">Алдаа</div><div class="sub">Улсуудын жагсаалт татаж чадсангүй. /.netlify/functions/getCountries шалгана уу.</div></div>`;
     }
+  }
+}
 
-    // =========================
-    // MODAL (plans per country)
-    // Unlimited goes last
-    // =========================
-    function openCountry(country){
-      currentCountry = country;
-      const plansRaw = GROUPED[country] || [];
-      currentPlans = sortPlansForUI(plansRaw);
+// =========================
+// Plans per country (by code)
+// =========================
+async function openCountryPlans(c){
+  currentCountry = c;
+  ttl.textContent = `${c.flag ? c.flag + " " : ""}${c.name || c.code} – eSIM багцууд`;
+  out.innerHTML = `<div class="sub">⏳ Багц татаж байна…</div>`;
+  openModal();
 
-      if(modalPlanEl){
-        modalPlanEl.innerHTML = currentPlans.map(p => {
-          const mnt = calculateMNT(p.price, country);
-          const unBadge = isUnlimitedPlan(p) ? " • Unlimited" : "";
-          const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
-          const dur = (p.vaildity && p.validityType) ? `${p.vaildity}${p.validityType}` : "";
-          const meta = [cap, dur].filter(Boolean).join(" / ");
-          const label = `${meta ? meta + " — " : ""}${fmt(mnt)}${unBadge}`;
-          return `<option value="${p.planCode}">${label}</option>`;
-        }).join('');
-      }
+  resetPayUI();
 
-      currentPlan = currentPlans.find(p => !isUnlimitedPlan(p)) || currentPlans[0] || null;
-      if(modalPlanEl && currentPlan) modalPlanEl.value = currentPlan.planCode;
+  try{
+    const res = await fetch(`/.netlify/functions/getPlans?code=${encodeURIComponent(c.code)}`, { cache:"no-store" });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data?.error || "getPlans error");
 
-      updateModal();
-
-      bd.style.display="block";
-      md.style.display="block";
-    }
-
-    function closeModal(){
-      bd.style.display="none";
-      md.style.display="none";
-    }
-
-    function updateModal(){
-      if(!currentCountry) return;
-      const flag = flagForCountryName(currentCountry);
-
-      const selectedCode = modalPlanEl ? String(modalPlanEl.value || "") : "";
-      currentPlan = currentPlans.find(p => String(p.planCode) === selectedCode) || currentPlan;
-
-      ttl.textContent = `${flag} ${currentCountry} – eSIM багцууд`;
-
-      const rows = currentPlans.map(p => {
-        const mnt = calculateMNT(p.price, currentCountry);
-        const selected = currentPlan && String(currentPlan.planCode) === String(p.planCode);
-        const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
-        const dur = (p.vaildity && p.validityType) ? `${p.vaildity} ${p.validityType}` : "";
-        const meta = [cap, dur].filter(Boolean).join(" • ");
-        const travel = travelRequirement(p);
-        const un = isUnlimitedPlan(p) ? `<span class="pill" style="margin-left:8px">Unlimited</span>` : "";
-
-        const safeCode = String(p.planCode).replace(/'/g, "\\'");
-        return `
-          <div style="border-bottom:1px solid #eee;padding:10px 0;${selected ? "background:#fafafa" : ""}">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
-              <div style="min-width:0">
-                <div style="font-weight:700">${p.planName}${un}</div>
-                <div class="sub" style="margin-top:4px">${meta}${meta ? " • " : ""}TravelDate: ${travel}</div>
-                <div style="margin-top:6px;font-size:18px"><b>${fmt(mnt)}</b></div>
-              </div>
-             <button class="btn ${selected ? '' : 'primary'}" type="button" onclick="selectPlan('${safeCode}')">
-  ${selected ? "Сонгосон" : "Сонгох"}
-</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      out.innerHTML = rows;
-
-      if(orderBtn){
-        orderBtn.disabled = !currentPlan;
-      }
-    }
-
-    function selectPlan(planCode){
-      if(modalPlanEl) modalPlanEl.value = String(planCode);
-      updateModal();
-    }
+    currentPlans = sortPlansForUI(data.getInformation || []);
+    currentPlan = currentPlans.find(p => !isUnlimitedPlan(p)) || currentPlans[0] || null;
 
     if(modalPlanEl){
-      modalPlanEl.addEventListener("change", updateModal);
+      modalPlanEl.innerHTML = currentPlans.map(p => {
+        const mnt = calculateMNT(p.price, c.name || c.code);
+        const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
+        const dur = (p.vaildity && p.validityType) ? `${p.vaildity}${p.validityType}` : "";
+        const meta = [cap, dur].filter(Boolean).join(" / ");
+        const un = isUnlimitedPlan(p) ? " • Unlimited" : "";
+        return `<option value="${p.planCode}">${meta ? meta + " — " : ""}${fmt(mnt)}${un}</option>`;
+      }).join("");
+      if(currentPlan) modalPlanEl.value = String(currentPlan.planCode);
     }
 
-    window.openCountry = openCountry;
-    window.selectPlan = selectPlan;
+    updateModal();
+  }catch(err){
+    console.error(err);
+    out.innerHTML = `<div style="border:1px solid #fee2e2;background:#fff1f2;border-radius:14px;padding:12px">
+      <b>❌ Plan татахад алдаа</b>
+      <div class="sub" style="margin-top:6px">${String(err.message || err)}</div>
+    </div>`;
+  }
+}
 
-    // =========================
-    // ORDER BUTTON (copy message)
-    // =========================
-    if(orderBtn){
-      orderBtn.addEventListener("click", async ()=>{
-        if(!currentPlan || !currentCountry) return;
+function selectPlan(planCode){
+  if(modalPlanEl) modalPlanEl.value = String(planCode);
+  updateModal();
+}
 
-        const mnt = calculateMNT(currentPlan.price, currentCountry);
-        const travel = travelRequirement(currentPlan);
+function updateModal(){
+  if(!currentCountry) return;
 
-        const msg =
+  const selectedCode = modalPlanEl ? String(modalPlanEl.value || "") : "";
+  currentPlan = currentPlans.find(p => String(p.planCode) === selectedCode) || currentPlan;
+
+  if(!currentPlans.length){
+    out.innerHTML = `<div class="sub">Энэ улсад багц олдсонгүй.</div>`;
+    return;
+  }
+
+  out.innerHTML = currentPlans.map(p => {
+    const mnt = calculateMNT(p.price, currentCountry.name || currentCountry.code);
+    const selected = currentPlan && String(currentPlan.planCode) === String(p.planCode);
+    const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
+    const dur = (p.vaildity && p.validityType) ? `${p.vaildity} ${p.validityType}` : "";
+    const meta = [cap, dur].filter(Boolean).join(" • ");
+    const travel = travelRequirement(p);
+    const un = isUnlimitedPlan(p) ? `<span class="pill" style="margin-left:8px">Unlimited</span>` : "";
+
+    const safeCode = String(p.planCode).replace(/'/g, "\\'");
+    return `
+      <div style="border-bottom:1px solid #eee;padding:10px 0;${selected ? "background:#fafafa" : ""}">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+          <div style="min-width:0">
+            <div style="font-weight:700">${p.planName}${un}</div>
+            <div class="sub" style="margin-top:4px">${meta}${meta ? " • " : ""}TravelDate: ${travel}</div>
+            <div style="margin-top:6px;font-size:18px"><b>${fmt(mnt)}</b></div>
+          </div>
+          <button class="btn ${selected ? '' : 'primary'} planSelect" type="button" onclick="selectPlan('${safeCode}')">
+            ${selected ? "Сонгосон" : "Сонгох"}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  if(orderBtn) orderBtn.disabled = !currentPlan;
+}
+
+window.selectPlan = selectPlan;
+
+modalPlanEl?.addEventListener("change", updateModal);
+
+// =========================
+// Order (copy message)
+// =========================
+orderBtn?.addEventListener("click", async ()=>{
+  if(!currentPlan || !currentCountry) return;
+
+  const mnt = calculateMNT(currentPlan.price, currentCountry.name || currentCountry.code);
+  const travel = travelRequirement(currentPlan);
+
+  const msg =
 `Захиалга:
-Улс: ${flagForCountryName(currentCountry)} ${currentCountry}
+Улс: ${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code}
 Багц: ${currentPlan.planName}
 PlanCode: ${currentPlan.planCode}
 Хугацаа: ${currentPlan.vaildity} ${currentPlan.validityType}
@@ -762,145 +786,30 @@ TravelDate: ${travel}
 Утас: 90283039
 Facebook: https://www.facebook.com/profile.php?id=61587287992719`;
 
-        try{
-          await navigator.clipboard.writeText(msg);
-          showToast("Захиалгын мэдээлэл хууллаа ✅");
-        }catch(err){
-          const tmp = document.createElement("textarea");
-          tmp.value = msg;
-          document.body.appendChild(tmp);
-          tmp.select();
-          document.execCommand("copy");
-          tmp.remove();
-          showToast("Хууллаа ✅");
-        }
-      });
-    }
+  try{
+    await navigator.clipboard.writeText(msg);
+    showToast("Захиалгын мэдээлэл хууллаа ✅");
+  }catch(err){
+    const tmp = document.createElement("textarea");
+    tmp.value = msg;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand("copy");
+    tmp.remove();
+    showToast("Хууллаа ✅");
+  }
+});
 
-    // Page controls
-    const clearBtn = document.getElementById("clear");
-    if(clearBtn){
-      clearBtn.onclick = () => {
-        if(q) q.value = "";
-        render();
-      };
-    }
-
-    if(q) q.addEventListener("input", render);
-    if(daysEl) daysEl.addEventListener("change", render);
-
-    const quickChinaBtn = document.getElementById("quickChinaBtn");
-    if(quickChinaBtn){
-      quickChinaBtn.addEventListener("click", ()=> openCountry("China"));
-    }
-
-    // Start
-    // =========================
-    // QPAY BUTTON (create invoice)
-    // =========================
-    let paymentInterval = null;
-    const FB_PAGE_URL = "https://m.me/esimmongolia";
-const WHATSAPP_NUMBER = "97690283039"; // 
-    const qpayBtn = document.getElementById("payQpay");
-    if(qpayBtn){
-      qpayBtn.addEventListener("click", async () => {
-        if(!currentPlan || !currentCountry) return;
-
-        const orderId = "AIRHUB_" + Date.now();
-        const flag = flagForCountryName(currentCountry);
-        const desc = `${flag} ${currentCountry} • ${currentPlan.planName} • PlanCode:${currentPlan.planCode}`;
-
-        // Amount in MNT with markup rules
-        const amount = Math.round(calculateMNT(currentPlan.price, currentCountry));
-
-        resetPayUI();
-        qpayBox.style.display = "block";
-        qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
-
-        try{
-          const res = await fetch("/.netlify/functions/qpay-create-invoice", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              orderId,
-              amount,
-              description: desc
-            })
-          });
-
-          const data = await res.json();
-          if(!res.ok) throw new Error(data.error || "QPay error");
-
-          // Save invoice id for auto-check
-          window._invoiceId = extractInvoiceId(data);
-          const payUrl = extractPayUrl(data);
-          const qrValue = extractQrValue(data);
-          const qrImage = extractQrImage(data);
-
-          startAutoCheck();
-
-          const msg =
-`Сайн байна уу 👋
-Би QPay-р төлбөрөө төлсөн.
-Order: ${orderId}
-Улс: ${flag} ${currentCountry}
-Багц: ${currentPlan.planName}
-PlanCode: ${currentPlan.planCode}
-Дүн: ${fmt(amount)}
-Invoice: ${window._invoiceId || "-"}`;
-
-          window._orderMsg = msg;
-          goMessenger.href = FB_PAGE_URL;
-          goWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-
-          // Render QR
-          const qrImgHtml = qrImage
-            ? `<img alt="QPay QR" src="data:image/png;base64,${qrImage}" style="max-width:320px;width:100%;height:auto;border-radius:14px;border:1px solid #e5e7eb" />`
-            : "";
-
-          const qrLinkHtml = payUrl
-            ? `<div style="margin-top:10px"><a class="btn primary" href="${payUrl}" target="_blank" rel="noopener">QPay линк нээх</a></div>`
-            : "";
-
-          qpayBox.innerHTML = `
-            <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
-              ${qrImgHtml || ""}
-              ${(!qrImgHtml && qrValue) ? `<div class="sub">QR (text): ${qrValue}</div>` : ""}
-              ${qrLinkHtml || ""}
-              <div class="sub" style="text-align:center;max-width:520px">
-                Төлбөр ормогц автоматаар шалгана. Төлсөн бол доорх товчоор “Төллөө” гэж бичээрэй.
-              </div>
-            </div>
-          `;
-        }catch(e){
-          console.error(e);
-          qpayBox.innerHTML = `<div style="border:1px solid #fee2e2;background:#fff1f2;border-radius:14px;padding:12px">
-            <b>❌ QPay алдаа</b>
-            <div class="sub" style="margin-top:6px">${String(e.message || e)}</div>
-          </div>`;
-        }
-      });
-    }
-
-    loadPlans();
-
-
-    function extractPayUrl(data){
+// =========================
+// QPay helpers (unchanged logic, but single flow)
+// =========================
+function extractPayUrl(data){
   if(!data) return "";
-
-  if (Array.isArray(data.urls)) {
-    return data.urls.find(u => u?.link)?.link || "";
-  }
-
-  if (typeof data.urls === "object") {
-    return data.urls.qPay || data.urls.qpay || data.urls.link || "";
-  }
-
+  if (Array.isArray(data.urls)) return data.urls.find(u => u?.link)?.link || "";
+  if (typeof data.urls === "object") return data.urls.qPay || data.urls.qpay || data.urls.link || "";
   return data.qpay_url || data.payment_url || data.link || "";
 }
-
 function extractQrValue(data){
-  // Prefer raw qr text / deep link that QPay apps can open.
   return (
     data?.qr_text ||
     data?.qrText ||
@@ -909,17 +818,13 @@ function extractQrValue(data){
     data?.qr ||
     data?.qrCode ||
     data?.qr_code ||
-    // Sometimes qr text lives under "result"
     data?.result?.qr_text ||
     data?.result?.qrText ||
     data?.result?.qr_string ||
-    // Fallback to any payable deep link
     extractPayUrl(data)
   );
 }
-
 function extractQrImage(data){
-  // Base64 QR image (no prefix) returned by some QPay endpoints
   return (
     data?.qr_image ||
     data?.qrImage ||
@@ -929,7 +834,6 @@ function extractQrImage(data){
     data?.result?.qrImage
   );
 }
-
 function extractInvoiceId(data){
   return (
     data?.invoice_id ||
@@ -945,6 +849,64 @@ function extractInvoiceId(data){
   );
 }
 
+function resetPayUI(){
+  if(paymentInterval){
+    clearInterval(paymentInterval);
+    paymentInterval = null;
+  }
+  if(qpayBox){
+    qpayBox.innerHTML = "";
+    qpayBox.style.display = "none";
+  }
+  if(chatBtns) chatBtns.style.display = "none";
+  window._invoiceId = null;
+  window._orderMsg = null;
+}
+
+async function checkPaymentOnce(){
+  if(!window._invoiceId) {
+    alert("Эхлээд QPay-р төлөх дээр дарна уу.");
+    return;
+  }
+  if(qpayBox){
+    qpayBox.style.display = "block";
+    qpayBox.innerHTML = "⏳ Төлбөр шалгаж байна...";
+  }
+  try{
+    const res = await fetch("/.netlify/functions/qpay-check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ invoice_id: window._invoiceId })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data?.error || "check error");
+
+    if(data.paid){
+      if(chatBtns) chatBtns.style.display = "flex";
+      if(qpayBox){
+        qpayBox.innerHTML = `
+          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+            <b>✅ Төлбөр амжилттай</b>
+            <div class="sub" style="margin-top:8px">
+              WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
+            </div>
+          </div>
+        `;
+      }
+    }else{
+      if(qpayBox){
+        qpayBox.innerHTML = `
+          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+            <b>⏳ Төлбөр хараахан ороогүй</b>
+          </div>
+        `;
+      }
+    }
+  }catch(e){
+    console.error(e);
+    if(qpayBox) qpayBox.innerHTML = "❌ Төлбөр шалгахад алдаа гарлаа.";
+  }
+}
 
 function startAutoCheck(){
   if(!window._invoiceId) return;
@@ -968,319 +930,133 @@ function startAutoCheck(){
         clearInterval(paymentInterval);
         paymentInterval = null;
 
-        chatBtns.style.display = "flex";
-        qpayBox.innerHTML = `
-          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-            <b style="color:green">✅ Төлбөр амжилттай</b>
-            <div class="sub" style="margin-top:8px">
-              WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
+        if(chatBtns) chatBtns.style.display = "flex";
+        if(qpayBox){
+          qpayBox.innerHTML = `
+            <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+              <b style="color:green">✅ Төлбөр амжилттай</b>
+              <div class="sub" style="margin-top:8px">
+                WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       }
 
     }catch(e){
       console.error("Auto check error:", e);
     }
-  }, 5000); // 20 секунд тутам шалгана
+  }, 5000);
 }
 
-function resetPayUI(){
-  qpayBox.innerHTML = "";
-  qpayBox.style.display = "none";     // ✅ нэм
-  chatBtns.style.display = "none";
-  window._invoiceId = null;
-  window._orderMsg = null;
-}
-let currentItem = null;
-qpayBtn.addEventListener("click", async () => {
-
-  if(!currentItem) return;
-
-  const days = Number(modalDaysEl.value) || 7;
-  const plan = String(modalPlanEl.value || currentPlan || "1");
-  const basePerDay = baseForPlan(currentItem, plan);
-  const r = calc(basePerDay, days);
-
-  const orderId = "ESIM_" + Date.now();
-  const desc = `${itemFlag(currentItem)} ${currentItem.name} • ${planLabel(plan)} • ${days} өдөр`;
+// =========================
+// QPay button (single listener)
+// =========================
+qpayBtn?.addEventListener("click", async () => {
+  if(!currentPlan || !currentCountry) return;
 
   resetPayUI();
-qpayBox.style.display = "block";      // ✅ нэм
-qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
+  if(qpayBox){
+    qpayBox.style.display = "block";
+    qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
+  }
 
+  const orderId = "AIRHUB_" + Date.now();
+  const desc = `${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code} • ${currentPlan.planName} • PlanCode:${currentPlan.planCode}`;
+  const amount = Math.round(calculateMNT(currentPlan.price, currentCountry.name || currentCountry.code));
 
   try{
     const res = await fetch("/.netlify/functions/qpay-create-invoice", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId,
-        amount: Math.round(r.sell),
-        description: desc
-      })
+      body: JSON.stringify({ orderId, amount, description: desc })
     });
 
     const data = await res.json();
     if(!res.ok) throw new Error(data.error || "QPay error");
 
-   const payUrl = extractPayUrl(data);
-const qrValue = extractQrValue(data);   // 🔥 ЖИНХЭНЭ QR TEXT
-const qrImage = extractQrImage(data);   // 🔥 Хэрэв base64 image ирвэл
+    window._invoiceId = extractInvoiceId(data);
+    const payUrl = extractPayUrl(data);
+    const qrValue = extractQrValue(data);
+    const qrImage = extractQrImage(data);
 
-
-    
     startAutoCheck();
-const msg =
+
+    const msg =
 `Сайн байна уу 👋
 Би QPay-р төлбөрөө төлсөн.
 Order: ${orderId}
-Багц: ${desc}
-Дүн: ${fmt(r.sell)}
+Улс: ${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code}
+Багц: ${currentPlan.planName}
+PlanCode: ${currentPlan.planCode}
+Дүн: ${fmt(amount)}
 Invoice: ${window._invoiceId || "-"}`;
 
     window._orderMsg = msg;
 
-    goMessenger.href = FB_PAGE_URL;
-    goWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+    if(goMessenger) goMessenger.href = FB_PAGE_URL;
+    if(goWhatsapp) goWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
-    qpayBox.innerHTML = `
-      <div style="
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        padding:14px;
-        background:#fff;
-        border-radius:16px;
-      ">
-        <div id="qpayQr"></div>
-      </div>
-    `;
+    const qrImgHtml = qrImage
+      ? `<img alt="QPay QR" src="${String(qrImage).startsWith("data:") ? String(qrImage) : "data:image/png;base64,"+String(qrImage)}" style="max-width:320px;width:100%;height:auto;border-radius:14px;border:1px solid #e5e7eb" />`
+      : "";
 
-    const qrDiv = document.getElementById("qpayQr");
-    if(qrImage){
-      // Render base64 PNG QR image if provided
-      const img = document.createElement("img");
-      img.alt = "QPay QR";
-      img.style.width = "360px";
-      img.style.height = "360px";
-      img.src = String(qrImage).startsWith("data:")
-        ? String(qrImage)
-        : `data:image/png;base64,${String(qrImage)}`;
-      qrDiv.innerHTML = "";
-      qrDiv.appendChild(img);
-    }else if(qrValue){
-      // Generate QR from text / deep link
-      qrDiv.innerHTML = "";
-      new QRCode(qrDiv, {
-        text: String(qrValue),
-        width: 360,
-        height: 360
-      });
-        if(payUrl){
-  qpayBox.insertAdjacentHTML("beforeend", `
-    <div style="margin-top:12px;text-align:center">
-      <a class="btn primary" href="${payUrl}" target="_blank">
-        QPay нээж төлөх
-      </a>
-      <div class="sub" style="margin-top:6px">
-        QR уншихгүйгээр шууд QPay-р нээж төлж болно.
-      </div>
-    </div>
-  `);
-}
+    const qrLinkHtml = payUrl
+      ? `<div style="margin-top:10px"><a class="btn primary" href="${payUrl}" target="_blank" rel="noopener">QPay линк нээх</a></div>`
+      : "";
 
-    }else{
-      qrDiv.innerHTML = "<div class='sub'>⚠️ QR мэдээлэл ирсэнгүй. Доорх 'QPay нээж төлөх' линкээр төлж болно.</div>";
-    }
-
-  }catch(e){
-    const msg = (e && e.message) ? e.message : String(e);
-    qpayBox.innerHTML = `❌ QPay нэхэмжлэл үүсгэхэд алдаа гарлаа.<div class="sub" style="margin-top:6px">Дэлгэрэнгүй: <b>${msg}</b></div>`;
-    console.error("QPay create invoice error:", e);
-  }
-});
-
-
-const checkBtn = document.getElementById("checkBtn");
-
-if (checkBtn) {
-  checkBtn.addEventListener("click", async () => {
-
-    if (!window._invoiceId) {
-      alert("Эхлээд QPay-р төлөх дээр дарна уу.");
-      return;
-    }
-
-    qpayBox.innerHTML = "⏳ Төлбөр шалгаж байна...";
-
-    try {
-      const res = await fetch("/.netlify/functions/qpay-check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invoice_id: window._invoiceId })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error();
-
-      if (data.paid) {
-        chatBtns.style.display = "flex";
-        qpayBox.innerHTML = `
-          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-            <b>✅ Төлбөр амжилттай</b>
-            <div style="margin-top:8px">
-              WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
-            </div>
+    if(qpayBox){
+      qpayBox.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+          ${qrImgHtml || ""}
+          ${(!qrImgHtml && qrValue) ? `<div class="sub">QR (text): ${qrValue}</div>` : ""}
+          ${qrLinkHtml || ""}
+          <div class="sub" style="text-align:center;max-width:520px">
+            Төлбөр ормогц автоматаар шалгана. Төлсөн бол доорх товчоор “Төллөө” гэж бичээрэй.
           </div>
-        `;
-      } else {
-        qpayBox.innerHTML = `
-          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-            <b>⏳ Төлбөр хараахан ороогүй</b>
-          </div>
-        `;
-      }
-
-    } catch (e) {
-      qpayBox.innerHTML = "❌ Төлбөр шалгахад алдаа гарлаа.";
-    }
-
-  });
-}
-    render();
-
-// ✅ ЭНДЭЭС (доорхыг нэмж paste хийнэ)
-function closeModal() {
-  const modal = document.getElementById("md");
-  const backdrop = document.getElementById("bd");
-
-  modal.style.display = "none";
-  backdrop.style.display = "none";
-  document.body.style.overflow = "";
-}
-
-document.addEventListener("click", (e) => {
-  if (e.target.closest("[data-close]")) closeModal();
-  if (e.target.id === "bd") closeModal();
-});
-// ✅ ЭНД ХҮРТЭЛ
-    // ===============================
-// SAFE getPlans UI
-// ===============================
-
-let allCountries = [];
-let currentContinent = "All";
-
-
-// ✅ Continent ангилал: getCountries.js-ээс ирсэн `continent` талбарыг ашиглана
-// (fallback map хэрэггүй)
-function continentKey(raw){
-  const s = String(raw || "").toLowerCase();
-  if (s.includes("asia")) return "Asia";
-  if (s.includes("europe")) return "Europe";
-  if (s.includes("africa")) return "Africa";
-  if (s.includes("oceania") || s.includes("australia")) return "Oceania";
-  if (s.includes("north")) return "NorthAmerica";
-  if (s.includes("south")) return "SouthAmerica";
-  if (s.includes("middle")) return "MiddleEast";
-  return "Other";
-}
-function getContinent(itemOrCode){
-  if(!itemOrCode) return "Other";
-  // item объект эсвэл "CN" мэт код байж болно
-  if(typeof itemOrCode === "string"){
-    const code = String(itemOrCode).toUpperCase();
-    const found = (window.__countries || []).find(c =>
-      String(c.code || "").toUpperCase() === code
-    );
-    return continentKey(found && (found.continent || found.region || found.continentName));
-  }
-  return continentKey(itemOrCode.continent || itemOrCode.region || itemOrCode.continentName);
-}
-
-function setContinent(c) {
-  currentContinent = c;
-  applyFiltersAndRender();
-}
-
-function applyFiltersAndRender() {
-  let list = [...allCountries];
-
-  if (currentContinent !== "All") {
-    list = list.filter(x => getContinent(x) === currentContinent);
-  }
-
-  renderCountries(list);
-  // Таб дармагц жагсаалт руу автоматаар очно
-  const grid = document.getElementById('countriesGrid');
-  if (grid) grid.scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function renderCountries(list) {
-  const box = document.getElementById("countries");
-  if (!box) return;
-
-  box.innerHTML = "";
-
-  list.forEach(c => {
-    const el = document.createElement("div");
-    el.style.cssText =
-      "display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:8px 0;cursor:pointer;";
-
-    el.innerHTML = `
-      <div>
-        <div style="font-weight:700;">${c.flag || ""} ${c.name || c.code}</div>
-        <div style="opacity:.7;font-size:13px;">
-          From ${c.fromPrice ? Number(c.fromPrice).toLocaleString() : "-"}₮
         </div>
-      </div>
-      <button type="button" class="btn primary">Багц харах</button>
-    `;
-
-    
-    // Open modal when clicking row or the button
-    el.addEventListener("click", () => openCountry((c.code || c.name), c.name, (c.flag||"")));
-    const btn = el.querySelector("button.btn.primary");
-    if (btn) btn.addEventListener("click", (e) => { e.stopPropagation(); openCountry((c.code || c.name), c.name, (c.flag||"")); });
-box.appendChild(el);
-  });
-}
-
-async function loadCountriesSafe() {
-  try {
-    const res = await fetch("/.netlify/functions/getCountries");
-    const json = await res.json();
-    if (res.ok && Array.isArray(json.countries) && json.countries.length) {
-      allCountries = json.countries;
-      applyFiltersAndRender();
-      return;
+      `;
     }
-  } catch (e) {
-    console.log("getCountries error:", e);
+  }catch(e){
+    console.error(e);
+    if(qpayBox){
+      qpayBox.innerHTML = `<div style="border:1px solid #fee2e2;background:#fff1f2;border-radius:14px;padding:12px">
+        <b>❌ QPay алдаа</b>
+        <div class="sub" style="margin-top:6px">${String(e.message || e)}</div>
+      </div>`;
+    }
   }
+});
 
-  // Fallback: getCountries ажиллахгүй бол GROUPED-оос (plan-оос) улсуудыг байгуулна
-  try {
-    const keys = Object.keys(GROUPED || {});
-    allCountries = keys.map((code) => ({
-      code,
-      name: code,        // нэр байхгүй тул түр code харуулна
-      flag: "",          // flag байхгүй (getCountries ажиллавал автоматаар ирнэ)
-      continent: getContinent(code) || "Other",
-      from: minPriceByCountry.get(code) || null,
-      plansCount: Array.isArray(GROUPED[code]) ? GROUPED[code].length : 0,
-    }));
-    applyFiltersAndRender();
-  } catch (e) {
-    console.log("fallback build countries failed:", e);
+checkPaymentBtn?.addEventListener("click", checkPaymentOnce);
+
+// Quick China
+quickChinaBtn?.addEventListener("click", () => {
+  const china = ALL_COUNTRIES.find(c => String(c.code).toUpperCase() === "CN") || { code:"CN", name:"China", flag:"🇨🇳" };
+  openCountryPlans({ code: china.code, name: china.name, flag: china.flag });
+});
+
+// Search & clear
+qInput?.addEventListener("input", renderCountries);
+clearBtn?.addEventListener("click", () => {
+  if(qInput) qInput.value = "";
+  renderCountries();
+});
+
+// Start
+document.addEventListener("DOMContentLoaded", () => {
+  // Make continent buttons look like pills
+  const tabs = document.getElementById("continentTabs");
+  if(tabs){
+    [...tabs.querySelectorAll("button")].forEach(b => b.classList.add("pill"));
+    // default active All
+    window.setContinent("All");
   }
-}
-
-document.addEventListener("DOMContentLoaded", loadCountriesSafe);
+  loadCountries();
+});
 </script>
 
-    <section style="padding:60px 20px;text-align:center;background:#f6f7fb;">
+<section style="padding:60px 20px;text-align:center;background:#f6f7fb;">
 <h2 style="color:#1b0981;">Манай аяллын үйлчилгээ</h2>
 
 <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:30px;">
