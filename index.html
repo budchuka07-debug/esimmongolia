@@ -1114,6 +1114,23 @@ if (checkBtn) {
   });
 }
     render();
+
+// ✅ ЭНДЭЭС (доорхыг нэмж paste хийнэ)
+function closeModal() {
+  const modal = document.getElementById("md");
+  const backdrop = document.getElementById("bd");
+
+  modal.style.display = "none";
+  backdrop.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-close]")) closeModal();
+  if (e.target.id === "bd") closeModal();
+});
+// ✅ ЭНД ХҮРТЭЛ
+</script>
 </script>
     <section style="padding:60px 20px;text-align:center;background:#f6f7fb;">
 <h2 style="color:#1b0981;">Манай аяллын үйлчилгээ</h2>
