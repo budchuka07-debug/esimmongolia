@@ -188,6 +188,17 @@
 .planSelect:hover{ filter:brightness(0.95); }
 
 .planPick{font-weight:700;}
+
+/* Сонгох товч илүү тод */
+.planSelect{
+  background:#2563eb;
+  color:#fff;
+  border:0;
+}
+.planSelect.isSelected{
+  background:#16a34a;
+}
+
 </style>
 </head>
 <body>
@@ -1173,8 +1184,17 @@ function continentKey(raw){
   if (s.includes("middle")) return "MiddleEast";
   return "Other";
 }
-function getContinent(item){
-  return continentKey(item && item.continent);
+function getContinent(itemOrCode){
+  if(!itemOrCode) return "Other";
+  // item объект эсвэл "CN" мэт код байж болно
+  if(typeof itemOrCode === "string"){
+    const code = String(itemOrCode).toUpperCase();
+    const found = (window.__countries || []).find(c =>
+      String(c.code || "").toUpperCase() === code
+    );
+    return continentKey(found && (found.continent || found.region || found.continentName));
+  }
+  return continentKey(itemOrCode.continent || itemOrCode.region || itemOrCode.continentName);
 }
 
 function setContinent(c) {
@@ -1186,10 +1206,13 @@ function applyFiltersAndRender() {
   let list = [...allCountries];
 
   if (currentContinent !== "All") {
-    list = list.filter(x => getContinent(x.code) === currentContinent);
+    list = list.filter(x => getContinent(x) === currentContinent);
   }
 
   renderCountries(list);
+  // Таб дармагц жагсаалт руу автоматаар очно
+  const grid = document.getElementById('countriesGrid');
+  if (grid) grid.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function renderCountries(list) {
@@ -1215,9 +1238,9 @@ function renderCountries(list) {
 
     
     // Open modal when clicking row or the button
-    el.addEventListener("click", () => openCountry(c.name));
+    el.addEventListener("click", () => openCountry((c.code || c.name), c.name, (c.flag||"")));
     const btn = el.querySelector("button.btn.primary");
-    if (btn) btn.addEventListener("click", (e) => { e.stopPropagation(); openCountry(c.name); });
+    if (btn) btn.addEventListener("click", (e) => { e.stopPropagation(); openCountry((c.code || c.name), c.name, (c.flag||"")); });
 box.appendChild(el);
   });
 }
