@@ -1200,7 +1200,12 @@ function renderCountries(list) {
       <button type="button" class="btn primary">Багц харах</button>
     `;
 
-    box.appendChild(el);
+    
+    // Open modal when clicking row or the button
+    el.addEventListener("click", () => openCountry(c.code));
+    const btn = el.querySelector("button.btn.primary");
+    if (btn) btn.addEventListener("click", (e) => { e.stopPropagation(); openCountry(c.code); });
+box.appendChild(el);
   });
 }
 
