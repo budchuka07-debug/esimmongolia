@@ -1141,8 +1141,85 @@ document.addEventListener("click", (e) => {
   if (e.target.id === "bd") closeModal();
 });
 // ✅ ЭНД ХҮРТЭЛ
+    // ===============================
+// SAFE getPlans UI
+// ===============================
+
+let allCountries = [];
+let currentContinent = "All";
+
+const continentMap = {
+  Asia: new Set(["MN","CN","JP","KR","HK","MO","TW","TH","VN","ID","MY","SG","PH","IN","AE","TR"]),
+  Europe: new Set(["GB","IE","FR","DE","IT","ES","PT","NL","BE","LU","CH","AT","DK","SE","NO","FI","PL","CZ","HU","RO","BG","GR"]),
+  America: new Set(["US","CA","MX","BR","AR","CL","CO","PE"]),
+  Africa: new Set(["EG","MA","ZA","NG","KE","GH","TZ"])
+};
+
+function getContinent(code) {
+  const c = String(code || "").toUpperCase();
+  if (continentMap.Asia.has(c)) return "Asia";
+  if (continentMap.Europe.has(c)) return "Europe";
+  if (continentMap.America.has(c)) return "America";
+  if (continentMap.Africa.has(c)) return "Africa";
+  return "Other";
+}
+
+function setContinent(c) {
+  currentContinent = c;
+  applyFiltersAndRender();
+}
+
+function applyFiltersAndRender() {
+  let list = [...allCountries];
+
+  if (currentContinent !== "All") {
+    list = list.filter(x => getContinent(x.code) === currentContinent);
+  }
+
+  renderCountries(list);
+}
+
+function renderCountries(list) {
+  const box = document.getElementById("countries");
+  if (!box) return;
+
+  box.innerHTML = "";
+
+  list.forEach(c => {
+    const el = document.createElement("div");
+    el.style.cssText =
+      "display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:8px 0;cursor:pointer;";
+
+    el.innerHTML = `
+      <div>
+        <div style="font-weight:700;">${c.flag || ""} ${c.name || c.code}</div>
+        <div style="opacity:.7;font-size:13px;">
+          From ${c.fromPrice ? Number(c.fromPrice).toLocaleString() : "-"}₮
+        </div>
+      </div>
+      <button type="button" class="btn primary">Багц харах</button>
+    `;
+
+    box.appendChild(el);
+  });
+}
+
+async function loadCountriesSafe() {
+  try {
+    const res = await fetch("/.netlify/functions/getPlans");
+    const json = await res.json();
+    if (!res.ok) return;
+
+    allCountries = json.countries || [];
+    applyFiltersAndRender();
+  } catch (e) {
+    console.log("getPlans error:", e);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadCountriesSafe);
 </script>
-</script>
+
     <section style="padding:60px 20px;text-align:center;background:#f6f7fb;">
 <h2 style="color:#1b0981;">Манай аяллын үйлчилгээ</h2>
 
