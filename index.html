@@ -199,23 +199,6 @@
   background:#16a34a;
 }
 
-
-/* --- Modal plan list buttons --- */
-.planRow{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.06);}
-.planName{font-weight:700}
-.planMeta{color:#6b7280;font-size:13px;margin-top:2px}
-.planPrice{font-size:22px;font-weight:800;margin-top:6px}
-.selectBtn{
-  padding:10px 16px;border-radius:14px;border:1px solid rgba(0,0,0,.15);
-  background:#10b981;color:#fff;font-weight:800;cursor:pointer;
-}
-.selectBtn:hover{filter:brightness(.95)}
-.selectBtn.selected{background:#111827;border-color:#111827}
-
-/* Modal choose button */
-#md .chooseBtn{background:#16a34a;color:#fff;border:1px solid #16a34a;font-weight:800;}
-#md .chooseBtn:hover{filter:brightness(0.95);}
-#md .chooseBtn.isSelected{background:#e5e7eb;color:#111;border-color:#d1d5db;}
 </style>
 </head>
 <body>
@@ -649,25 +632,9 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
         const normal = candidate.filter(p => !isUnlimitedPlan(p));
         const base = (normal.length ? normal : candidate);
 
-        if(!base.length){
-        const safeCountry = String(country).replace(/'/g, "\\'");
-        return `
-          <div class="card">
-            <div class="cardHead">
-              <div>
-                <div class="name">${flag} ${country}</div>
-                <div class="sub">Үнэ авахын тулд “Багц харах” дарна уу</div>
-              </div>
-              <button class="btn primary" onclick="openCountry('${safeCountry}','${code || ''}')">Багц харах</button>
-            </div>
-          </div>
-        `;
-      }
-
-      const minUSD = Math.min(...base.map(p => Number(p.price)));
+        const minUSD = Math.min(...base.map(p => Number(p.price)));
         const minMNT = calculateMNT(minUSD, country);
         const flag = flagForCountryName(country);
-        const code = c.code || c.countryCode || c.iso2 || "";
 
         const safeCountry = String(country).replace(/'/g, "\\'");
         return `
@@ -677,7 +644,7 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
                 <div class="name">${flag} ${country}</div>
                 <div class="sub">From <b>${fmt(minMNT)}</b></div>
               </div>
-              <button class="btn primary" onclick="openCountry('${safeCountry}','${code || ''}')">Багц харах</button>
+              <button class="btn primary" onclick="openCountry('${safeCountry}')">Багц харах</button>
             </div>
           </div>
         `;
@@ -688,91 +655,23 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
     // MODAL (plans per country)
     // Unlimited goes last
     // =========================
-    async function openCountry(country){
+    function openCountry(country){
       currentCountry = country;
+      const plansRaw = GROUPED[country] || [];
+      currentPlans = sortPlansForUI(plansRaw);
 
-      // 1) Эхлээд cache (GROUPED) дотроос хайна
-      let plansRaw = GROUPED[country];
-
-      // 2) Хэрвээ энэ улс хараахан татагдаагүй бол server function-оос 1 удаа татна
-      if((!plansRaw || !plansRaw.length) && code){
-        try{
-          const res = await fetch(`/.netlify/functions/getPlans?countryCode=${encodeURIComponent(code)}`);
-          const json = await res.json();
-          // Airhub хариултаас plans массивыг олно
-          const plans = (json && (json.data || json.plans || json.result || json)) || [];
-          const arr = Array.isArray(plans) ? plans : (plans?.plans || []);
-          // group by countryName
-          if(Array.isArray(arr) && arr.length){
-            arr.forEach(p=>{
-              const name = p.countryName || p.country || country;
-              if(!GROUPED[name]) GROUPED[name]=[];
-              GROUPED[name].push(p);
-            });
-          }
-          plansRaw = GROUPED[country] || arr.filter(p => (p.countryName||p.country)===country) || [];
-        }catch(e){
-          console.warn("openCountry fetch failed", e);
-        }
-      }
-
-      // 3) Хэрвээ код өгөгдөөгүй бол: сүүлийн боломж — country дээрээ code гэж үзээд туршина
-      if((!plansRaw || !plansRaw.length) && !code){
-        try{
-          const res = await fetch(`/.netlify/functions/getPlans?countryCode=${encodeURIComponent(country)}`);
-          const json = await res.json();
-          const plans = (json && (json.data || json.plans || json.result || json)) || [];
-          const arr = Array.isArray(plans) ? plans : (plans?.plans || []);
-          if(Array.isArray(arr) && arr.length){
-            arr.forEach(p=>{
-              const name = p.countryName || p.country || country;
-              if(!GROUPED[name]) GROUPED[name]=[];
-              GROUPED[name].push(p);
-            });
-          }
-          plansRaw = GROUPED[country] || [];
-        }catch(e){
-          console.warn("openCountry fallback fetch failed", e);
-        }
-      }
-
-      currentPlans = sortPlansForUI(plansRaw || []);
-
-      // --- Modal render ---
       if(modalPlanEl){
-        if(!currentPlans.length){
-          modalPlanEl.innerHTML = `<div class="sub" style="padding:12px 0">Энэ улсад одоогоор багц олдсонгүй.</div>`;
-        } else {
-          modalPlanEl.innerHTML = currentPlans.map(p => {
-            const mnt = calculateMNT(p.price, country);
-            const unBadge = isUnlimitedPlan(p) ? " • Unlimited" : "";
-            const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
-            const dur = (p.vaildity && p.validityType) ? `${p.vaildity}${p.validityType}` : "";
-            const meta = [cap, dur].filter(Boolean).join(" • ");
-            const selected = selectedPlan && selectedPlan.id === p.id;
-            return `
-              <div class="planRow">
-                <div>
-                  <div class="planName">${country} ${meta}${unBadge}</div>
-                  <div class="planMeta">${meta || ""}</div>
-                  <div class="planPrice">${fmt(mnt)}₮</div>
-                </div>
-                <button class="selectBtn ${selected ? "selected" : ""}" data-plan-id="${p.id}" type="button">
-                  ${selected ? "Сонгосон" : "Сонгох"}
-                </button>
-              </div>
-            `;
-          }).join("");
-        }
+        modalPlanEl.innerHTML = currentPlans.map(p => {
+          const mnt = calculateMNT(p.price, country);
+          const unBadge = isUnlimitedPlan(p) ? " • Unlimited" : "";
+          const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
+          const dur = (p.vaildity && p.validityType) ? `${p.vaildity}${p.validityType}` : "";
+          const meta = [cap, dur].filter(Boolean).join(" / ");
+          const label = `${meta ? meta + " — " : ""}${fmt(mnt)}${unBadge}`;
+          return `<option value="${p.planCode}">${label}</option>`;
+        }).join('');
       }
 
-      // гарчиг/текст
-      const flag = flagForCountryName(country);
-        const code = c.code || c.countryCode || c.iso2 || "";
-      if(ttlEl) ttlEl.textContent = `${flag} ${country} – eSIM багцууд`;
-
-      showModal();
-    }
       currentPlan = currentPlans.find(p => !isUnlimitedPlan(p)) || currentPlans[0] || null;
       if(modalPlanEl && currentPlan) modalPlanEl.value = currentPlan.planCode;
 
@@ -814,7 +713,7 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
                 <div class="sub" style="margin-top:4px">${meta}${meta ? " • " : ""}TravelDate: ${travel}</div>
                 <div style="margin-top:6px;font-size:18px"><b>${fmt(mnt)}</b></div>
               </div>
-              <button class="btn chooseBtn ${selected ? "isSelected" : ""}" type="button" onclick="selectPlan('${safeCode}')">${selected ? "Сонгосон" : "Сонгох"}</button>
+              <button class="btn" type="button" onclick="selectPlan('${safeCode}')">${selected ? "Сонгосон" : "Сонгох"}</button>
             </div>
           </div>
         `;
@@ -1400,19 +1299,6 @@ document.addEventListener("DOMContentLoaded", loadCountriesSafe);
 
 </div>
 </section>
-    <script>
-function setContinent(continent){
-  const cards = document.querySelectorAll('.card');
-  cards.forEach(card => {
-    if(continent === 'all'){
-      card.style.display = '';
-    } else {
-      card.style.display =
-        card.dataset.continent === continent ? '' : 'none';
-    }
-  });
-}
-</script>
 </body>
 </html>
 
