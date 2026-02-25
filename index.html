@@ -177,6 +177,15 @@
     /* ===== QPay Box (no inner scroll; modal body scrolls) ===== */
     #qpayBox{ max-height:none; overflow:visible; padding-right:0; }
     #qpayBox img{ max-width:100%; height:auto; }
+
+/* Modal дээрх "Сонгох" товч тод харагдуулах */
+.planSelect{
+  background:#0bb981;
+  color:#fff;
+  border-color:#0bb981;
+  font-weight:800;
+}
+.planSelect:hover{ filter:brightness(0.95); }
 </style>
 </head>
 <body>
@@ -1213,12 +1222,29 @@ async function loadCountriesSafe() {
   try {
     const res = await fetch("/.netlify/functions/getCountries");
     const json = await res.json();
-    if (!res.ok) return;
+    if (res.ok && Array.isArray(json.countries) && json.countries.length) {
+      allCountries = json.countries;
+      applyFiltersAndRender();
+      return;
+    }
+  } catch (e) {
+    console.log("getCountries error:", e);
+  }
 
-    allCountries = json.countries || [];
+  // Fallback: getCountries ажиллахгүй бол GROUPED-оос (plan-оос) улсуудыг байгуулна
+  try {
+    const keys = Object.keys(GROUPED || {});
+    allCountries = keys.map((code) => ({
+      code,
+      name: code,        // нэр байхгүй тул түр code харуулна
+      flag: "",          // flag байхгүй (getCountries ажиллавал автоматаар ирнэ)
+      continent: getContinent(code) || "Other",
+      from: minPriceByCountry.get(code) || null,
+      plansCount: Array.isArray(GROUPED[code]) ? GROUPED[code].length : 0,
+    }));
     applyFiltersAndRender();
   } catch (e) {
-    console.log("getPlans error:", e);
+    console.log("fallback build countries failed:", e);
   }
 }
 
