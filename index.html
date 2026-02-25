@@ -957,7 +957,7 @@ function resetPayUI(){
   window._invoiceId = null;
   window._orderMsg = null;
 }
-
+let currentItem = null;
 qpayBtn.addEventListener("click", async () => {
 
   if(!currentItem) return;
