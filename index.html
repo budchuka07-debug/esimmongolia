@@ -1400,6 +1400,19 @@ document.addEventListener("DOMContentLoaded", loadCountriesSafe);
 
 </div>
 </section>
+    <script>
+function setContinent(continent){
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    if(continent === 'all'){
+      card.style.display = '';
+    } else {
+      card.style.display =
+        card.dataset.continent === continent ? '' : 'none';
+    }
+  });
+}
+</script>
 </body>
 </html>
 
