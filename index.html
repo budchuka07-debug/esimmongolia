@@ -706,12 +706,28 @@ function renderCountries(){
   }
 
   countriesBox.innerHTML = list.map(c => {
-    const from = (c.fromPrice != null) ? fmt(c.fromPrice) : "-";
-    return `
-      <div class="card" style="cursor:pointer" data-code="${String(c.code||"")}" data-name="${String(c.name||"")}" data-flag="${String(c.flag||"")}">
-        <div class="cardHead">
-          <div>
-            <div class="name">
+  const from = (c.fromPrice != null) ? fmt(c.fromPrice) : "--";
+  return `
+    <div class="card" style="cursor:pointer"
+      data-code="${String(c.code||"")}"
+      data-name="${String(c.name||"")}"
+      data-flag="${String(c.flag||"")}">
+
+      <div class="cardHead">
+        <div>
+
+          <div class="name" style="display:flex;align-items:center;gap:10px;font-weight:600">
+
+            <img
+              src="https://flagcdn.com/24x18/${String(c.code||"").toLowerCase()}.png"
+              alt=""
+              style="width:24px;height:18px;border-radius:4px;object-fit:cover;box-shadow:0 1px 6px rgba(0,0,0,.15)"
+              onerror="this.style.display='none'"
+            />
+
+            <span>${c.name || c.code}</span>
+
+          </div>
   <span style="font-size:20px;margin-right:6px;display:inline-block">
     ${c.flag || "🌍"}
   </span>
