@@ -1,7 +1,4 @@
 // netlify/functions/getPlans.js
-// - /getPlans?code=TH  → зөвхөн тухайн улсын plan-ууд
-// ⚠️ code байхгүй бол 400 буцаана (ингэснээр холилдох 100% зогсоно)
-
 const BASE = "https://api.airhubapp.com";
 
 function jsonRes(statusCode, bodyObj) {
@@ -29,17 +26,15 @@ async function airhubLogin(USERNAME, PASSWORD) {
   if (!loginRes.ok || !loginJson?.token) {
     return { ok: false, status: loginRes.status, data: loginJson };
   }
-  return { ok: true, token: loginJson.token };
+  return { ok: true, token: loginJson.token, raw: loginJson };
 }
 
-// ISO2 код plan дотроос найдвартай унших
 function readCode(plan) {
   return String(
     plan.countryCode ||
       plan.CountryCode ||
       plan.country_code ||
       plan.countrycode ||
-      plan.Countrycode ||
       plan.iso2 ||
       plan.ISO2 ||
       plan.countryIso2 ||
@@ -50,8 +45,7 @@ function readCode(plan) {
     .trim();
 }
 
-// Airhub plan татах (single country)
-async function fetchPlansOne(token, PARTNER_CODE, code) {
+async function fetchPlansOne(token, PARTNER_CODE, code, flag) {
   const planRes = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
     method: "POST",
     headers: {
@@ -60,9 +54,8 @@ async function fetchPlansOne(token, PARTNER_CODE, code) {
     },
     body: JSON.stringify({
       partnerCode: Number(PARTNER_CODE),
-      flag: 6,
-      countryCode: "",            // Airhub заримдаа countryCode-аар буцаахгүй
-      multiplecountrycode: [code],// ✅ 1 улсын кодыг энд өгнө
+      countryCode: code, // ✅ заавал 2 үсэгтэй код
+      flag: flag,        // ✅ 1 эсвэл 2
     }),
   });
 
@@ -71,7 +64,6 @@ async function fetchPlansOne(token, PARTNER_CODE, code) {
 }
 
 exports.handler = async function handler(event) {
-  // CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -103,7 +95,6 @@ exports.handler = async function handler(event) {
     .trim()
     .toUpperCase();
 
-  // ✅ Гол хамгаалалт: code байхгүй бол холимог татахгүй
   if (!code) {
     return jsonRes(400, {
       error: "Missing required query: code",
@@ -114,13 +105,25 @@ exports.handler = async function handler(event) {
   try {
     const login = await airhubLogin(USERNAME, PASSWORD);
     if (!login.ok) {
-      return jsonRes(401, {
-        error: "Airhub login failed",
-        details: login.data,
-      });
+      return jsonRes(401, { error: "Airhub login failed", details: login.data });
     }
 
-    const plans = await fetchPlansOne(login.token, PARTNER_CODE, code);
+    // ✅ эхлээд flag=1, хоосон бол flag=2
+    let plans = await fetchPlansOne(login.token, PARTNER_CODE, code, 1);
+
+    // Хэрвээ ok боловч хоосон байвал flag=2 гэж дахин туршина
+    const list1 = Array.isArray(plans.data?.getInformation)
+      ? plans.data.getInformation
+      : [];
+
+    if (plans.ok && list1.length === 0) {
+      const plans2 = await fetchPlansOne(login.token, PARTNER_CODE, code, 2);
+      const list2 = Array.isArray(plans2.data?.getInformation)
+        ? plans2.data.getInformation
+        : [];
+      if (plans2.ok && list2.length > 0) plans = plans2;
+    }
+
     if (!plans.ok) {
       return jsonRes(plans.status, {
         error: "GetPlanInformation failed",
@@ -128,7 +131,7 @@ exports.handler = async function handler(event) {
       });
     }
 
-    // ✅ Нэмэлт хамгаалалт: Airhub буруу data өгсөн ч server дээрээс шүүж өгнө
+    // хамгаалалтын filter
     if (Array.isArray(plans.data?.getInformation)) {
       plans.data.getInformation = plans.data.getInformation.filter(
         (p) => readCode(p) === code
