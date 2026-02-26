@@ -685,7 +685,11 @@ async function openCountryPlans(c){
   openModal();
 
   resetPayUI();
-
+  if(!c.code || String(c.code).length !== 2){
+    out.innerHTML = `<div class="card"><b>⚠️ Энэ улсад ISO код олдсонгүй.</b>
+      <div class="sub">Дахин refresh (Ctrl+F5) хийгээд үзээрэй.</div></div>`;
+    return;
+  }
   try{
     const res = await fetch(`/.netlify/functions/getPlans?code=${encodeURIComponent(c.code)}`, { cache:"no-store" });
     const data = await res.json();
