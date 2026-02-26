@@ -1,124 +1,113 @@
 // netlify/functions/getCountries.js
-// Airhub → бүх улс/багц татаж (batch), frontend-д "countries" жагсаалт буцаана.
-// Netlify environment variables хэрэгтэй:
-// AIRHUB_USERNAME, AIRHUB_PASSWORD, AIRHUB_PARTNER_CODE
+// Улсуудын жагсаалт (card list) татах зориулалттай.
+// ✅ Найдвартай хувилбар:
+// 1) RestCountries-оос ISO2 (cca2) жагсаалт авна
+// 2) ISO2-г жижиг багцуудаар Airhub ESIM/GetPlanInformation руу явуулж plan-ууд татна
+// 3) plan.countryName-оос unique country list үүсгэнэ + ISO2 map (flag/continent-д)
+//
+// Энэ нь /api/Plan/GetPlanInformation (GET) дээр унадаг асуудлыг бүрэн тойрдог.
 
-let _cache = null;
-let _cacheAt = 0;
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 минут
+const AIRHUB_BASE = "https://api.airhubapp.com";
+const RESTCOUNTRIES_ALL = "https://restcountries.com/v3.1/all?fields=cca2,name,altSpellings";
 
-const BASE = "https://api.airhubapp.com";
-
-// ISO2 → 🇲🇳 гэх мэт flag
-function codeToFlag(code) {
-  const cc = String(code || "").toUpperCase();
-  if (cc.length !== 2) return "";
-  const A = 0x1F1E6;
-  const first = cc.charCodeAt(0) - 65 + A;
-  const second = cc.charCodeAt(1) - 65 + A;
-  return String.fromCodePoint(first, second);
-}
-
-// Тивийн энгийн ангилал (ихэнх улс бүрэн хамрагдана)
-const CONTINENT = {
-  Asia: new Set([
-    "AE","AF","AM","AZ","BD","BH","BN","BT","CN","CY","GE","HK","ID","IL","IN","IQ","IR","JO","JP","KG","KH","KP","KR","KW","KZ","LA","LB","LK","MO","MM","MN","MO","MV","MY","NP","OM","PH","PK","PS","QA","SA","SG","SY","TH","TJ","TL","TM","TR","TW","UZ","VN","YE"
-  ]),
-  Europe: new Set([
-    "AD","AL","AT","AX","BA","BE","BG","BY","CH","CZ","DE","DK","EE","ES","FI","FO","FR","GB","GG","GI","GR","HR","HU","IE","IM","IS","IT","JE","LI","LT","LU","LV","MC","MD","ME","MK","MT","NL","NO","PL","PT","RO","RS","RU","SE","SI","SJ","SK","SM","UA","VA"
-  ]),
-  Africa: new Set([
-    "AO","BF","BI","BJ","BW","CD","CF","CG","CI","CM","CV","DJ","DZ","EG","EH","ER","ET","GA","GH","GM","GN","GQ","GW","KE","KM","LR","LS","LY","MA","MG","ML","MR","MU","MW","MZ","NA","NE","NG","RE","RW","SC","SD","SH","SL","SN","SO","SS","ST","SZ","TD","TG","TN","TZ","UG","ZA","ZM","ZW"
-  ]),
-  Americas: new Set([
-    "AG","AI","AR","AW","BB","BM","BO","BR","BS","BZ","CA","CL","CO","CR","CU","CW","DM","DO","EC","GD","GL","GP","GT","GY","HN","HT","JM","KN","KY","LC","MF","MQ","MS","MX","NI","PA","PE","PM","PR","PY","SR","SV","TC","TT","US","UY","VC","VE","VG","VI"
-  ]),
-  Oceania: new Set([
-    "AS","AU","CK","FJ","FM","GU","KI","MH","MP","NC","NF","NR","NU","NZ","PF","PG","PN","PW","SB","TK","TO","TV","VU","WF","WS"
-  ])
+// Зарим нэр Airhub дээр өөр хэлбэртэй ирдэг → override
+const NAME_OVERRIDES = {
+  "korea south": "KR",
+  "south korea": "KR",
+  "korea, republic of": "KR",
+  "usa": "US",
+  "united states": "US",
+  "united states of america": "US",
+  "uk": "GB",
+  "united kingdom": "GB",
+  "russia": "RU",
 };
 
-function getContinent(code) {
+function jsonRes(statusCode, bodyObj) {
+  return {
+    statusCode,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Cache-Control": "no-store",
+    },
+    body: JSON.stringify(bodyObj),
+  };
+}
+
+function corsPreflight() {
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+    },
+    body: "",
+  };
+}
+
+function normalizeName(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[’']/g, "")
+    .trim();
+}
+
+function flagFromCode(code) {
   const cc = String(code || "").toUpperCase();
-  for (const [k, set] of Object.entries(CONTINENT)) {
-    if (set.has(cc)) return k;
-  }
+  if (!/^[A-Z]{2}$/.test(cc)) return "";
+  return cc.replace(/./g, (ch) => String.fromCodePoint(127397 + ch.charCodeAt()));
+}
+
+// ✅ UI дээр чинь "America" гэж байгаа тул "Americas" биш "America" буцаана
+function detectContinent(code) {
+  const c = String(code || "").toUpperCase();
+
+  const asia = new Set([
+    "CN","JP","KR","MN","TW","HK","MO","SG","TH","VN","MY","PH","ID","IN","KH","LA","MM","BD","NP","LK","PK",
+    "KZ","UZ","KG","TJ","TM","AE","SA","QA","KW","OM","BH","IL","JO","IQ","IR","TR"
+  ]);
+  const europe = new Set([
+    "FR","DE","IT","ES","PT","NL","BE","LU","IE","GB","UK","CH","AT","CZ","PL","HU","SK","SI","HR","RO","BG",
+    "GR","SE","NO","FI","DK","IS","EE","LV","LT","UA","MD","RS","BA","ME","AL","MK","CY","MT"
+  ]);
+  const africa = new Set([
+    "ZA","EG","MA","TN","DZ","NG","KE","TZ","UG","ET","GH","CI","SN","CM","ZW","ZM","MW","MZ","AO","GA","TD"
+  ]);
+  const america = new Set([
+    "US","CA","MX","BR","AR","CL","CO","PE","EC","UY","PY","BO","VE","GT","CR","PA","DO","JM","BS"
+  ]);
+  const oceania = new Set(["AU","NZ","FJ","PG","SB","VU"]);
+
+  if (asia.has(c)) return "Asia";
+  if (europe.has(c)) return "Europe";
+  if (africa.has(c)) return "Africa";
+  if (america.has(c)) return "America";
+  if (oceania.has(c)) return "Oceania";
   return "Other";
 }
 
-// Airhub plan-уудаас үнэ унших (талбар нэр өөр байж болно)
-function readPrice(plan) {
-  const candidates = [
-    plan.totalPrice, plan.price, plan.salePrice, plan.amount, plan.Amount, plan.unitPrice, plan.UnitPrice
-  ];
-  for (const v of candidates) {
-    const n = Number(v);
-    if (Number.isFinite(n) && n > 0) return n;
-  }
-  return 0;
-}
-
-function readCode(plan) {
-  return (plan.countryCode || plan.CountryCode || plan.country_code || "").toUpperCase();
-}
-
-function readName(plan) {
-  return plan.countryName || plan.CountryName || plan.country || plan.Country || "";
-}
-
-// ISO2 бүх код (batch хийхэд ашиглана)
-const ALL_ISO2 = [
-  "AD","AE","AF","AG","AI","AL","AM","AO","AQ","AR","AS","AT","AU","AW","AX","AZ",
-  "BA","BB","BD","BE","BF","BG","BH","BI","BJ","BL","BM","BN","BO","BQ","BR","BS","BT","BV","BW","BY","BZ",
-  "CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CU","CV","CW","CX","CY","CZ",
-  "DE","DJ","DK","DM","DO","DZ",
-  "EC","EE","EG","EH","ER","ES","ET",
-  "FI","FJ","FK","FM","FO","FR",
-  "GA","GB","GD","GE","GF","GG","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY",
-  "HK","HM","HN","HR","HT","HU",
-  "ID","IE","IL","IM","IN","IO","IQ","IR","IS","IT",
-  "JE","JM","JO","JP",
-  "KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ",
-  "LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY",
-  "MA","MC","MD","ME","MF","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ",
-  "NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ",
-  "OM",
-  "PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY",
-  "QA",
-  "RE","RO","RS","RU","RW",
-  "SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SV","SX","SY","SZ",
-  "TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TR","TT","TV","TW","TZ",
-  "UA","UG","UM","US","UY","UZ",
-  "VA","VC","VE","VG","VI","VN","VU",
-  "WF","WS",
-  "YE","YT",
-  "ZA","ZM","ZW"
-];
-
-function chunk(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}
-
 async function airhubLogin(USERNAME, PASSWORD) {
-  const loginRes = await fetch(`${BASE}/api/Authentication/UserLogin`, {
+  const loginRes = await fetch(`${AIRHUB_BASE}/api/Authentication/UserLogin`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userName: USERNAME, password: PASSWORD }),
   });
+
   const loginJson = await loginRes.json().catch(() => ({}));
   if (!loginRes.ok || !loginJson?.token) {
-    const err = new Error("Airhub login failed");
-    err.details = loginJson;
-    err.status = loginRes.status;
-    throw err;
+    return { ok: false, status: loginRes.status, data: loginJson };
   }
-  return loginJson.token;
+  return { ok: true, token: loginJson.token };
 }
 
-async function fetchPlansBatch(token, PARTNER_CODE, codes) {
-  const planRes = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
+// Airhub GetPlanInformation (multi-country)
+async function fetchPlansMulti(token, PARTNER_CODE, codes) {
+  const res = await fetch(`${AIRHUB_BASE}/api/ESIM/GetPlanInformation`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -132,152 +121,129 @@ async function fetchPlansBatch(token, PARTNER_CODE, codes) {
     }),
   });
 
-  const planJson = await planRes.json().catch(() => ({}));
-  if (!planRes.ok) {
-    const err = new Error("Airhub GetPlanInformation failed");
-    err.details = planJson;
-    err.status = planRes.status;
-    throw err;
-  }
-  return planJson;
+  const json = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data: json };
 }
 
-function normalize(planJsonList) {
-  // planJsonList: олон batch-ийн result массив
-  const allPlans = [];
-  for (const pj of planJsonList) {
-    const list = pj?.getInformation || pj?.GetInformation || pj?.data || [];
-    if (Array.isArray(list)) allPlans.push(...list);
-  }
+async function buildRestCountriesMaps() {
+  const res = await fetch(RESTCOUNTRIES_ALL, { method: "GET" });
+  const arr = await res.json().catch(() => []);
+  const nameToCca2 = new Map();
+  const allCca2 = [];
 
-  // улсуудаар min price тооцоолно
-  const byCode = new Map();
-  for (const p of allPlans) {
-    const code = readCode(p);
-    const name = readName(p);
-    if (!code && !name) continue;
+  for (const item of Array.isArray(arr) ? arr : []) {
+    const cca2 = item?.cca2;
+    if (!cca2) continue;
+    allCca2.push(cca2);
 
-    const key = code || name;
-    if (!byCode.has(key)) {
-      byCode.set(key, {
-        code: code || "",
-        name: name || key,
-        continent: getContinent(code),
-        flag: codeToFlag(code),
-        fromPrice: null,
-      });
-    }
-    const item = byCode.get(key);
-    // name байхгүй үед нөхнө
-    if (!item.name && name) item.name = name;
-    if (!item.code && code) {
-      item.code = code;
-      item.flag = codeToFlag(code);
-      item.continent = getContinent(code);
-    }
-    const price = readPrice(p);
-    if (price > 0 && (item.fromPrice === null || price < item.fromPrice)) {
-      item.fromPrice = price;
+    const names = [];
+    if (item?.name?.common) names.push(item.name.common);
+    if (item?.name?.official) names.push(item.name.official);
+    if (Array.isArray(item?.altSpellings)) names.push(...item.altSpellings);
+
+    for (const n of names) {
+      const key = normalizeName(n);
+      if (key && !nameToCca2.has(key)) nameToCca2.set(key, cca2);
     }
   }
 
-  const countries = Array.from(byCode.values())
-    .map(c => ({ ...c, fromPrice: c.fromPrice ?? 0 }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return { nameToCca2, allCca2: [...new Set(allCca2)] };
+}
 
-  return { countries, totalCountries: countries.length, totalPlans: allPlans.length };
+function chunkArray(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
 }
 
 export async function handler(event) {
-  // CORS preflight
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-      },
-      body: "",
-    };
-  }
-
-  if (event.httpMethod !== "GET") {
-    return {
-      statusCode: 405,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Method Not Allowed" }),
-    };
-  }
-
-  // cache
-  const now = Date.now();
-  if (_cache && now - _cacheAt < CACHE_TTL_MS) {
-    return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify(_cache),
-    };
-  }
+  if (event.httpMethod === "OPTIONS") return corsPreflight();
+  if (event.httpMethod !== "GET") return jsonRes(405, { error: "Method Not Allowed" });
 
   const USERNAME = process.env.AIRHUB_USERNAME;
   const PASSWORD = process.env.AIRHUB_PASSWORD;
   const PARTNER_CODE = process.env.AIRHUB_PARTNER_CODE;
 
   if (!USERNAME || !PASSWORD || !PARTNER_CODE) {
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        error: "Missing env vars: AIRHUB_USERNAME, AIRHUB_PASSWORD, AIRHUB_PARTNER_CODE",
-      }),
-    };
+    return jsonRes(500, {
+      error: "Missing env vars: AIRHUB_USERNAME, AIRHUB_PASSWORD, AIRHUB_PARTNER_CODE",
+    });
   }
 
   try {
-    const token = await airhubLogin(USERNAME, PASSWORD);
+    // 1) ISO2 жагсаалт + нэр mapping
+    const { nameToCca2, allCca2 } = await buildRestCountriesMaps();
 
-    // Airhub дээр "all countries" 1 удаа татахад хязгаар/timeout гарах магадлалтай.
-    // Тиймээс ISO2 кодуудаа жижиг batch-ээр явуулна.
-    const batches = chunk(ALL_ISO2, 25);
+    // ⚡ performance: бүх улсыг биш, эхний 220-г татна (ихэнхдээ хангалттай)
+    const iso2List = allCca2.filter((c) => /^[A-Z]{2}$/.test(c)).slice(0, 220);
 
-    const results = [];
-    for (const b of batches) {
-      // зарим улс Airhub дээр байхгүй байж болно — зүгээр л хоосон ирнэ
-      const r = await fetchPlansBatch(token, PARTNER_CODE, b);
-      results.push(r);
+    // 2) Airhub login
+    const login = await airhubLogin(USERNAME, PASSWORD);
+    if (!login.ok) {
+      return jsonRes(401, { error: "Airhub login failed", details: login.data });
     }
 
-    const payload = normalize(results);
+    // 3) ISO2-г багцуудаар plan татах
+    const chunks = chunkArray(iso2List, 40);
+    let allPlans = [];
 
-    _cache = payload;
-    _cacheAt = Date.now();
+    for (const codes of chunks) {
+      const plansRes = await fetchPlansMulti(login.token, PARTNER_CODE, codes);
+      if (!plansRes.ok) continue;
 
-    return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Allow-Methods": "GET, OPTIONS",
-      },
-      body: JSON.stringify(payload),
-    };
+      const plans = Array.isArray(plansRes.data?.getInformation) ? plansRes.data.getInformation : [];
+      allPlans = allPlans.concat(plans);
+    }
+
+    // 4) Unique улс үүсгэх
+    const byKey = new Map(); // normalizedName -> { name, code, fromPrice }
+    for (const p of allPlans) {
+      const name = String(p?.countryName || "").trim();
+      if (!name) continue;
+
+      const key = normalizeName(name);
+      const price = Number(p?.price ?? p?.Price ?? NaN);
+
+      // ISO2 resolve
+      const override = NAME_OVERRIDES[key];
+      const iso2 = (override || nameToCca2.get(key) || "").toUpperCase();
+
+      const entry = byKey.get(key) || { name, code: iso2, fromPrice: null };
+
+      if (!entry.code && iso2) entry.code = iso2;
+
+      if (Number.isFinite(price)) {
+        if (entry.fromPrice == null || price < entry.fromPrice) entry.fromPrice = price;
+      }
+
+      byKey.set(key, entry);
+    }
+
+    const countries = [...byKey.values()]
+      .map((c) => {
+        const code = String(c.code || "").toUpperCase();
+        return {
+          code,
+          name: c.name,
+          continent: detectContinent(code),
+          flag: flagFromCode(code),
+          fromPrice: c.fromPrice,
+        };
+      })
+      .sort((a, b) => {
+        const aHas = a.code ? 0 : 1;
+        const bHas = b.code ? 0 : 1;
+        if (aHas !== bHas) return aHas - bHas;
+        return String(a.name).localeCompare(String(b.name));
+      });
+
+    return jsonRes(200, {
+      countries,
+      totalCountries: countries.length,
+      totalPlans: allPlans.length,
+      note: "getCountries: RestCountries ISO2-г багцуудаар Airhub GetPlanInformation руу явуулж country list үүсгэдэг.",
+    });
   } catch (err) {
-    return {
-      statusCode: err?.status || 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        error: "getCountries failed",
-        message: String(err?.message || err),
-        details: err?.details || null,
-      }),
-    };
+    return jsonRes(500, { error: "Server error", message: String(err) });
   }
 }
