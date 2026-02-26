@@ -61,8 +61,8 @@ async function fetchPlansOne(token, PARTNER_CODE, code) {
     body: JSON.stringify({
       partnerCode: Number(PARTNER_CODE),
       flag: 6,
-      countryCode: code,          // ✅ хамгийн чухал
-      multiplecountrycode: [],    // ✅ хоосон байлгана
+      countryCode: "",            // Airhub заримдаа countryCode-аар буцаахгүй
+      multiplecountrycode: [code],// ✅ 1 улсын кодыг энд өгнө
     }),
   });
 
