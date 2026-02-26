@@ -711,7 +711,12 @@ function renderCountries(){
       <div class="card" style="cursor:pointer" data-code="${String(c.code||"")}" data-name="${String(c.name||"")}" data-flag="${String(c.flag||"")}">
         <div class="cardHead">
           <div>
-            <div class="name">${c.flag ? c.flag + " " : ""}${c.name || c.code}</div>
+            <div class="name">
+  <span style="font-size:20px;margin-right:6px;display:inline-block">
+    ${c.flag || "🌍"}
+  </span>
+  ${c.name || c.code}
+</div>
             <div class="sub">From <b>${from}</b></div>
           </div>
           <button class="btn primary" type="button">Багц харах</button>
