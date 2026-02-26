@@ -2,6 +2,7 @@ const fetch = require("node-fetch");
 
 exports.handler = async function () {
   try {
+    // 1️⃣ Airhub Token авах
     const tokenRes = await fetch("https://api.airhubapp.com/api/Token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -12,8 +13,16 @@ exports.handler = async function () {
     });
 
     const tokenData = await tokenRes.json();
+    if (!tokenData.token) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Airhub token авах боломжгүй" })
+      };
+    }
+
     const token = tokenData.token;
 
+    // 2️⃣ Бүх plan татах
     const plansRes = await fetch(
       "https://api.airhubapp.com/api/Plan/GetPlanInformation",
       {
@@ -24,11 +33,12 @@ exports.handler = async function () {
     const plansData = await plansRes.json();
     const plans = plansData.getInformation || [];
 
-    const map = {};
+    // 3️⃣ Улсууд map үүсгэх
+    const countryMap = {};
 
     plans.forEach(plan => {
-      // 🔥 ISO code зөв унших
-      const code =
+      // 🔥 ISO2 code зөв унших (хамгийн чухал хэсэг)
+      const code = (
         plan.countryCode ||
         plan.CountryCode ||
         plan.country_code ||
@@ -38,24 +48,30 @@ exports.handler = async function () {
         plan.ISO2 ||
         plan.countryIso2 ||
         plan.CountryIso2 ||
-        "";
+        ""
+      ).toUpperCase().trim();
 
       if (!code) return;
 
-      const name = plan.countryName || plan.CountryName || code;
+      const name =
+        plan.countryName ||
+        plan.CountryName ||
+        plan.country_name ||
+        code;
 
-      if (!map[code]) {
-        map[code] = {
-          code: code.toUpperCase(),
+      const price = Number(plan.price || 0);
+
+      if (!countryMap[code]) {
+        countryMap[code] = {
+          code,
           name,
           continent: detectContinent(code),
           flag: flagFromCode(code),
-          fromPrice: Number(plan.price || 0)
+          fromPrice: price
         };
       } else {
-        const price = Number(plan.price || 0);
-        if (price < map[code].fromPrice) {
-          map[code].fromPrice = price;
+        if (price < countryMap[code].fromPrice) {
+          countryMap[code].fromPrice = price;
         }
       }
     });
@@ -63,11 +79,12 @@ exports.handler = async function () {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        countries: Object.values(map),
-        totalCountries: Object.keys(map).length,
+        countries: Object.values(countryMap),
+        totalCountries: Object.keys(countryMap).length,
         totalPlans: plans.length
       })
     };
+
   } catch (err) {
     return {
       statusCode: 500,
@@ -76,12 +93,14 @@ exports.handler = async function () {
   }
 };
 
-// 🌍 Continent detection
+//
+// 🌍 Continent detection (энгийнаар)
+//
 function detectContinent(code) {
-  const asia = ["CN","JP","KR","TH","VN","MY","PH","SG","ID","TW"];
-  const europe = ["FR","DE","IT","ES","NL","UK","TR"];
-  const africa = ["ZA","KE","NG","TZ","UG","ZM"];
-  const americas = ["US","CA","BR","MX"];
+  const asia = ["CN","JP","KR","TH","VN","MY","PH","SG","ID","TW","HK"];
+  const europe = ["FR","DE","IT","ES","NL","UK","TR","CH","PL"];
+  const africa = ["ZA","KE","NG","TZ","UG","ZM","EG"];
+  const americas = ["US","CA","BR","MX","AR"];
   const oceania = ["AU","NZ"];
 
   if (asia.includes(code)) return "Asia";
@@ -93,7 +112,9 @@ function detectContinent(code) {
   return "Other";
 }
 
-// 🇨🇳 Flag generator
+//
+// 🇨🇳 Flag generator (ISO2 → Emoji)
+//
 function flagFromCode(code) {
   return code
     .toUpperCase()
