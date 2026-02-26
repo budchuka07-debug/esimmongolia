@@ -16,12 +16,26 @@ function jsonRes(statusCode, bodyObj) {
   };
 }
 
-async function airhubLogin(email, password) {
-  const res = await fetch(`${BASE}/api/Account/Login`, {
+const AIRHUB_BASE = "https://api.airhubapp.com";
+
+async function airhubLogin(USERNAME, PASSWORD) {
+  const loginRes = await fetch(`${AIRHUB_BASE}/api/Authentication/UserLogin`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({
+      userName: USERNAME,
+      password: PASSWORD,
+    }),
   });
+
+  const loginJson = await loginRes.json().catch(() => ({}));
+
+  if (!loginRes.ok || !loginJson?.token) {
+    return { ok: false, status: loginRes.status, data: loginJson };
+  }
+
+  return { ok: true, token: loginJson.token };
+}
   const data = await res.json().catch(() => ({}));
   const token = data?.data?.token;
   return { ok: !!token, token, raw: data };
