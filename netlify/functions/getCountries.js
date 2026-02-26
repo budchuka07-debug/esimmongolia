@@ -1,6 +1,7 @@
-// netlify/functions/getCountries.js
-// ✅ index.html-тэй таарах JSON: { countries: [...] } буцаана
-// ✅ Эхлээд Airhub-аас 1 удаа бүх plan авахыг оролдож, болохгүй бол fallback batch хийнэ
+// netlify/functions/getPlans.js
+// FEATURED (modal) plan татах зориулалттай.
+// - /getPlans?code=CA  → тухайн улсын plan-ууд (Airhub raw response)
+// - /getPlans          → default featured кодууд (China/Asia/Global гэх мэт)
 
 const BASE = "https://api.airhubapp.com";
 
@@ -11,113 +12,96 @@ function jsonRes(statusCode, bodyObj) {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
     },
     body: JSON.stringify(bodyObj),
   };
 }
 
-const AIRHUB_BASE = "https://api.airhubapp.com";
-
 async function airhubLogin(USERNAME, PASSWORD) {
-  const loginRes = await fetch(`${AIRHUB_BASE}/api/Authentication/UserLogin`, {
+  const loginRes = await fetch(`${BASE}/api/Authentication/UserLogin`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userName: USERNAME,
-      password: PASSWORD,
-    }),
+    body: JSON.stringify({ userName: USERNAME, password: PASSWORD }),
   });
 
   const loginJson = await loginRes.json().catch(() => ({}));
-
   if (!loginRes.ok || !loginJson?.token) {
     return { ok: false, status: loginRes.status, data: loginJson };
   }
-
   return { ok: true, token: loginJson.token };
 }
-  const data = await res.json().catch(() => ({}));
-  const token = data?.data?.token;
-  return { ok: !!token, token, raw: data };
-}
 
-async function fetchPlansMulti(token, partnerCode, codes) {
-  const res = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
+async function fetchPlans(token, PARTNER_CODE, codes) {
+  const planRes = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      partnerCode,
-      multiplecountrycode: codes, // [] байвал зарим аккаунт дээр бүгдийг буцаадаг
+      partnerCode: Number(PARTNER_CODE),
+      flag: 6,
+      countryCode: "",
+      multiplecountrycode: codes,
     }),
   });
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data };
+
+  const planJson = await planRes.json().catch(() => ({}));
+  return { ok: planRes.ok, status: planRes.status, data: planJson };
 }
 
-function uniqCountriesFromPlans(plans) {
-  const m = new Map();
-  for (const p of plans) {
-    const code = String(p.countryCode || "").toUpperCase().trim();
-    const name = String(p.countryName || "").trim();
-    if (!code) continue;
-    if (!m.has(code)) {
-      m.set(code, { code, name: name || code });
-    }
+export async function handler(event) {
+  // CORS preflight
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+      },
+      body: "",
+    };
   }
-  return Array.from(m.values()).sort((a, b) => String(a.name).localeCompare(String(b.name)));
-}
 
-exports.handler = async () => {
-  try {
-    const EMAIL = process.env.AIRHUB_USERNAME || process.env.AIRHUB_EMAIL;
-    const PASSWORD = process.env.AIRHUB_PASSWORD;
-    const PARTNER_CODE = process.env.AIRHUB_PARTNER_CODE;
+  if (event.httpMethod !== "GET") {
+    return jsonRes(405, { error: "Method Not Allowed" });
+  }
 
-    if (!EMAIL || !PASSWORD || !PARTNER_CODE) {
-      return jsonRes(500, { error: "Missing env vars", need: ["AIRHUB_USERNAME(or AIRHUB_EMAIL)", "AIRHUB_PASSWORD", "AIRHUB_PARTNER_CODE"] });
-    }
+  const USERNAME = process.env.AIRHUB_USERNAME;
+  const PASSWORD = process.env.AIRHUB_PASSWORD;
+  const PARTNER_CODE = process.env.AIRHUB_PARTNER_CODE;
 
-    // 1) Login
-    const login = await airhubLogin(EMAIL, PASSWORD);
-    if (!login.ok) return jsonRes(500, { error: "Airhub login failed" });
-
-    const token = login.token;
-
-    // 2) Fast path: 1 удаа бүгдийг авах оролдлого
-    const one = await fetchPlansMulti(token, PARTNER_CODE, []);
-    let plans = Array.isArray(one?.data?.data?.getInformation) ? one.data.data.getInformation : [];
-
-    // 3) Fallback: хэрвээ empty ирвэл (зарим аккаунт дээр [] ажиллахгүй)
-    if (!plans.length) {
-      // ⚠️ Timeout-аас хамгаалж цөөн batch-ээр (жишээ 120 код хүртэл)
-      // Доорхи ISO жагсаалтыг хамгийн түгээмэлүүдээр эхлүүлж байна (чи хүсвэл өсгөж болно)
-      const ISO = [
-        "CN","KR","JP","TH","VN","SG","MY","ID","PH","HK","MO","TW","TR",
-        "AE","SA","QA","KW","OM","BH","US","CA","GB","DE","FR","IT","ES",
-        "NL","BE","CH","SE","NO","DK","FI","RU","KZ","AU","NZ"
-      ];
-      const BATCH = 15;
-      const all = [];
-      for (let i = 0; i < ISO.length; i += BATCH) {
-        const codes = ISO.slice(i, i + BATCH);
-        const r = await fetchPlansMulti(token, PARTNER_CODE, codes);
-        const arr = Array.isArray(r?.data?.data?.getInformation) ? r.data.data.getInformation : [];
-        all.push(...arr);
-      }
-      plans = all;
-    }
-
-    const countries = uniqCountriesFromPlans(plans);
-
-    return jsonRes(200, {
-      countries,
-      totalCountries: countries.length,
-      totalPlans: plans.length,
+  if (!USERNAME || !PASSWORD || !PARTNER_CODE) {
+    return jsonRes(500, {
+      error: "Missing env vars: AIRHUB_USERNAME, AIRHUB_PASSWORD, AIRHUB_PARTNER_CODE",
     });
-  } catch (e) {
-    return jsonRes(500, { error: "Server error", message: String(e) });
   }
-};
+
+  const code = (event.queryStringParameters?.code || "").trim().toUpperCase();
+
+  // ✅ default featured list (чи хүсвэл энд нэм/хас)
+  const defaultCodes = [
+    "CN","KR","JP","TH","VN","MY","SG","ID","PH","TW","HK","MO",
+    "US","CA","MX","TR","DE","FR","GB","IT","ES"
+  ];
+
+  const codes = code ? [code] : defaultCodes;
+
+  try {
+    const login = await airhubLogin(USERNAME, PASSWORD);
+    if (!login.ok) {
+      return jsonRes(401, { error: "Airhub login failed", details: login.data });
+    }
+
+    const plans = await fetchPlans(login.token, PARTNER_CODE, codes);
+    if (!plans.ok) {
+      return jsonRes(plans.status, { error: "GetPlanInformation failed", details: plans.data });
+    }
+
+    return jsonRes(200, plans.data);
+  } catch (err) {
+    return jsonRes(500, { error: "Server error", message: String(err) });
+  }
+}
