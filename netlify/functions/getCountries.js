@@ -7,6 +7,19 @@
 const AIRHUB_BASE = "https://api.airhubapp.com";
 const RESTCOUNTRIES_ALL = "https://restcountries.com/v3.1/all?fields=cca2,name,altSpellings";
 
+// Fallback ISO2 map (in case RestCountries is down / blocked)
+const MANUAL_ISO2 = {
+  "andorra":"AD","bahamas":"BS","bolivia":"BO","brazil":"BR","british virgin islands":"VG",
+  "cambodia":"KH","chad":"TD","gabon":"GA","iceland":"IS","india":"IN","indonesia":"ID",
+  "iraq":"IQ","israel":"IL","italy":"IT","jersey":"JE","jordan":"JO","kenya":"KE",
+  "kyrgyzstan":"KG","laos":"LA","malawi":"MW","malaysia":"MY","maldives":"MV",
+  "mauritius":"MU","mayotte":"YT","montserrat":"MS","mexico":"MX","nepal":"NP",
+  "netherlands":"NL","nigeria":"NG","norway":"NO","philippines":"PH","sint maarten":"SX",
+  "south africa":"ZA","taiwan":"TW","tanzania":"TZ","thailand":"TH","tunisia":"TN",
+  "turks and caicos islands":"TC","uganda":"UG","ukraine":"UA","usa":"US","united states":"US",
+  "uzbekistan":"UZ","venezuela":"VE","vietnam":"VN","zambia":"ZM"
+};
+
 function jsonRes(statusCode, bodyObj) {
   return {
     statusCode,
@@ -49,19 +62,14 @@ async function airhubLogin(USERNAME, PASSWORD) {
 
 // ⚠️ Энд multiplecountrycode-г хоосон явуулахад (flag=6) Airhub бүх plan-аа буцаадаг гэж үзэж байгаа.
 // Хэрвээ танайд limit тавьдаг бол энд codes list өгч paginate хийх хэрэг гарч магадгүй.
-async function fetchAllPlans(token, PARTNER_CODE) {
-  const res = await fetch(`${AIRHUB_BASE}/api/ESIM/GetPlanInformation`, {
-    method: "POST",
+async function fetchAllPlans(token) {
+  // This endpoint returns the full catalog (used to build country list)
+  const res = await fetch(`${AIRHUB_BASE}/api/Plan/GetPlanInformation`, {
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      partnerCode: Number(PARTNER_CODE),
-      flag: 6,
-      countryCode: "",
-      multiplecountrycode: [],
-    }),
   });
 
   const json = await res.json().catch(() => ({}));
@@ -163,7 +171,7 @@ export async function handler(event) {
       return jsonRes(401, { error: "Airhub login failed", details: login.data });
     }
 
-    const plansRes = await fetchAllPlans(login.token, PARTNER_CODE);
+    const plansRes = await fetchAllPlans(login.token);
     if (!plansRes.ok) {
       return jsonRes(plansRes.status, { error: "GetPlanInformation failed", details: plansRes.data });
     }
