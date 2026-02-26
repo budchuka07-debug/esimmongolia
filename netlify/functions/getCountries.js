@@ -91,108 +91,100 @@ function detectContinent(code) {
   return "Other";
 }
 
+// ✅ хамгийн гол засвар: ISO2-г plan дотроос шууд унших (хоосон болохоос хамгаална)
+function readIso2FromPlan(plan){
+  return String(
+    plan?.countryCode ||
+    plan?.CountryCode ||
+    plan?.country_code ||
+    plan?.iso2 ||
+    plan?.ISO2 ||
+    ""
+  ).toUpperCase().trim();
+}
+
 async function airhubLogin(USERNAME, PASSWORD) {
-  const loginRes = await fetch(`${AIRHUB_BASE}/api/Authentication/UserLogin`, {
+  const loginRes = await fetch(`${AIRHUB_BASE}/api/Authentication/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userName: USERNAME, password: PASSWORD }),
+    body: JSON.stringify({ username: USERNAME, password: PASSWORD }),
   });
-
   const loginJson = await loginRes.json().catch(() => ({}));
-  if (!loginRes.ok || !loginJson?.token) {
-    return { ok: false, status: loginRes.status, data: loginJson };
-  }
-  return { ok: true, token: loginJson.token };
+  if (!loginRes.ok) throw new Error(loginJson?.message || "Airhub login failed");
+  const token = loginJson?.token || loginJson?.access_token || loginJson?.data?.token;
+  if (!token) throw new Error("Airhub token not found in response");
+  return token;
 }
 
-// Airhub GetPlanInformation (multi-country)
-async function fetchPlansMulti(token, PARTNER_CODE, codes) {
-  const res = await fetch(`${AIRHUB_BASE}/api/ESIM/GetPlanInformation`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      partnerCode: Number(PARTNER_CODE),
-      flag: 6,
-      countryCode: "",
-      multiplecountrycode: codes,
-    }),
-  });
+async function getRestCountriesMap() {
+  const r = await fetch(RESTCOUNTRIES_ALL, { headers: { "Accept": "application/json" } });
+  const arr = await r.json();
 
-  const json = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data: json };
-}
+  const map = new Map(); // normalizedName -> cca2
+  for (const c of (Array.isArray(arr) ? arr : [])) {
+    const cca2 = String(c?.cca2 || "").toUpperCase();
+    if (!/^[A-Z]{2}$/.test(cca2)) continue;
 
-async function buildRestCountriesMaps() {
-  const res = await fetch(RESTCOUNTRIES_ALL, { method: "GET" });
-  const arr = await res.json().catch(() => []);
-  const nameToCca2 = new Map();
-  const allCca2 = [];
-
-  for (const item of Array.isArray(arr) ? arr : []) {
-    const cca2 = item?.cca2;
-    if (!cca2) continue;
-    allCca2.push(cca2);
-
-    const names = [];
-    if (item?.name?.common) names.push(item.name.common);
-    if (item?.name?.official) names.push(item.name.official);
-    if (Array.isArray(item?.altSpellings)) names.push(...item.altSpellings);
+    const names = new Set();
+    const common = c?.name?.common;
+    const official = c?.name?.official;
+    if (common) names.add(common);
+    if (official) names.add(official);
+    for (const a of (c?.altSpellings || [])) names.add(a);
 
     for (const n of names) {
       const key = normalizeName(n);
-      if (key && !nameToCca2.has(key)) nameToCca2.set(key, cca2);
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, cca2);
     }
   }
-
-  return { nameToCca2, allCca2: [...new Set(allCca2)] };
+  return map;
 }
 
-function chunkArray(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
+async function fetchPlansByCode(token, iso2) {
+  const url = `${AIRHUB_BASE}/api/ESIM/GetPlanInformation?countryCode=${encodeURIComponent(iso2)}`;
+  const res = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || `GetPlanInformation failed for ${iso2}`);
+  const list = data?.getInformation || data?.GetInformation || data?.data || data?.plans || [];
+  return Array.isArray(list) ? list : [];
 }
 
-export async function handler(event) {
+exports.handler = async function (event) {
   if (event.httpMethod === "OPTIONS") return corsPreflight();
-  if (event.httpMethod !== "GET") return jsonRes(405, { error: "Method Not Allowed" });
-
-  const USERNAME = process.env.AIRHUB_USERNAME;
-  const PASSWORD = process.env.AIRHUB_PASSWORD;
-  const PARTNER_CODE = process.env.AIRHUB_PARTNER_CODE;
-
-  if (!USERNAME || !PASSWORD || !PARTNER_CODE) {
-    return jsonRes(500, {
-      error: "Missing env vars: AIRHUB_USERNAME, AIRHUB_PASSWORD, AIRHUB_PARTNER_CODE",
-    });
-  }
+  if (event.httpMethod !== "GET") return jsonRes(405, { error: "Method not allowed" });
 
   try {
-    // 1) ISO2 жагсаалт + нэр mapping
-    const { nameToCca2, allCca2 } = await buildRestCountriesMaps();
+    const USERNAME = process.env.AIRHUB_USERNAME;
+    const PASSWORD = process.env.AIRHUB_PASSWORD;
 
-    // ⚡ performance: бүх улсыг биш, эхний 220-г татна (ихэнхдээ хангалттай)
-    const iso2List = allCca2.filter((c) => /^[A-Z]{2}$/.test(c)).slice(0, 220);
-
-    // 2) Airhub login
-    const login = await airhubLogin(USERNAME, PASSWORD);
-    if (!login.ok) {
-      return jsonRes(401, { error: "Airhub login failed", details: login.data });
+    if (!USERNAME || !PASSWORD) {
+      return jsonRes(500, { error: "Missing AIRHUB_USERNAME / AIRHUB_PASSWORD env vars" });
     }
 
-    // 3) ISO2-г багцуудаар plan татах
-    const chunks = chunkArray(iso2List, 40);
-    let allPlans = [];
+    // 1) RestCountries map
+    const nameToCca2 = await getRestCountriesMap();
 
-    for (const codes of chunks) {
-      const plansRes = await fetchPlansMulti(login.token, PARTNER_CODE, codes);
-      if (!plansRes.ok) continue;
+    // 2) Airhub login
+    const token = await airhubLogin(USERNAME, PASSWORD);
 
-      const plans = Array.isArray(plansRes.data?.getInformation) ? plansRes.data.getInformation : [];
-      allPlans = allPlans.concat(plans);
+    // 3) ISO2 list (RestCountries-оос)
+    const allIso2 = Array.from(new Set(Array.from(nameToCca2.values()))).sort();
+
+    // 3.1) жижиг batch-аар plan-ууд татна
+    const BATCH = 10;
+    const allPlans = [];
+    for (let i = 0; i < allIso2.length; i += BATCH) {
+      const slice = allIso2.slice(i, i + BATCH);
+      const chunk = await Promise.allSettled(slice.map((cc) => fetchPlansByCode(token, cc)));
+      for (const r of chunk) {
+        if (r.status === "fulfilled") allPlans.push(...r.value);
+      }
     }
 
     // 4) Unique улс үүсгэх
@@ -204,12 +196,13 @@ export async function handler(event) {
       const key = normalizeName(name);
       const price = Number(p?.price ?? p?.Price ?? NaN);
 
-      // ISO2 resolve
+      // ✅ ISO2 resolve: plan -> override -> restcountries
+      const fromPlan = readIso2FromPlan(p);
       const override = NAME_OVERRIDES[key];
-      const iso2 = (override || nameToCca2.get(key) || "").toUpperCase();
+      const fromRest = (nameToCca2.get(key) || "");
+      const iso2 = (fromPlan || override || fromRest).toUpperCase();
 
       const entry = byKey.get(key) || { name, code: iso2, fromPrice: null };
-
       if (!entry.code && iso2) entry.code = iso2;
 
       if (Number.isFinite(price)) {
@@ -234,16 +227,11 @@ export async function handler(event) {
         const aHas = a.code ? 0 : 1;
         const bHas = b.code ? 0 : 1;
         if (aHas !== bHas) return aHas - bHas;
-        return String(a.name).localeCompare(String(b.name));
+        return (a.name || "").localeCompare(b.name || "");
       });
 
-    return jsonRes(200, {
-      countries,
-      totalCountries: countries.length,
-      totalPlans: allPlans.length,
-      note: "getCountries: RestCountries ISO2-г багцуудаар Airhub GetPlanInformation руу явуулж country list үүсгэдэг.",
-    });
+    return jsonRes(200, { countries, total: countries.length });
   } catch (err) {
-    return jsonRes(500, { error: "Server error", message: String(err) });
+    return jsonRes(500, { error: String(err?.message || err) });
   }
-}
+};
