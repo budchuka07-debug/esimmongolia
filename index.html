@@ -702,10 +702,28 @@ function renderCountries(){
   // sort by name
   list.sort((a,b)=> String(a.name||"").localeCompare(String(b.name||"")));
 
-  if(!list.length){
-    countriesBox.innerHTML = `<div class="card"><div class="name">Олдсонгүй</div><div class="sub">Хайлтаа өөрчилж үзээрэй.</div></div>`;
+ if (!list.length) {
+
+  // ✅ анх сайт нээгдэхэд: data хараахан ирээгүй бол "түр хүлээнэ үү" гэж гаргана
+  if (!HAS_LOADED) {
+    countriesBox.innerHTML = `
+      <div class="card">
+        <div class="name">⏳ Түр хүлээнэ үү…</div>
+        <div class="sub">Улсуудын мэдээлэл ачаалж байна.</div>
+      </div>
+    `;
     return;
   }
+
+  // ✅ зөвхөн data ирсний дараа л "олдсонгүй" гарна
+  countriesBox.innerHTML = `
+    <div class="card">
+      <div class="name">Олдсонгүй</div>
+      <div class="sub">Хайлт/шүүлтээ өөрчилж үзээрэй.</div>
+    </div>
+  `;
+  return;
+}
 
   countriesBox.innerHTML = list.map(c => {
   const from = (c.fromPrice != null) ? fmt(c.fromPrice) : "--";
