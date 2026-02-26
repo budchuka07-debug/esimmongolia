@@ -200,7 +200,14 @@ export async function handler(event) {
     for (const p of allPlans) {
       const name = String(p?.countryName || "").trim();
       if (!name) continue;
-
+const iso =
+  p.countryCode ||
+  p.countrycode ||
+  p.countryISO ||
+  p.countryIso ||
+  p.iso ||
+  p.country ||
+  "";
       const key = normalizeName(name);
       const price = Number(p?.price ?? p?.Price ?? NaN);
 
