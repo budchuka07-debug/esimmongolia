@@ -194,7 +194,8 @@ export async function handler(event) {
       const plans = Array.isArray(plansRes.data?.getInformation) ? plansRes.data.getInformation : [];
       allPlans = allPlans.concat(plans);
     }
-
+console.log("SAMPLE_PLAN_KEYS:", Object.keys(plans?.[0] || {}));
+console.log("SAMPLE_PLAN:", plans?.[0]);
     // 4) Unique улс үүсгэх
     const byKey = new Map(); // normalizedName -> { name, code, fromPrice }
     for (const p of allPlans) {
