@@ -3,127 +3,230 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Asia Pacific eSIM Монгол | 6 улсад ажиллах</title>
+  <meta name="description" content="Asia Pacific eSIM: Cambodia, Indonesia, Malaysia, Singapore, Thailand, Vietnam. QPay-р төлөөд QR кодоор идэвхжүүлнэ." />
 
-  <title>Asia Pacific eSIM Монгол | 6 улсад ажиллах дата багц</title>
-  <meta name="description" content="Asia Pacific eSIM: Cambodia, Indonesia, Malaysia, Singapore, Thailand, Vietnam. QR кодоор 5 минутанд идэвхжүүлнэ." />
-
-  <link rel="canonical" href="https://esimmongolia.com/asia-esim.html" />
-
-  <meta property="og:title" content="Asia Pacific eSIM Монгол (6 улс)" />
-  <meta property="og:description" content="Cambodia, Indonesia, Malaysia, Singapore, Thailand, Vietnam улсад ажиллах eSIM дата багц." />
-  <meta property="og:url" content="https://esimmongolia.com/asia-esim.html" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-
-  <link rel="stylesheet" href="/common.css" />
-  <script defer src="/common.js"></script>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;color:#111;background:#fff}
+    .wrap{max-width:980px;margin:0 auto;padding:22px}
+    .hero{padding:10px 0 6px}
+    .badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+    .badge{display:inline-block;padding:6px 10px;border:1px solid #eee;border-radius:999px;background:#fafafa;font-size:13px}
+    h1{font-size:40px;line-height:1.08;margin:8px 0 10px}
+    .sub{opacity:.82;font-size:16px;margin:0 0 14px;max-width:70ch}
+    .ctaRow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .btn{display:inline-block;padding:10px 14px;border:1px solid #ddd;border-radius:12px;text-decoration:none;color:inherit}
+    .btn.primary{background:#111;border-color:#111;color:#fff}
+    .card{border:1px solid #eee;border-radius:16px;padding:16px;margin:14px 0}
+    .grid2{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:860px){.grid2{grid-template-columns:1fr 1fr}}
+    .planBtn{width:100%;text-align:left;padding:12px;margin:8px 0;border:1px solid #eee;border-radius:14px;background:#fff;cursor:pointer}
+    .planBtn:hover{border-color:#ccc}
+    .price{font-size:30px;font-weight:900;margin:0}
+    .muted{opacity:.7}
+    .hr{height:1px;background:#eee;margin:14px 0}
+    .links a{display:inline-block;margin:6px 10px 0 0}
+    img.qr{max-width:280px;height:auto;border:1px solid #eee;border-radius:12px;padding:8px;background:#fff}
+  </style>
 </head>
 
 <body>
   <div class="wrap">
-
     <section class="hero">
       <div class="badges">
         <span class="badge">🌏 Asia Pacific eSIM</span>
         <span class="badge">6 улсад ажиллана</span>
+        <span class="badge">QPay + QR</span>
       </div>
 
-      <h1>Asia Pacific eSIM – 6 улсад ажиллах дата багц</h1>
-
+      <h1>Asia Pacific eSIM (6 улс)</h1>
       <p class="sub">
-        Cambodia, Indonesia, Malaysia, Singapore, Thailand, Vietnam улсад ашиглах боломжтой.
-        QPay-р төлөөд QR кодоор 1–5 минутанд суулгана.
+        Cambodia, Indonesia, Malaysia, Singapore, Thailand, Vietnam улсад ажиллах нэг багц.
+        Багцаа сонгоод QPay-р төлөхөд QR код шууд гарна.
       </p>
 
       <div class="ctaRow">
-        <a class="btn primary" href="#price">Үнэ харах</a>
-        <a class="btn" href="/">⬅ Буцах</a>
+        <a class="btn primary" href="#plans">Багц сонгох</a>
+        <a class="btn" href="/">⬅ Үндсэн сайт руу буцах</a>
       </div>
     </section>
 
-    <section class="card" id="price">
-      <h2>💰 Үнэ (35% ашиг + 1 USD = 3680₮)</h2>
-      <p style="opacity:.8;margin-top:6px">
-        Доорх үнэ нь: <strong>USD × 3680 × 1.35</strong> томьёогоор бодогдоно.
-        (Та хүсвэл USD үнээ доорх код дээр өөрчилж болно.)
+    <section class="card">
+      <h2 style="margin:0 0 10px">✅ Supported Countries</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <span class="badge">🇰🇭 Cambodia</span>
+        <span class="badge">🇮🇩 Indonesia</span>
+        <span class="badge">🇲🇾 Malaysia</span>
+        <span class="badge">🇸🇬 Singapore</span>
+        <span class="badge">🇹🇭 Thailand</span>
+        <span class="badge">🇻🇳 Vietnam</span>
+      </div>
+      <p class="muted" style="margin:10px 0 0">Нийт: 6 улс</p>
+    </section>
+
+    <section class="card" id="plans">
+      <h2 style="margin:0 0 10px">🧾 Багц сонгох</h2>
+      <p class="muted" style="margin:0 0 10px">
+        (Үнэ нь автоматаар MNT болж харагдана. Сонгосон багцаар QPay invoice үүсгэнэ.)
       </p>
+      <div id="planList">Loading...</div>
+    </section>
 
-      <div class="grid2" style="margin-top:12px">
-        <div class="card" style="margin:0">
-          <h3>Asia Pacific (6 улс)</h3>
-          <p class="sub">Бодогдсон үнэ:</p>
-          <div style="font-size:28px;font-weight:800" id="apacMnt">—</div>
-          <p style="opacity:.7;margin-top:6px">USD үнэ: <span id="apacUsd">—</span></p>
-        </div>
-
-        <div class="card" style="margin:0">
-          <h3>✅ Supported Countries</h3>
-          <div id="apacCountries" style="margin-top:10px"></div>
-        </div>
-      </div>
+    <section class="card" id="payBox" style="display:none">
+      <h2 style="margin:0 0 10px">💳 QPay төлбөр</h2>
+      <p class="muted" id="payMeta" style="margin:0 0 10px"></p>
+      <div id="qrBox"></div>
+      <div class="links" id="urlBox"></div>
+      <div class="hr"></div>
+      <button class="btn" id="checkBtn" type="button">Төлбөр шалгах</button>
+      <span class="muted" id="checkResult" style="margin-left:10px"></span>
     </section>
 
     <section class="card">
-      <h2>📌 Давуу тал</h2>
-      <ul>
-        <li>Нэг eSIM-ээр 6 улсад ажиллана</li>
-        <li>QR кодоор хурдан суулгалт (1–5 минут)</li>
-        <li>Аялал/томилолтод тохиромжтой</li>
-        <li>Бодит SIM хэрэггүй</li>
-      </ul>
+      <h2 style="margin:0 0 10px">❓ Түгээмэл асуулт</h2>
+      <p><strong>Яаж идэвхжүүлэх вэ?</strong><br>QR код уншуулж суулгаад Data Roaming асаана.</p>
+      <p><strong>Сүлжээ барихгүй бол?</strong><br>Airplane mode ON/OFF хийгээд дахин оролдоорой.</p>
     </section>
-
-    <section class="card">
-      <h2>❓ Түгээмэл асуултууд</h2>
-
-      <h3>Яаж идэвхжүүлэх вэ?</h3>
-      <p>Төлбөрөө хийгээд QR кодоо уншуулна. Data roaming асаагаад ашиглана.</p>
-
-      <h3>Нэг улсаас нөгөө улс руу ороход яах вэ?</h3>
-      <p>Ихэнх тохиолдолд дата автоматаар шилжинэ. Хэрэв сүлжээ барихгүй бол Airplane mode ON/OFF хийж болно.</p>
-    </section>
-
   </div>
 
   <script>
-    // --- тохируулга ---
-    const FX = 3680;        // 1 USD = 3680₮
-    const MARGIN = 0.35;    // 35%
+    // ===== SETTINGS =====
+    const FX = 3680;
+    const MARGIN = 0.35;
 
-    // ✅ энд Asia Pacific-ийн portal USD үнээ л оруулна (Airhub дээрх Portal Price)
-    const APAC_USD = 10; // <-- ЭНИЙГ өөрийн бодит USD-ээр солино
+    // getPlans одоогоор 1 улсын code авдаг тул “anchor” код ашиглана (Asia 6-с сонгов)
+    const ANCHOR_CODE = "SG";
 
-    const APAC6 = [
-      { name: "Cambodia", code: "KH" },
-      { name: "Indonesia", code: "ID" },
-      { name: "Malaysia", code: "MY" },
-      { name: "Singapore", code: "SG" },
-      { name: "Thailand", code: "TH" },
-      { name: "Vietnam", code: "VN" },
-    ];
-
-    function flagFromCode(code){
-      const cc = String(code||"").toUpperCase();
-      if (!/^[A-Z]{2}$/.test(cc)) return "";
-      return cc.replace(/./g, ch => String.fromCodePoint(127397 + ch.charCodeAt()));
+    // ===== HELPERS =====
+    function cleanUsd(x){
+      return parseFloat(String(x ?? "").replace("$","").trim()) || 0;
     }
-
-    function calcMnt(usd){
+    function calcMntFromUsd(usd){
       return Math.round(Number(usd) * FX * (1 + MARGIN));
     }
+    function pickUsd(plan){
+      // Airhub талбар нэр өөр байж болох тул олон хувилбар шалгана
+      return cleanUsd(
+        plan.portalPrice ??
+        plan.price ??
+        plan.Price ??
+        plan["Portal Price"] ??
+        plan["PortalPrice"] ??
+        plan["PortalPriceUSD"] ??
+        0
+      );
+    }
+    function pickTitle(plan){
+      return String(plan.planName ?? plan.data ?? plan.name ?? "Asia Pacific");
+    }
+    function pickDays(plan){
+      return String(plan.day ?? plan.days ?? plan.duration ?? "");
+    }
+    function isAsiaPlan(plan){
+      const s = String(plan.countryName ?? plan.Country ?? plan.planName ?? plan.name ?? "").toLowerCase();
+      return s.includes("asia pacific") || s === "asia";
+    }
 
-    // Үнэ харуулах
-    document.getElementById("apacUsd").textContent = "$" + APAC_USD;
-    document.getElementById("apacMnt").textContent =
-      calcMnt(APAC_USD).toLocaleString("en-US") + " ₮";
+    // ===== UI RENDER =====
+    fetch(`/.netlify/functions/getPlans?code=${encodeURIComponent(ANCHOR_CODE)}`)
+      .then(r => r.json())
+      .then(data => {
+        const plans = Array.isArray(data.getInformation) ? data.getInformation
+                    : Array.isArray(data.data) ? data.data
+                    : Array.isArray(data.plans) ? data.plans
+                    : [];
 
-    // Улсууд (badge)
-    document.getElementById("apacCountries").innerHTML = `
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        ${APAC6.map(c => `<span class="badge">${flagFromCode(c.code)} ${c.name}</span>`).join("")}
-      </div>
-      <p style="opacity:.7;margin-top:10px;">Нийт: ${APAC6.length} улс</p>
-    `;
+        const asiaPlans = plans.filter(isAsiaPlan);
+
+        if (!asiaPlans.length){
+          document.getElementById("planList").innerHTML =
+            "Asia Pacific багц олдсонгүй. (getPlans response дээр planName/countryName талбарыг шалгах хэрэгтэй)";
+          return;
+        }
+
+        document.getElementById("planList").innerHTML = asiaPlans.map(p => {
+          const usd = pickUsd(p);
+          const mnt = calcMntFromUsd(usd);
+          const title = pickTitle(p);
+          const days = pickDays(p);
+
+          return `
+            <button class="planBtn"
+              data-title="${title.replace(/"/g,'&quot;')}"
+              data-days="${days.replace(/"/g,'&quot;')}"
+              data-amount="${mnt}">
+              <div><strong>${title}</strong> ${days ? "• "+days+" өдөр" : ""}</div>
+              <div class="price">${mnt.toLocaleString("en-US")} ₮</div>
+              <div class="muted">QPay төлбөр үүсгэнэ</div>
+            </button>
+          `;
+        }).join("");
+      })
+      .catch(() => {
+        document.getElementById("planList").innerHTML = "Plan ачааллаж чадсангүй.";
+      });
+
+    // ===== QPAY FLOW =====
+    let lastInvoiceId = "";
+
+    document.addEventListener("click", async (e) => {
+      const btn = e.target.closest(".planBtn");
+      if (!btn) return;
+
+      const amount = Number(btn.dataset.amount || 0);
+      const title = btn.dataset.title || "Asia Pacific eSIM";
+      const days = btn.dataset.days || "";
+
+      if (!amount) return alert("Үнэ бодогдсонгүй.");
+
+      const payload = {
+        amount,
+        orderId: "ASIA-" + Date.now(),
+        description: `${title} ${days}`.trim()
+      };
+
+      const r = await fetch("/.netlify/functions/qpay-create-invoice", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok) return alert("QPay алдаа: " + JSON.stringify(j));
+
+      lastInvoiceId = j.invoice_id || "";
+
+      document.getElementById("payBox").style.display = "block";
+      document.getElementById("payMeta").textContent =
+        `${payload.description} • ${amount.toLocaleString("en-US")} ₮`;
+
+      document.getElementById("qrBox").innerHTML =
+        j.qr_image ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">` : "QR олдсонгүй";
+
+      const urls = Array.isArray(j.urls) ? j.urls : [];
+      document.getElementById("urlBox").innerHTML = urls.length
+        ? urls.map(u => `<a class="btn" href="${u.link}" target="_blank" rel="noopener">${u.name || "Pay link"}</a>`).join("")
+        : "";
+
+      // scroll to payment box
+      document.getElementById("payBox").scrollIntoView({behavior:"smooth", block:"start"});
+    });
+
+    // ===== PAYMENT CHECK =====
+    document.getElementById("checkBtn").addEventListener("click", async () => {
+      if (!lastInvoiceId) return alert("Invoice олдсонгүй.");
+      document.getElementById("checkResult").textContent = "Шалгаж байна...";
+
+      const r = await fetch("/.netlify/functions/qpay-check", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ invoice_id: lastInvoiceId })
+      });
+
+      const j = await r.json().catch(() => ({}));
+      document.getElementById("checkResult").textContent =
+        j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
+    });
   </script>
 </body>
 </html>
