@@ -175,7 +175,15 @@ export async function handler(event) {
     const { nameToCca2, allCca2 } = await buildRestCountriesMaps();
 
     // ⚡ performance: бүх улсыг биш, эхний 220-г татна (ихэнхдээ хангалттай)
-    const iso2List = allCca2.filter((c) => /^[A-Z]{2}$/.test(c)).slice(0, 220);
+    // ⚡ performance + priority: чухал улсуудыг эхэнд нь авч гаргана
+const PRIORITY = ["TH","US","GB","JP","KR","CN","VN","SG","HK","MY","TW","TR","PH","ID"];
+
+const iso2List = Array.from(
+  new Set([
+    ...PRIORITY,
+    ...allCca2.filter((c) => /^[A-Z]{2}$/.test(c)),
+  ])
+).slice(0, 220);
 
     // 2) Airhub login
     const login = await airhubLogin(USERNAME, PASSWORD);
