@@ -122,9 +122,12 @@
     function pickDays(plan){
       return String(plan.day ?? plan.days ?? plan.duration ?? "");
     }
-    function isAsiaPlan(plan){
-      const s = String(plan.countryName ?? plan.Country ?? plan.planName ?? plan.name ?? "").toLowerCase();
-      return s.includes("asia pacific") || s === "asia";
+  function isAsiaPlan(plan){
+  return (
+    plan.countryName === "Asia Pacific" ||
+    plan.Country === "Asia Pacific"
+  );
+}
     }
 
     // ===== UI RENDER =====
@@ -230,3 +233,4 @@
   </script>
 </body>
 </html>
+
