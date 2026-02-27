@@ -123,9 +123,12 @@
     function pickDays(plan){
       return String(plan.day ?? plan.days ?? plan.duration ?? "");
     }
-    function isGlobalPlan(plan){
-      const s = String(plan.countryName ?? plan.Country ?? plan.planName ?? plan.name ?? "").toLowerCase();
-      return s.includes("global");
+  function isGlobalPlan(plan){
+  return (
+    plan.countryName === "Global" ||
+    plan.Country === "Global"
+  );
+}
     }
 
     // ===== UI RENDER =====
@@ -230,3 +233,4 @@
   </script>
 </body>
 </html>
+
