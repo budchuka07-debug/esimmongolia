@@ -4,7 +4,7 @@
 Netlify → Site settings → Environment variables:
 
 - QPAY_USERNAME = (QPay-ээс өгсөн username/client_id)
-- QPAY_PASSWORD = (QPay-ээс өгсөн password/client_secret)
+- QPAY_PASSWORD = (QPay-ээс өгсөн password)
 - QPAY_INVOICE_CODE = ESIM_MGL_INVOICE
 - SITE_URL = https://esimmongolia.com  (эсвэл таны netlify домэйн)
 
