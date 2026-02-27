@@ -134,10 +134,24 @@
     fetch(`/.netlify/functions/getPlans?code=${encodeURIComponent(ANCHOR_CODE)}`)
       .then(r => r.json())
       .then(data => {
-        const plans = Array.isArray(data.getInformation) ? data.getInformation
-                    : Array.isArray(data.data) ? data.data
-                    : Array.isArray(data.plans) ? data.plans
-                    : [];
+       function findFirstArray(obj){
+  if (!obj) return [];
+  if (Array.isArray(obj)) return obj;
+
+  if (typeof obj === "object") {
+    // common keys
+    for (const k of ["getInformation","GetInformation","data","Data","plans","Plans","result","Result"]) {
+      if (Array.isArray(obj[k])) return obj[k];
+    }
+    // any array
+    for (const k of Object.keys(obj)) {
+      if (Array.isArray(obj[k])) return obj[k];
+    }
+  }
+  return [];
+}
+
+const plans = findFirstArray(data);
 
         const globalPlans = plans.filter(isGlobalPlan);
 
@@ -232,5 +246,6 @@
   </script>
 </body>
 </html>
+
 
 
