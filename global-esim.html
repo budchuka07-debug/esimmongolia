@@ -1,46 +1,130 @@
 <!doctype html>
 <html lang="mn">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<title>Global eSIM Монгол | 66 улсад ажиллах дата багц</title>
-<meta name="description" content="66 улсад ажиллах Global eSIM дата багц. Европ, Ази, Америк, Австрали зэрэг бүсэд ашиглана. QR кодоор 5 минутанд идэвхжүүлнэ.">
+  <title>Global eSIM Монгол | Олон улсад ажиллах дата багц</title>
+  <meta name="description" content="Global eSIM олон улсад ажиллах дата багц. QR кодоор 5 минутанд идэвхжүүлнэ." />
+
+  <link rel="canonical" href="https://esimmongolia.com/global-esim.html" />
+
+  <meta property="og:title" content="Global eSIM Монгол" />
+  <meta property="og:description" content="Олон улсад ажиллах Global eSIM дата багц. QR кодоор хурдан суулгана." />
+  <meta property="og:url" content="https://esimmongolia.com/global-esim.html" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="stylesheet" href="/common.css" />
+  <script defer src="/common.js"></script>
 </head>
 
 <body>
+  <div class="wrap">
 
-<h1>Global (66 улс) eSIM Монгол</h1>
+    <section class="hero">
+      <div class="badges">
+        <span class="badge">🌍 Global eSIM</span>
+        <span class="badge">Олон улсад ажиллана</span>
+      </div>
 
-<p>
-Global eSIM нь 66 улсад ажиллах олон улсын дата багц юм.
-Европ, Ази, Америк, Австрали зэрэг бүс нутагт ашиглах боломжтой.
-</p>
+      <h1>Global eSIM – Олон улсад ажиллах дата багц</h1>
 
-<h2>Яагаад Global eSIM сонгох вэ?</h2>
+      <p class="sub">
+        Олон оронд нэг eSIM-ээр дата ашиглах боломжтой.
+        QPay-р төлөөд QR кодоор 1–5 минутанд суулгана.
+      </p>
 
-<ul>
-<li>Нэг eSIM-ээр олон улсад ажиллана</li>
-<li>QR кодоор 5 минутанд суулгана</li>
-<li>7–30 хоногийн багц сонголттой</li>
-<li>Бизнес болон аялалд тохиромжтой</li>
-</ul>
+      <div class="ctaRow">
+        <a class="btn primary" href="#price">Үнэ харах</a>
+        <a class="btn" href="/">⬅ Буцах</a>
+      </div>
+    </section>
 
-<h2>Түгээмэл асуултууд</h2>
+    <section class="card" id="price">
+      <h2>💰 Үнэ (35% ашиг + 1 USD = 3680₮)</h2>
+      <p style="opacity:.8;margin-top:6px">
+        Доорх үнэ нь: <strong>USD × 3680 × 1.35</strong> томьёогоор бодогдоно.
+      </p>
 
-<h3>Global eSIM хэдэн улсад ажиллах вэ?</h3>
-<p>66 улсад ажиллана.</p>
+      <div class="grid2" style="margin-top:12px">
+        <div class="card" style="margin:0">
+          <h3>Global</h3>
+          <p class="sub">Бодогдсон үнэ:</p>
+          <div style="font-size:28px;font-weight:800" id="globalMnt">—</div>
+          <p style="opacity:.7;margin-top:6px">USD үнэ: <span id="globalUsd">—</span></p>
+        </div>
 
-<h3>Ямар төхөөрөмж дэмжих вэ?</h3>
-<p>iPhone XS болон түүнээс дээш, Samsung S20 болон түүнээс дээш.</p>
+        <div class="card" style="margin:0">
+          <h3>✅ Supported Countries</h3>
+          <div id="globalCountries" style="margin-top:10px">Loading...</div>
+        </div>
+      </div>
+    </section>
 
-<h2>Бусад багцууд</h2>
+    <section class="card">
+      <h2>📌 Давуу тал</h2>
+      <ul>
+        <li>Нэг eSIM-ээр олон улсад ажиллана</li>
+        <li>QR кодоор хурдан суулгалт (1–5 минут)</li>
+        <li>Аялал/томилолтод маш тохиромжтой</li>
+        <li>SIM солих төвөггүй</li>
+      </ul>
+    </section>
 
-<ul>
-<li><a href="/china-esim.html">Хятад eSIM</a></li>
-<li><a href="/asia-esim.html">Asia eSIM</a></li>
-<li><a href="/">Бүх багц харах</a></li>
-</ul>
+    <section class="card">
+      <h2>❓ Түгээмэл асуултууд</h2>
 
+      <h3>Яаж ашиглах вэ?</h3>
+      <p>QR код уншуулж суулгаад Data roaming асаана. Сүлжээ барихгүй бол Airplane mode ON/OFF хийнэ.</p>
+
+      <h3>Ямар утсанд ажиллах вэ?</h3>
+      <p>eSIM дэмждэг iPhone / Samsung / Pixel болон бусад төхөөрөмж дээр ажиллана.</p>
+    </section>
+
+  </div>
+
+  <script>
+    // --- тохируулга ---
+    const FX = 3680;
+    const MARGIN = 0.35;
+
+    // ✅ энд Global-ийн portal USD үнээ л оруулна (Airhub дээрх Portal Price)
+    const GLOBAL_USD = 25; // <-- ЭНИЙГ өөрийн бодит USD-ээр солино
+
+    function calcMnt(usd){
+      return Math.round(Number(usd) * FX * (1 + MARGIN));
+    }
+
+    document.getElementById("globalUsd").textContent = "$" + GLOBAL_USD;
+    document.getElementById("globalMnt").textContent =
+      calcMnt(GLOBAL_USD).toLocaleString("en-US") + " ₮";
+
+    // Supported countries (таны явуулсан жагсаалт)
+    const supportedRaw = `Albania, Algeria, Andorra, Argentina, Armenia, Australia, Austria, Azerbaijan, Bahrain, Bangladesh, Belarus, Belgium, Bosnia and Herzegovina, Brazil, Bulgaria, Cambodia, Canada, Chile, China, Costa Rica, Croatia, Cyprus, Czech Republic, Denmark, Ecuador, Egypt, Estonia, Faroe Islands, Finland, France, French Guiana, Georgia, Germany, Ghana, Gibraltor, Greece, Hong Kong, Hungary, Iceland, India, Indonesia, Iraq, Ireland, Israel, Italy, Japan, Kazakhstan, Kenya, Kosovo, Kuwait, Kyrgyzstan, Laos, Latvia, Liechtenstein, Lithuania, Luxembourg, Macau, Macedonia, Madagascar, Malaysia, Malta, Mexico, Moldova, Montenegro, Morocco, Netherlands, New Zealand, Nigeria, Norway, Oman, Pakistan, Panama, Peru, Philippines, Poland, Portugal, Qatar, Reunion, Romania, Russia, Saudi Arabia, Serbia, Singapore, Slovakia, Slovenia, South Korea, Spain, Srilanka, Sweden, Switzerland, Taiwan, Tanzania, Thailand, Tunisia, Turkey, UK, Ukraine, United Arab Emirates, Uruguay, USA, Uzbekistan, Vietnam`;
+
+    function normalizeName(s){
+      return String(s||"").toLowerCase().replace(/\s+/g," ").replace(/[’']/g,"").trim();
+    }
+    function fixName(n){
+      const k = normalizeName(n);
+      if (k === "gibraltor") return "Gibraltar";
+      if (k === "srilanka") return "Sri Lanka";
+      if (k === "macedonia") return "North Macedonia";
+      if (k === "reunion") return "Réunion";
+      if (k === "uk") return "United Kingdom";
+      if (k === "usa") return "United States";
+      return n;
+    }
+
+    const names = supportedRaw.split(",").map(s => fixName(s.trim())).filter(Boolean);
+
+    document.getElementById("globalCountries").innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${names.map(n => `<span class="badge">${n}</span>`).join("")}
+      </div>
+      <p style="opacity:.7;margin-top:10px;">Нийт: ${names.length} нэр</p>
+    `;
+  </script>
 </body>
 </html>
