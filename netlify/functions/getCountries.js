@@ -117,7 +117,7 @@ async function fetchPlansMulti(token, PARTNER_CODE, codes) {
       partnerCode: Number(PARTNER_CODE),
       flag: 6,
       countryCode: "",
-      multiplecountrycode: codes,
+     multiplecountrycode: Array.isArray(codes) ? codes.join(",") : String(codes || ""),
     }),
   });
 
