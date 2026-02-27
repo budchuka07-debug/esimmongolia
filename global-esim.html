@@ -124,10 +124,9 @@
       return String(plan.day ?? plan.days ?? plan.duration ?? "");
     }
   function isGlobalPlan(plan){
-  return (
-    plan.countryName === "Global" ||
-    plan.Country === "Global"
-  );
+  const c = String(plan.countryName ?? plan.Country ?? "").trim().toLowerCase();
+  return c === "global" || c.includes("global");
+}
 }
    
     // ===== UI RENDER =====
@@ -246,6 +245,7 @@ const plans = findFirstArray(data);
   </script>
 </body>
 </html>
+
 
 
 
