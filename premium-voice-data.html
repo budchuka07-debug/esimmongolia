@@ -2,101 +2,103 @@
 <html lang="mn">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Premium Voice + Data eSIM | eSIM Mongolia</title>
   <meta name="description" content="Premium Voice + Data eSIM багцууд. Улсаа сонгоод QPay-р төлөхөд QR код гарна." />
   <style>
+
     :root{
-      --bg:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --soft:#f8fafc;
-      --primary:#111111;
-      --primary-2:#0f766e;
-      --chip:#eef6f5;
+      --bg:#fffdf7;
       --card:#ffffff;
-      --shadow:0 8px 24px rgba(15,23,42,.06);
-      --radius:18px;
+      --text:#111111;
+      --muted:#6b7280;
+      --line:#ece7dc;
+      --soft:#fff8e1;
+      --dark:#111111;
+      --gold:#facc15;
+      --gold-2:#fbbf24;
+      --shadow:0 10px 30px rgba(17,17,17,.08);
+      --radius:20px;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
-      background:#fff;
+      background:linear-gradient(180deg,#fffefb 0%,#fff 100%);
     }
-    .wrap{max-width:1120px;margin:0 auto;padding:22px}
+    .wrap{max-width:1080px;margin:0 auto;padding:22px}
     .hero{padding:8px 0 18px}
-    .badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
-    .badge{
+    .badges,.chips,.topActions{display:flex;flex-wrap:wrap;gap:10px}
+    .badge,.chip{
       display:inline-flex;align-items:center;gap:8px;
-      padding:8px 14px;border-radius:999px;background:var(--chip);
-      border:1px solid #d9ece9;font-size:14px;font-weight:600;color:#0f4d48;
+      padding:8px 12px;border-radius:999px;background:#fff;
+      border:1px solid var(--line);font-size:13px;font-weight:700;
     }
-    h1{font-size:42px;line-height:1.08;margin:8px 0 10px}
-    .sub{font-size:17px;line-height:1.65;max-width:74ch;color:#374151;margin:0 0 16px}
-    .ctaRow{display:flex;flex-wrap:wrap;gap:10px}
+    .hero h1{font-size:42px;line-height:1.08;margin:8px 0 10px}
+    .sub{font-size:17px;line-height:1.65;color:#374151;max-width:74ch;margin:0 0 16px}
+    .ctaRow{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
     .btn{
       display:inline-flex;align-items:center;justify-content:center;
-      min-height:46px;padding:10px 16px;border-radius:14px;
-      border:1px solid #d1d5db;background:#fff;color:#111;text-decoration:none;
-      font-weight:700;cursor:pointer;
+      min-height:48px;padding:12px 18px;border-radius:16px;
+      border:1px solid #d6d3d1;background:#fff;color:#111;text-decoration:none;
+      font-weight:800;cursor:pointer;transition:.18s ease;
     }
-    .btn.primary{background:#111;color:#fff;border-color:#111}
     .btn:hover{transform:translateY(-1px)}
-    .tabs{
-      display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 16px;
+    .btn.primary{
+      background:#111;color:#facc15;border-color:#111;
+      box-shadow:0 10px 24px rgba(17,17,17,.16);
     }
-    .tab{
-      border:1px solid var(--line);
-      background:#fff;border-radius:22px;padding:14px 18px;min-width:220px;
+    .btn.gold{
+      background:#facc15;color:#111;border-color:#facc15;
+      box-shadow:0 10px 24px rgba(250,204,21,.28);
+    }
+    .stats{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:14px;margin:18px 0 16px}
+    @media(min-width:780px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .stat{
+      border:1px solid var(--line);background:var(--card);border-radius:24px;padding:18px 22px;
       box-shadow:var(--shadow);
     }
-    .tab.active{border-color:#abd4cf;background:#f7fbfb}
-    .tab .t1{font-size:18px;font-weight:800}
-    .tab .t2{font-size:14px;color:#6b7280;margin-top:4px}
+    .stat.active{background:#111;color:#fff;border-color:#111}
+    .stat.active .muted{color:rgba(255,255,255,.75)}
+    .stat .t1{font-size:18px;font-weight:900}
+    .stat .t2{font-size:14px;margin-top:6px}
     .card{
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:18px;
-      background:var(--card);
-      box-shadow:var(--shadow);
-      margin:16px 0;
+      border:1px solid var(--line);border-radius:24px;padding:20px;background:var(--card);
+      box-shadow:var(--shadow);margin:16px 0;
     }
-    .sectionTitle{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;margin:0 0 14px}
+    .sectionTitle{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:900;margin:0 0 12px}
     .muted{color:var(--muted)}
-    .plans{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:12px}
-    @media(min-width:820px){
-      .plans{grid-template-columns:repeat(2,minmax(0,1fr))}
-    }
+    .small{font-size:13px}
+    .plans{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:860px){.plans{grid-template-columns:1fr 1fr}}
     .planBtn{
-      width:100%;text-align:left;padding:16px;border-radius:18px;border:1px solid var(--line);
-      background:#fff;cursor:pointer;transition:.18s ease;
-      display:flex;flex-direction:column;gap:10px;
+      width:100%;text-align:left;padding:18px;border-radius:22px;border:1px solid var(--line);
+      background:#fff;cursor:pointer;transition:.18s ease;display:flex;flex-direction:column;gap:12px;
+      box-shadow:0 2px 6px rgba(17,17,17,.03);
     }
-    .planBtn:hover{border-color:#bfc7d3;transform:translateY(-1px)}
+    .planBtn:hover{transform:translateY(-1px);border-color:#d6c79c}
     .planBtn.active{
       background:#111;border-color:#111;color:#fff;
-      box-shadow:0 10px 24px rgba(17,17,17,.18);
+      box-shadow:0 12px 26px rgba(17,17,17,.18);
     }
+    .planBtn.active .muted,.planBtn.active .small{color:rgba(255,255,255,.78)}
+    .planBtn.active .chip{background:rgba(250,204,21,.12);border-color:rgba(250,204,21,.28);color:#fff}
     .topRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-    .country{font-size:22px;font-weight:900}
-    .flag{font-size:28px;margin-right:8px}
-    .mini{font-size:13px;color:var(--muted)}
-    .planBtn.active .mini,.planBtn.active .muted{color:rgba(255,255,255,.78)}
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{
-      display:inline-flex;align-items:center;gap:6px;padding:7px 10px;
-      border-radius:999px;background:#f8fafc;border:1px solid #e5e7eb;font-size:13px;font-weight:700;
+    .planName{font-size:24px;font-weight:900;line-height:1.1}
+    .price{font-size:34px;font-weight:900;letter-spacing:-0.02em}
+    .selectedBadge{
+      display:none;align-self:flex-start;padding:7px 10px;border-radius:999px;
+      background:#facc15;color:#111;font-size:12px;font-weight:900;
     }
-    .planBtn.active .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
-    .price{font-size:30px;font-weight:900;letter-spacing:-0.02em}
-    .usd{font-size:14px}
-    .payGrid{display:grid;grid-template-columns:1fr;gap:14px}
-    @media(min-width:900px){.payGrid{grid-template-columns:1.2fr .8fr}}
+    .planBtn.active .selectedBadge{display:inline-flex}
+    .payGrid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:920px){.payGrid{grid-template-columns:1.15fr .85fr}}
     .qr{max-width:260px;border:1px solid var(--line);border-radius:16px;padding:8px;background:#fff}
-    .faq p{line-height:1.65}
+    .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .hr{height:1px;background:var(--line);margin:16px 0}
+    .backNote{margin-top:10px}
+
   </style>
 </head>
 <body>
@@ -104,15 +106,12 @@
     <section class="hero">
       <div class="badges">
         <span class="badge">👑 Premium Plans</span>
-        <span class="badge">📞 Voice + Data</span>
-        <span class="badge">💳 QPay + QR</span>
+<span class="badge">📞 Voice + Data</span>
+<span class="badge">💳 QPay + QR</span>
       </div>
 
       <h1>Premium Voice + Data eSIM</h1>
-      <p class="sub">
-        Дугаартай, Voice + Data premium багцууд. Улсаа сонгоод багцаа дармагц идэвхтэй болж,
-        QPay invoice үүсээд QR код гарна. Доорх үнэ нь Airhub USD үнэн дээр 35% нэмээд MNT болгосон.
-      </p>
+      <p class="sub">Орон нутгийн дугаартай premium eSIM багцууд. Улсаа сонгоод багцаа дармагц идэвхтэй болж, төлбөрийн хэсэг шууд гарна.</p>
 
       <div class="ctaRow">
         <a class="btn primary" href="#plans">Багц сонгох</a>
@@ -120,25 +119,31 @@
       </div>
     </section>
 
-    <div class="tabs">
-      <div class="tab active">
-        <div class="t1">Premium Plans</div>
-        <div class="t2">Best Value • Voice + Data</div>
-      </div>
-      <div class="tab">
-        <div class="t1">8 Countries</div>
-        <div class="t2">Operator мэдээлэлтэй</div>
-      </div>
-      <div class="tab">
-        <div class="t1">Manual Pricing</div>
-        <div class="t2">Airhub үнэ + 35%</div>
-      </div>
+    <div class="stats">
+      <div class="stat active"><div class="t1">Premium Plans</div><div class="t2 muted">Best Value • Voice + Data</div></div>
+<div class="stat"><div class="t1">8 Countries</div><div class="t2 muted">Operator мэдээлэлтэй</div></div>
+<div class="stat"><div class="t1">Fast Checkout</div><div class="t2 muted">QPay + QR</div></div>
     </div>
 
+    <section class="card">
+      <h2 class="sectionTitle">🌍 Ашиглах боломжтой чиглэлүүд</h2>
+      <div class="chips">
+        <span class="chip">🇺🇸 USA</span>
+<span class="chip">🇬🇧 UK</span>
+<span class="chip">🇦🇺 Australia</span>
+<span class="chip">🇻🇳 Vietnam</span>
+<span class="chip">🇳🇿 New Zealand</span>
+<span class="chip">🇫🇷 France</span>
+<span class="chip">🇲🇻 Maldives</span>
+<span class="chip">🇬🇺 Guam</span>
+      </div>
+    </section>
+
     <section class="card" id="plans">
-      <h2 class="sectionTitle">📦 Premium багц сонгох</h2>
-      <p class="muted" style="margin:0 0 14px">Дарсан багц хар өнгөтэй болж идэвхжинэ. Дараа нь QPay box автоматаар гарна.</p>
+      <h2 class="sectionTitle">📦 Багц сонгох</h2>
+      <p class="muted" style="margin:0 0 14px">Сонгосон багц хар өнгөтэй болж идэвхжинэ. Дараа нь төлбөрийн хэсэг автоматаар гарна.</p>
       <div class="plans" id="planList"></div>
+      <div class="small muted backNote" id="planStatus"></div>
     </section>
 
     <section class="card" id="payBox" style="display:none">
@@ -147,41 +152,32 @@
         <div>
           <p id="payMeta" class="muted" style="margin:0 0 12px"></p>
           <div id="qrBox"></div>
-          <div id="urlBox" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px"></div>
+          <div class="links" id="urlBox"></div>
         </div>
         <div>
           <div class="card" style="margin:0">
             <h3 style="margin:0 0 10px">Төлбөр шалгах</h3>
             <p class="muted" style="margin:0 0 12px">QPay төлсний дараа доорх товчоор шалгана.</p>
-            <button class="btn primary" id="checkBtn" type="button">Төлбөр шалгах</button>
+            <button class="btn gold" id="checkBtn" type="button">Төлбөр шалгах</button>
             <div id="checkResult" class="muted" style="margin-top:12px"></div>
           </div>
         </div>
       </div>
     </section>
-
-    <section class="card faq">
+    
+    <section class="card">
       <h2 class="sectionTitle">❓ Түгээмэл асуулт</h2>
-      <p><strong>Эдгээр багц local number-той юу?</strong><br>Тийм. Эдгээр нь premium voice + data төрлийн багцууд тул дуудлага болон дата ашиглах боломжтой.</p>
-      <p><strong>Үнэ яаж бодсон бэ?</strong><br>Airhub дээрх USD үнийг 35% нэмээд MNT рүү хөрвүүлсэн. FX утгыг script дотор өөрчилж болно.</p>
-      <p><strong>Оператор харагдах уу?</strong><br>Тийм. Багц бүр дээр тухайн улсын операторын мэдээлэл тусдаа харагдана.</p>
+      <p><strong>Эдгээр багц local number-той юу?</strong><br>Тийм. Эдгээр нь voice + data төрлийн premium багцууд тул дуудлага болон дата ашиглах боломжтой.</p>
+<p><strong>Оператор харагдах уу?</strong><br>Тийм. Багц бүр дээр тухайн улсын операторын мэдээлэл тусдаа харагдана.</p>
+<p><strong>Яаж идэвхжүүлэх вэ?</strong><br>QR код уншуулж суулгаад Data Roaming асаана.</p>
     </section>
   </div>
 
   <script>
     const FX = 3680;
     const MARKUP = 0.35;
-
-    const PREMIUM_PLANS = [
-      { flag:"🇺🇸", country:"USA", data:"Unlimited", validity:"15 Days", operator:"T-Mobile", usd:26, planCode:"2900617" },
-      { flag:"🇻🇳", country:"Vietnam", data:"Unlimited", validity:"20 Days", operator:"Vietnamobile", usd:14, planCode:"2434470" },
-      { flag:"🇦🇺", country:"Australia", data:"10 GB", validity:"30 Days", operator:"Vodafone", usd:18, planCode:"2897121" },
-      { flag:"🇬🇧", country:"UK", data:"50 GB", validity:"30 Days", operator:"EE", usd:27.5, planCode:"2431581" },
-      { flag:"🇳🇿", country:"New Zealand", data:"Unlimited", validity:"30 Days", operator:"2degrees", usd:42, planCode:"2505661" },
-      { flag:"🇫🇷", country:"France", data:"20 GB", validity:"30 Days", operator:"Orange", usd:17.75, planCode:"2785414" },
-      { flag:"🇲🇻", country:"Maldives", data:"20 GB", validity:"10 Days", operator:"Ooredoo", usd:51.75, planCode:"240990" },
-      { flag:"🇬🇺", country:"Guam", data:"Unlimited", validity:"8 Days", operator:"GTA", usd:24.5, planCode:"800582" }
-    ];
+    const ORDER_PREFIX = "PREMIUM";
+    const PLANS = [{"flag": "🇺🇸", "country": "USA", "data": "Unlimited", "validity": "15 Days", "type": "Voice + Data", "operator": "T-Mobile", "usd": 26, "planCode": "2900617"}, {"flag": "🇻🇳", "country": "Vietnam", "data": "Unlimited", "validity": "20 Days", "type": "Voice + Data", "operator": "Vietnamobile", "usd": 14, "planCode": "2434470"}, {"flag": "🇦🇺", "country": "Australia", "data": "10 GB", "validity": "30 Days", "type": "Voice + Data", "operator": "Vodafone", "usd": 18, "planCode": "2897121"}, {"flag": "🇬🇧", "country": "UK", "data": "50 GB", "validity": "30 Days", "type": "Voice + Data", "operator": "EE", "usd": 27.5, "planCode": "2431581"}, {"flag": "🇳🇿", "country": "New Zealand", "data": "Unlimited", "validity": "30 Days", "type": "Voice + Data", "operator": "2degrees", "usd": 42, "planCode": "2505661"}, {"flag": "🇫🇷", "country": "France", "data": "20 GB", "validity": "30 Days", "type": "Voice + Data", "operator": "Orange", "usd": 17.75, "planCode": "2785414"}, {"flag": "🇲🇻", "country": "Maldives", "data": "20 GB", "validity": "10 Days", "type": "Voice + Data", "operator": "Ooredoo", "usd": 51.75, "planCode": "240990"}, {"flag": "🇬🇺", "country": "Guam", "data": "Unlimited", "validity": "8 Days", "type": "Voice + Data", "operator": "GTA", "usd": 24.5, "planCode": "800582"}];
 
     let lastInvoiceId = "";
     let activeBtn = null;
@@ -192,37 +188,40 @@
 
     function renderPlans(){
       const list = document.getElementById("planList");
-      list.innerHTML = PREMIUM_PLANS.map((p, i) => {
+      const status = document.getElementById("planStatus");
+      status.textContent = `Нийт ${PLANS.length} багц`;
+
+      list.innerHTML = PLANS.map((p, i) => {
         const amount = toMnt(p.usd);
+        const chips = [
+          p.data ? `📶 ${p.data}` : "",
+          p.validity ? `🗓 ${p.validity}` : "",
+          p.type ? `📦 ${p.type}` : "",
+          p.operator ? `📡 ${p.operator}` : ""
+        ].filter(Boolean).map(x => `<span class="chip">${x}</span>`).join("");
+
         return `
           <button class="planBtn"
             type="button"
             data-index="${i}"
-            data-country="${p.country}"
-            data-data="${p.data}"
-            data-validity="${p.validity}"
-            data-operator="${p.operator}"
-            data-usd="${p.usd}"
-            data-plan-code="${p.planCode}"
+            data-title="${p.title || p.data || ''}"
+            data-validity="${p.validity || ''}"
+            data-data="${p.data || ''}"
+            data-type="${p.type || ''}"
+            data-operator="${p.operator || ''}"
+            data-country="${p.country || ''}"
+            data-plan-code="${p.planCode || ''}"
             data-amount="${amount}">
+            <span class="selectedBadge">Сонгогдсон багц</span>
             <div class="topRow">
               <div>
-                <div class="country"><span class="flag">${p.flag}</span>${p.country}</div>
-                <div class="mini">Plan code: ${p.planCode}</div>
+                <div class="planName">${p.country ? `${p.flag || ''} ${p.country}` : (p.title || '')}</div>
+                <div class="small muted">${p.planCode ? `Plan code: ${p.planCode}` : `${p.title || ''}`}</div>
               </div>
               <div class="price">${amount.toLocaleString("en-US")} ₮</div>
             </div>
-
-            <div class="chips">
-              <span class="chip">📶 ${p.data}</span>
-              <span class="chip">🗓 ${p.validity}</span>
-              <span class="chip">📞 Voice + Data</span>
-              <span class="chip">📡 ${p.operator}</span>
-            </div>
-
-            <div class="muted usd">Airhub: $${p.usd} • 35% нэмэгдсэн</div>
-          </button>
-        `;
+            <div class="chips">${chips}</div>
+          </button>`;
       }).join("");
     }
 
@@ -237,24 +236,26 @@
       activeBtn = btn;
 
       const amount = Number(btn.dataset.amount || 0);
-      const country = btn.dataset.country || "Premium eSIM";
+      const country = btn.dataset.country || "";
+      const title = btn.dataset.title || "";
       const data = btn.dataset.data || "";
       const validity = btn.dataset.validity || "";
+      const type = btn.dataset.type || "";
       const operator = btn.dataset.operator || "";
       const planCode = btn.dataset.planCode || "";
-      const description = `${country} Premium • ${data} • ${validity} • ${operator}`.trim();
 
-      const payload = {
-        amount,
-        orderId: `PREMIUM-${country.toUpperCase().replace(/\s+/g, "-")}-${Date.now()}`,
-        description
-      };
+      const descriptionParts = [country || title, data, validity, type, operator].filter(Boolean);
+      const description = descriptionParts.join(" • ");
 
       try {
         const r = await fetch("/.netlify/functions/qpay-create-invoice", {
           method: "POST",
           headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            amount,
+            orderId: `${ORDER_PREFIX}-${Date.now()}`,
+            description
+          })
         });
 
         const j = await r.json().catch(() => ({}));
@@ -264,22 +265,20 @@
         }
 
         lastInvoiceId = j.invoice_id || "";
-
         document.getElementById("payBox").style.display = "block";
         document.getElementById("payMeta").textContent =
-          `${description} • Plan code: ${planCode} • ${amount.toLocaleString("en-US")} ₮`;
+          `${description}${planCode ? ` • Plan code: ${planCode}` : ""} • ${amount.toLocaleString("en-US")} ₮`;
 
         document.getElementById("qrBox").innerHTML =
-          j.qr_image
-            ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">`
-            : "QR олдсонгүй";
+          j.qr_image ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">` : "QR олдсонгүй";
 
         const urls = Array.isArray(j.urls) ? j.urls : [];
         document.getElementById("urlBox").innerHTML = urls.length
-          ? urls.map(u => `<a class="btn" href="${u.link}" target="_blank" rel="noopener">${u.name || "Pay link"}</a>`).join("")
+          ? urls.map(u => `<a class="btn gold" href="${u.link}" target="_blank" rel="noopener">${u.name || "Төлбөрийн линк"}</a>`).join("")
           : "";
 
-        document.getElementById("payBox").scrollIntoView({ behavior:"smooth", block:"start" });
+        document.getElementById("checkResult").textContent = "";
+        document.getElementById("payBox").scrollIntoView({behavior:"smooth", block:"start"});
       } catch (err) {
         alert("Төлбөрийн хэсэгт алдаа гарлаа.");
       }
@@ -287,7 +286,7 @@
 
     document.getElementById("checkBtn").addEventListener("click", async () => {
       if (!lastInvoiceId) {
-        alert("Invoice олдсонгүй.");
+        alert("Эхлээд багцаа сонгоно уу.");
         return;
       }
 
