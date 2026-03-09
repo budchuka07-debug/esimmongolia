@@ -1,6 +1,15 @@
-// netlify/functions/getPlans.js  (CommonJS)
+// netlify/functions/getPlans.js
+// Supports:
+//   /.netlify/functions/getPlans?code=CN
+//   /.netlify/functions/getPlans?group=asia
+//   /.netlify/functions/getPlans?group=global
 
 const BASE = "https://api.airhubapp.com";
+
+const GROUP_CODES = {
+  asia: ["KH", "ID", "MY", "SG", "TH", "VN", "HK", "TW"],
+  global: ["US", "GB", "DE", "FR", "JP", "KR", "SG", "AE", "AU", "CA"]
+};
 
 function res(statusCode, obj) {
   return {
@@ -24,20 +33,49 @@ async function airhubLogin(USERNAME, PASSWORD) {
   });
 
   const j = await r.json().catch(() => ({}));
-
-  // Таны одоогийн код j?.token гэж шалгаж байгаа
-  // Airhub response өөр бүтэцтэй байж болох тул арай уян хатан шалгав
-  const token =
-    j?.token ||
-    j?.data?.token ||
-    j?.data?.Token ||
-    j?.Token;
-
-  if (!r.ok || !token) {
-    return { ok: false, status: r.status, data: j };
-  }
-
+  const token = j?.token || j?.data?.token || j?.data?.Token || j?.Token;
+  if (!r.ok || !token) return { ok: false, status: r.status, data: j };
   return { ok: true, token, raw: j };
+}
+
+function extractPlans(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+  for (const key of ["getInformation", "GetInformation", "data", "Data", "plans", "Plans", "result", "Result"]) {
+    if (Array.isArray(payload[key])) return payload[key];
+  }
+  for (const key of Object.keys(payload)) {
+    if (Array.isArray(payload[key])) return payload[key];
+  }
+  return [];
+}
+
+function normalizeText(v) {
+  return String(v || "").trim().toLowerCase();
+}
+
+function matchesGroup(plan, group) {
+  const text = [
+    plan?.countryName,
+    plan?.Country,
+    plan?.country,
+    plan?.areaName,
+    plan?.regionName,
+    plan?.zoneName,
+    plan?.packageName,
+    plan?.planName,
+    plan?.name,
+    plan?.title,
+    plan?.operatorName,
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  if (group === "asia") {
+    return text.includes("asia") || text.includes("asia pacific") || text.includes("asia-pacific");
+  }
+  if (group === "global") {
+    return text.includes("global") || text.includes("world");
+  }
+  return false;
 }
 
 exports.handler = async (event) => {
@@ -56,7 +94,7 @@ exports.handler = async (event) => {
   }
 
   const code = String(event.queryStringParameters?.code || "").trim().toUpperCase();
-  const group = String(event.queryStringParameters?.group || "").trim().toLowerCase();
+  const group = normalizeText(event.queryStringParameters?.group);
 
   if (!code && !group) {
     return res(400, {
@@ -65,36 +103,33 @@ exports.handler = async (event) => {
         "/.netlify/functions/getPlans?code=CN",
         "/.netlify/functions/getPlans?group=asia",
         "/.netlify/functions/getPlans?group=global"
-      ],
+      ]
     });
   }
 
-  try {
-    // 1) login
-    const login = await airhubLogin(USERNAME, PASSWORD);
-    if (!login.ok) {
-      return res(401, { error: "Airhub login failed", details: login.data });
-    }
+  const requestedCodes = code ? [code] : (GROUP_CODES[group] || []);
+  if (!requestedCodes.length) {
+    return res(400, { error: "Unsupported group", group });
+  }
 
-    // 2) plans
+  try {
+    const login = await airhubLogin(USERNAME, PASSWORD);
+    if (!login.ok) return res(401, { error: "Airhub login failed", details: login.data });
+
     const body = {
       partnerCode: Number(PARTNER_CODE),
       flag: 6,
       countryCode: "",
-      multiplecountrycode: code ? [code] : [],
+      multiplecountrycode: requestedCodes,
     };
 
     const planRes = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${login.token}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${login.token}` },
       body: JSON.stringify(body),
     });
 
     const planJson = await planRes.json().catch(() => ({}));
-
     if (!planRes.ok) {
       return res(planRes.status, {
         error: "GetPlanInformation failed",
@@ -103,57 +138,20 @@ exports.handler = async (event) => {
       });
     }
 
-    // Airhub буцааж байгаа массивыг олно
-    const rawPlans =
-      planJson?.data ||
-      planJson?.result ||
-      planJson?.plans ||
-      [];
-
-    // 3) Asia / Global бол response дотроос шүүнэ
-    if (group === "asia" || group === "global") {
-      const filtered = rawPlans.filter((p) => {
-        const text = [
-          p?.countryName,
-          p?.country,
-          p?.areaName,
-          p?.regionName,
-          p?.zoneName,
-          p?.packageName,
-          p?.planName,
-          p?.displayName,
-          p?.title,
-          p?.name,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-        if (group === "asia") {
-          return text.includes("asia");
-        }
-
-        if (group === "global") {
-          return text.includes("global") || text.includes("world");
-        }
-
-        return false;
-      });
-
-      return res(200, {
-        ok: true,
-        mode: group,
-        count: filtered.length,
-        data: filtered,
-      });
+    const plans = extractPlans(planJson);
+    if (!group) {
+      return res(200, { ok: true, mode: "code", code, plans, raw: planJson });
     }
 
-    // 4) Энгийн улс
+    const filtered = plans.filter((p) => matchesGroup(p, group));
     return res(200, {
       ok: true,
-      mode: "code",
-      code,
-      data: rawPlans,
+      mode: "group",
+      group,
+      requestedCodes,
+      count: filtered.length,
+      plans: filtered,
+      raw: planJson,
     });
   } catch (e) {
     return res(500, { error: "Server error", message: String(e) });
