@@ -3,63 +3,151 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Global eSIM Монгол | Олон улсад ажиллах</title>
-  <meta name="description" content="Global eSIM олон улсад ажиллах дата багц. Багц сонгоод QPay-р төлөөд QR код гаргана." />
+  <title>Global eSIM Монгол | eSIM Mongolia</title>
+  <meta name="description" content="Global eSIM багцууд. QPay-р төлөөд QR кодоор идэвхжүүлнэ." />
 
   <style>
-    :root{--fg:#111;--muted:#666;--line:#e8e8e8;--bg:#fff;--chip:#fafafa;--active:#111;--activeText:#fff;}
+    :root{
+      --fg:#111;
+      --muted:#666;
+      --line:#e8e8e8;
+      --bg:#fff;
+      --chip:#fafafa;
+      --active:#111;
+      --activeText:#fff;
+    }
     *{box-sizing:border-box}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;color:var(--fg);background:var(--bg)}
+    body{
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      margin:0;
+      color:var(--fg);
+      background:var(--bg)
+    }
     .wrap{max-width:980px;margin:0 auto;padding:22px}
     .hero{padding:10px 0 6px}
     .badges,.chips{display:flex;flex-wrap:wrap;gap:8px}
     .badges{margin-bottom:10px}
-    .badge{display:inline-block;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--chip);font-size:13px}
+    .badge{
+      display:inline-block;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--chip);
+      font-size:13px
+    }
     h1{font-size:40px;line-height:1.08;margin:8px 0 10px}
     h2{margin:0 0 10px}
     .sub{opacity:.82;font-size:16px;margin:0 0 14px;max-width:70ch}
     .ctaRow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border:1px solid #dcdcdc;border-radius:14px;text-decoration:none;color:inherit;background:#fff;cursor:pointer;font-weight:600}
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px 16px;
+      border:1px solid #dcdcdc;
+      border-radius:14px;
+      text-decoration:none;
+      color:inherit;
+      background:#fff;
+      cursor:pointer;
+      font-weight:600
+    }
     .btn.primary{background:#111;border-color:#111;color:#fff}
-    .card{border:1px solid var(--line);border-radius:18px;padding:18px;margin:16px 0;background:#fff}
-    .planGrid{display:grid;grid-template-columns:1fr;gap:12px}
-    @media (min-width:820px){.planGrid{grid-template-columns:1fr 1fr}}
-    .planBtn{width:100%;text-align:left;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff;cursor:pointer;transition:.18s ease;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-    .planBtn:hover{border-color:#bbb;transform:translateY(-1px)}
-    .planBtn.active{background:#111;color:#fff;border-color:#111;box-shadow:0 10px 24px rgba(0,0,0,.12)}
+    .card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      margin:16px 0;
+      background:#fff
+    }
+    .planGrid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px
+    }
+    @media (min-width:820px){
+      .planGrid{grid-template-columns:1fr 1fr}
+    }
+    .planBtn{
+      width:100%;
+      text-align:left;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      cursor:pointer;
+      transition:.18s ease;
+      box-shadow:0 1px 2px rgba(0,0,0,.03)
+    }
+    .planBtn:hover{
+      border-color:#bbb;
+      transform:translateY(-1px)
+    }
+    .planBtn.active{
+      background:#111;
+      color:#fff;
+      border-color:#111;
+      box-shadow:0 10px 24px rgba(0,0,0,.12)
+    }
     .planBtn.active .muted{color:rgba(255,255,255,.82);opacity:1}
     .price{font-size:30px;font-weight:900;margin:6px 0 2px}
     .muted{color:var(--muted);opacity:.9}
     .small{font-size:13px}
     .hr{height:1px;background:var(--line);margin:14px 0}
     .links a{display:inline-flex;margin:6px 10px 0 0}
-    img.qr{max-width:280px;height:auto;border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff}
+    img.qr{
+      max-width:280px;
+      height:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:8px;
+      background:#fff
+    }
     .status{margin-top:10px;font-size:14px}
   </style>
 </head>
 <body>
   <div class="wrap">
     <section class="hero">
-      <div class="badges"><span class="badge">🌍 Global eSIM</span><span class="badge">Олон улсад ажиллана</span><span class="badge">QPay + QR</span></div>
+      <div class="badges">
+        <span class="badge">🌍 Global eSIM</span>
+        <span class="badge">66+ улс</span>
+        <span class="badge">QPay + QR</span>
+      </div>
+
       <h1>Global eSIM</h1>
-      <p class="sub">Олон улсад нэг eSIM-ээр дата ашиглах боломжтой багцууд. Багцаа сонгоод QPay-р төлөхөд QR код шууд гарна.</p>
+      <p class="sub">
+        Дэлхийн олон улсад ашиглах Global eSIM багцууд. Доороос багцаа сонгоод QPay-р төлнө.
+      </p>
+
       <div class="ctaRow">
         <a class="btn primary" href="#plans">Багц сонгох</a>
         <a class="btn" href="/">⬅ Үндсэн сайт руу буцах</a>
       </div>
     </section>
 
-
-
     <section class="card">
-      <h2>✅ Supported Countries</h2>
-      <div class="chips"><span class="badge">Albania</span><span class="badge">Australia</span><span class="badge">Canada</span><span class="badge">China</span><span class="badge">France</span><span class="badge">Germany</span><span class="badge">Hong Kong</span><span class="badge">Japan</span><span class="badge">Malaysia</span><span class="badge">Singapore</span><span class="badge">South Korea</span><span class="badge">Thailand</span><span class="badge">Turkey</span><span class="badge">UK</span><span class="badge">USA</span><span class="badge">Vietnam</span></div>
+      <h2>✅ Ашиглах боломжтой чиглэлүүд</h2>
+      <div class="chips">
+        <span class="badge">🇨🇳 China</span>
+        <span class="badge">🇯🇵 Japan</span>
+        <span class="badge">🇰🇷 Korea</span>
+        <span class="badge">🇹🇭 Thailand</span>
+        <span class="badge">🇻🇳 Vietnam</span>
+        <span class="badge">🇸🇬 Singapore</span>
+        <span class="badge">🇺🇸 USA</span>
+        <span class="badge">🇬🇧 UK</span>
+        <span class="badge">🇫🇷 Europe</span>
+        <span class="badge">🌐 Global Travel</span>
+      </div>
     </section>
 
     <section class="card" id="plans">
       <h2>🧾 Багц сонгох</h2>
-      <p class="muted">Үнэ нь автоматаар MNT болж харагдана. Багц дээр дарахад сонгогдож, товчны өнгө өөрчлөгдөнө. Дараа нь QPay invoice үүсгэнэ.</p>
-      <div id="planList">Loading...</div>
+      <p class="muted">
+        Үнэ нь автоматаар MNT болж харагдана. Багц дээр дарахад сонгогдож, дараа нь QPay invoice үүснэ.
+      </p>
+      <div id="planList" class="planGrid"></div>
       <div class="status muted small" id="planStatus"></div>
     </section>
 
@@ -68,7 +156,9 @@
       <p class="muted" id="payMeta" style="margin:0 0 10px"></p>
       <div id="qrBox"></div>
       <div class="links" id="urlBox"></div>
+
       <div class="hr"></div>
+
       <div class="ctaRow">
         <button class="btn primary" id="checkBtn" type="button">Төлбөр шалгах</button>
         <span class="muted" id="checkResult"></span>
@@ -84,80 +174,53 @@
 
   <script>
     const FX = 3680;
-    const MARGIN = 0.30;
-    const PLANS_URL = '/.netlify/functions/getPlans?group=global';
-    const FALLBACK_TITLE = 'Global eSIM';
-    const ORDER_PREFIX = 'GLOBAL';
+    const MARGIN = 0.35;
+    const ORDER_PREFIX = "GLOBAL";
 
-    function cleanUsd(x) {
-      return parseFloat(String(x ?? "").replace(/[$,]/g, "").trim()) || 0;
-    }
+    const MANUAL_PLANS = [
+      { title: "1GB", days: 7, usd: 4.5 },
+      { title: "2GB", days: 15, usd: 7.5 },
+      { title: "3GB", days: 30, usd: 10.5 },
+      { title: "5GB", days: 30, usd: 16.5 },
+      { title: "10GB", days: 30, usd: 28.0 },
+      { title: "15GB", days: 30, usd: 39.0 },
+      { title: "20GB", days: 30, usd: 49.0 },
+      { title: "Unlimited", days: 10, usd: 35.0 },
+      { title: "Unlimited", days: 15, usd: 49.0 }
+    ];
+
     function calcMntFromUsd(usd) {
       return Math.round(Number(usd) * FX * (1 + MARGIN));
     }
-    function pickUsd(plan) {
-      return cleanUsd(
-        plan.portalPrice ?? plan.price ?? plan.Price ??
-        plan["Portal Price"] ?? plan["PortalPrice"] ?? plan["PortalPriceUSD"] ?? 0
-      );
+
+    function renderPlans() {
+      const list = document.getElementById("planList");
+      const status = document.getElementById("planStatus");
+
+      status.textContent = `Нийт ${MANUAL_PLANS.length} багц`;
+      list.innerHTML = MANUAL_PLANS.map((plan, i) => {
+        const mnt = calcMntFromUsd(plan.usd);
+        return `
+          <button
+            class="planBtn"
+            data-title="${plan.title}"
+            data-days="${plan.days}"
+            data-usd="${plan.usd}"
+            data-amount="${mnt}"
+            id="plan-${i}"
+          >
+            <div><strong>${plan.title}</strong> • ${plan.days} өдөр</div>
+            <div class="price">${mnt.toLocaleString("en-US")} ₮</div>
+            <div class="muted small">USD ${plan.usd} → автоматаар бодсон үнэ</div>
+          </button>
+        `;
+      }).join("");
     }
-    function pickTitle(plan) {
-      return String(plan.planName ?? plan.data ?? plan.name ?? plan.packageName ?? FALLBACK_TITLE);
-    }
-    function pickDays(plan) {
-      return String(plan.day ?? plan.days ?? plan.duration ?? plan.validity ?? "");
-    }
-    function findPlans(obj) {
-      if (!obj) return [];
-      if (Array.isArray(obj)) return obj;
-      for (const k of ["plans","data","getInformation","GetInformation","result","Result"]) {
-        if (Array.isArray(obj[k])) return obj[k];
-      }
-      return [];
-    }
+
+    renderPlans();
 
     let lastInvoiceId = "";
     let selectedBtn = null;
-
-    fetch(PLANS_URL)
-      .then(async (r) => {
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data?.error || "Plan татаж чадсангүй.");
-        return data;
-      })
-      .then((data) => {
-        const plans = findPlans(data);
-        const list = document.getElementById("planList");
-        const status = document.getElementById("planStatus");
-
-        if (!plans.length) {
-          list.innerHTML = "Багц олдсонгүй.";
-          return;
-        }
-
-        status.textContent = `Нийт ${plans.length} багц`;
-        list.className = "planGrid";
-        list.innerHTML = plans.map((p, i) => {
-          const usd = pickUsd(p);
-          const mnt = calcMntFromUsd(usd);
-          const title = pickTitle(p);
-          const days = pickDays(p);
-          const id = `plan-${i}`;
-          return `
-            <button class="planBtn" id="${id}"
-              data-title="${title.replace(/"/g,'&quot;')}"
-              data-days="${days.replace(/"/g,'&quot;')}"
-              data-amount="${mnt}">
-              <div><strong>${title}</strong> ${days ? "• " + days + " өдөр" : ""}</div>
-              <div class="price">${mnt.toLocaleString("en-US")} ₮</div>
-              <div class="muted">Сонгоод QPay төлбөр үүсгэнэ</div>
-            </button>`;
-        }).join("");
-      })
-      .catch((err) => {
-        document.getElementById("planList").innerHTML = "Plan ачааллаж чадсангүй.";
-        document.getElementById("planStatus").textContent = err.message || "Алдаа гарлаа.";
-      });
 
     document.addEventListener("click", async (e) => {
       const btn = e.target.closest(".planBtn");
@@ -168,52 +231,78 @@
       selectedBtn = btn;
 
       const amount = Number(btn.dataset.amount || 0);
-      const title = btn.dataset.title || FALLBACK_TITLE;
+      const title = btn.dataset.title || "Global eSIM";
       const days = btn.dataset.days || "";
-      if (!amount) return alert("Үнэ бодогдсонгүй.");
+      const usd = btn.dataset.usd || "";
+
+      if (!amount) {
+        alert("Үнэ бодогдсонгүй.");
+        return;
+      }
 
       const payload = {
         amount,
         orderId: `${ORDER_PREFIX}-${Date.now()}`,
-        description: `${title} ${days}`.trim()
+        description: `${title} ${days} өдөр`
       };
 
-      const r = await fetch("/.netlify/functions/qpay-create-invoice", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
-      });
+      try {
+        const r = await fetch("/.netlify/functions/qpay-create-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-      const j = await r.json().catch(() => ({}));
-      if (!j.ok) return alert("QPay алдаа: " + JSON.stringify(j));
+        const j = await r.json().catch(() => ({}));
 
-      lastInvoiceId = j.invoice_id || "";
-      document.getElementById("payBox").style.display = "block";
-      document.getElementById("payMeta").textContent = `${payload.description} • ${amount.toLocaleString("en-US")} ₮`;
-      document.getElementById("qrBox").innerHTML = j.qr_image
-        ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">`
-        : "QR олдсонгүй";
+        if (!j.ok) {
+          alert("QPay алдаа: " + JSON.stringify(j));
+          return;
+        }
 
-      const urls = Array.isArray(j.urls) ? j.urls : [];
-      document.getElementById("urlBox").innerHTML = urls.length
-        ? urls.map(u => `<a class="btn" href="${u.link}" target="_blank" rel="noopener">${u.name || "Pay link"}</a>`).join("")
-        : "";
+        lastInvoiceId = j.invoice_id || "";
 
-      document.getElementById("payBox").scrollIntoView({behavior:"smooth", block:"start"});
+        document.getElementById("payBox").style.display = "block";
+        document.getElementById("payMeta").textContent =
+          `${title} • ${days} өдөр • USD ${usd} • ${amount.toLocaleString("en-US")} ₮`;
+
+        document.getElementById("qrBox").innerHTML = j.qr_image
+          ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">`
+          : "QR олдсонгүй";
+
+        const urls = Array.isArray(j.urls) ? j.urls : [];
+        document.getElementById("urlBox").innerHTML = urls.length
+          ? urls.map(u => `<a class="btn" href="${u.link}" target="_blank" rel="noopener">${u.name || "Pay link"}</a>`).join("")
+          : "";
+
+        document.getElementById("checkResult").textContent = "";
+        document.getElementById("payBox").scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (err) {
+        alert("QPay function дуудах үед алдаа гарлаа.");
+      }
     });
 
     document.getElementById("checkBtn").addEventListener("click", async () => {
-      if (!lastInvoiceId) return alert("Эхлээд багцаа сонгоно уу.");
+      if (!lastInvoiceId) {
+        alert("Эхлээд багцаа сонгоно уу.");
+        return;
+      }
+
       document.getElementById("checkResult").textContent = "Шалгаж байна...";
 
-      const r = await fetch("/.netlify/functions/qpay-check", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ invoice_id: lastInvoiceId })
-      });
+      try {
+        const r = await fetch("/.netlify/functions/qpay-check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invoice_id: lastInvoiceId })
+        });
 
-      const j = await r.json().catch(() => ({}));
-      document.getElementById("checkResult").textContent = j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
+        const j = await r.json().catch(() => ({}));
+        document.getElementById("checkResult").textContent =
+          j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
+      } catch (err) {
+        document.getElementById("checkResult").textContent = "⚠️ Шалгах үед алдаа гарлаа";
+      }
     });
   </script>
 </body>
