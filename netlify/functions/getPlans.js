@@ -1,5 +1,4 @@
 // netlify/functions/getPlans.js  (CommonJS)
-// GET /.netlify/functions/getPlans?code=CN
 
 const BASE = "https://api.airhubapp.com";
 
@@ -25,14 +24,24 @@ async function airhubLogin(USERNAME, PASSWORD) {
   });
 
   const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j?.token) return { ok: false, status: r.status, data: j };
-  return { ok: true, token: j.token, raw: j };
+
+  // Таны одоогийн код j?.token гэж шалгаж байгаа
+  // Airhub response өөр бүтэцтэй байж болох тул арай уян хатан шалгав
+  const token =
+    j?.token ||
+    j?.data?.token ||
+    j?.data?.Token ||
+    j?.Token;
+
+  if (!r.ok || !token) {
+    return { ok: false, status: r.status, data: j };
+  }
+
+  return { ok: true, token, raw: j };
 }
 
 exports.handler = async (event) => {
-  // CORS preflight
   if (event.httpMethod === "OPTIONS") return res(200, { ok: true });
-
   if (event.httpMethod !== "GET") return res(405, { error: "Method Not Allowed" });
 
   const USERNAME = process.env.AIRHUB_USERNAME;
@@ -47,32 +56,45 @@ exports.handler = async (event) => {
   }
 
   const code = String(event.queryStringParameters?.code || "").trim().toUpperCase();
-  if (!code) {
-    return res(400, { error: "Missing query: code", example: "/getPlans?code=CN" });
+  const group = String(event.queryStringParameters?.group || "").trim().toLowerCase();
+
+  if (!code && !group) {
+    return res(400, {
+      error: "Missing query",
+      examples: [
+        "/.netlify/functions/getPlans?code=CN",
+        "/.netlify/functions/getPlans?group=asia",
+        "/.netlify/functions/getPlans?group=global"
+      ],
+    });
   }
 
   try {
     // 1) login
     const login = await airhubLogin(USERNAME, PASSWORD);
-    if (!login.ok) return res(401, { error: "Airhub login failed", details: login.data });
+    if (!login.ok) {
+      return res(401, { error: "Airhub login failed", details: login.data });
+    }
 
     // 2) plans
     const body = {
       partnerCode: Number(PARTNER_CODE),
       flag: 6,
       countryCode: "",
-      multiplecountrycode: [code],
+      multiplecountrycode: code ? [code] : [],
     };
 
     const planRes = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${login.token}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${login.token}`,
+      },
       body: JSON.stringify(body),
     });
 
     const planJson = await planRes.json().catch(() => ({}));
 
-    // 🔥 хамгийн чухал: унасан үед Airhub юу гэж буцааж байгааг харуулна
     if (!planRes.ok) {
       return res(planRes.status, {
         error: "GetPlanInformation failed",
@@ -81,7 +103,58 @@ exports.handler = async (event) => {
       });
     }
 
-    return res(200, planJson);
+    // Airhub буцааж байгаа массивыг олно
+    const rawPlans =
+      planJson?.data ||
+      planJson?.result ||
+      planJson?.plans ||
+      [];
+
+    // 3) Asia / Global бол response дотроос шүүнэ
+    if (group === "asia" || group === "global") {
+      const filtered = rawPlans.filter((p) => {
+        const text = [
+          p?.countryName,
+          p?.country,
+          p?.areaName,
+          p?.regionName,
+          p?.zoneName,
+          p?.packageName,
+          p?.planName,
+          p?.displayName,
+          p?.title,
+          p?.name,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        if (group === "asia") {
+          return text.includes("asia");
+        }
+
+        if (group === "global") {
+          return text.includes("global") || text.includes("world");
+        }
+
+        return false;
+      });
+
+      return res(200, {
+        ok: true,
+        mode: group,
+        count: filtered.length,
+        data: filtered,
+      });
+    }
+
+    // 4) Энгийн улс
+    return res(200, {
+      ok: true,
+      mode: "code",
+      code,
+      data: rawPlans,
+    });
   } catch (e) {
     return res(500, { error: "Server error", message: String(e) });
   }
