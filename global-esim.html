@@ -84,7 +84,7 @@
 
   <script>
     const FX = 3680;
-    const MARGIN = 0.35;
+    const MARGIN = 0.30;
     const PLANS_URL = '/.netlify/functions/getPlans?group=global';
     const FALLBACK_TITLE = 'Global eSIM';
     const ORDER_PREFIX = 'GLOBAL';
@@ -127,7 +127,6 @@
       })
       .then((data) => {
         const plans = findPlans(data);
-        console.log("PLANS DATA:", plans);
         const list = document.getElementById("planList");
         const status = document.getElementById("planStatus");
 
@@ -219,4 +218,3 @@
   </script>
 </body>
 </html>
-
