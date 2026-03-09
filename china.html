@@ -4,13 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>China eSIM | eSIM Mongolia</title>
-  <meta name="description" content="China eSIM багцууд - 7, 14, 21, 30 хоног. 1GB, 2GB, 3GB, Unlimited сонголттой. VPN шаардлагагүй." />
-
+  <meta name="description" content="China eSIM багцууд - 7, 14, 21, 30 хоног. 1GB, 2GB, 3GB, Unlimited сонголттой. QPay төлбөртэй." />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -18,17 +14,8 @@
       color: #222;
       line-height: 1.5;
     }
-
-    a {
-      text-decoration: none;
-    }
-
-    .container {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
+    a { text-decoration: none; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 20px; }
     .hero {
       background: linear-gradient(135deg, #111827, #1f2937);
       color: #fff;
@@ -37,7 +24,6 @@
       margin-bottom: 24px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.12);
     }
-
     .hero-badge {
       display: inline-block;
       background: #f4b400;
@@ -48,18 +34,8 @@
       font-size: 14px;
       margin-bottom: 14px;
     }
-
-    .hero h1 {
-      margin: 0 0 10px;
-      font-size: 36px;
-    }
-
-    .hero p {
-      margin: 0;
-      font-size: 17px;
-      color: #e5e7eb;
-      max-width: 760px;
-    }
+    .hero h1 { margin: 0 0 10px; font-size: 36px; }
+    .hero p { margin: 0; font-size: 17px; color: #e5e7eb; max-width: 760px; }
 
     .top-features {
       display: grid;
@@ -67,32 +43,22 @@
       gap: 14px;
       margin: 24px 0;
     }
-
-    .feature-card {
+    .feature-card, .note-box, .order-box {
       background: #fff;
       border-radius: 16px;
       padding: 18px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.06);
       border: 1px solid #ececec;
-      text-align: center;
-      font-weight: 700;
     }
+    .feature-card { text-align: center; font-weight: 700; }
 
-    .highlight-section {
-      margin: 28px 0;
-    }
-
-    .section-title {
-      font-size: 26px;
-      margin: 0 0 16px;
-    }
-
+    .highlight-section, .price-table-section { margin: 28px 0; }
+    .section-title { font-size: 26px; margin: 0 0 16px; }
     .highlight-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
     }
-
     .highlight-card {
       background: #fff;
       border-radius: 18px;
@@ -101,7 +67,6 @@
       border: 2px solid #f4b400;
       position: relative;
     }
-
     .highlight-tag {
       position: absolute;
       top: -12px;
@@ -113,43 +78,27 @@
       font-size: 13px;
       font-weight: 700;
     }
+    .highlight-card h3 { margin: 12px 0 10px; font-size: 22px; }
+    .highlight-card p { margin: 6px 0; color: #555; }
+    .highlight-price { font-size: 28px; font-weight: 800; margin: 14px 0; color: #111827; }
 
-    .highlight-card h3 {
-      margin: 12px 0 10px;
-      font-size: 22px;
-    }
-
-    .highlight-card p {
-      margin: 6px 0;
-      color: #555;
-    }
-
-    .highlight-price {
-      font-size: 28px;
-      font-weight: 800;
-      margin: 14px 0;
-      color: #111827;
-    }
-
-    .buy-btn,
-    .messenger-btn {
-      display: inline-block;
-      background: #f4b400;
-      color: #111;
+    .buy-btn, .messenger-btn, .primary-btn, .secondary-btn, .wa-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      cursor: pointer;
       font-weight: 700;
       padding: 12px 20px;
       border-radius: 12px;
       transition: 0.2s ease;
+      text-decoration: none;
     }
-
-    .buy-btn:hover,
-    .messenger-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
-    .price-table-section {
-      margin-top: 34px;
+    .buy-btn, .messenger-btn, .primary-btn { background: #f4b400; color: #111; }
+    .secondary-btn { background: #111827; color: #fff; }
+    .wa-btn { background: #25D366; color: #fff; }
+    .buy-btn:hover, .messenger-btn:hover, .primary-btn:hover, .secondary-btn:hover, .wa-btn:hover {
+      opacity: 0.92; transform: translateY(-1px);
     }
 
     .table-wrap {
@@ -159,13 +108,7 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.06);
       border: 1px solid #ececec;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 760px;
-    }
-
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
     thead th {
       background: #111827;
       color: #fff;
@@ -173,21 +116,14 @@
       text-align: center;
       font-size: 15px;
     }
-
     tbody td {
       border-top: 1px solid #eaeaea;
       padding: 16px 12px;
       text-align: center;
       font-size: 15px;
     }
-
-    tbody tr:nth-child(even) {
-      background: #fafafa;
-    }
-
-    tbody td:first-child {
-      font-weight: 700;
-    }
+    tbody tr:nth-child(even) { background: #fafafa; }
+    tbody td:first-child { font-weight: 700; }
 
     .notes {
       margin-top: 24px;
@@ -195,23 +131,79 @@
       grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
+    .note-box h3 { margin-top: 0; font-size: 20px; }
+    .note-box ul { margin: 0; padding-left: 18px; }
 
-    .note-box {
+    .order-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-top: 26px;
+    }
+    .order-box h3, .order-box h2 { margin-top: 0; }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    select, input {
+      width: 100%;
+      border: 1px solid #d9dde5;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 15px;
       background: #fff;
+    }
+    .summary-box {
+      background: linear-gradient(135deg, #fff7d6, #fff1b8);
+      border: 1px solid #f1d56a;
       border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      padding: 18px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px dashed rgba(0,0,0,0.12);
+    }
+    .summary-row:last-child { border-bottom: 0; }
+    .summary-price { font-size: 28px; font-weight: 800; margin-top: 10px; }
+    .mini-note { font-size: 13px; color: #666; margin-top: 10px; }
+    .helper { font-size: 13px; color: #666; }
+
+    #paymentBox, #successBox {
+      display: none;
+      margin-top: 16px;
+      background: #f9fafb;
       border: 1px solid #ececec;
+      border-radius: 14px;
+      padding: 16px;
     }
-
-    .note-box h3 {
-      margin-top: 0;
-      font-size: 20px;
+    #paymentBox img {
+      max-width: 230px;
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #ececec;
+      background: #fff;
+      padding: 10px;
     }
-
-    .note-box ul {
-      margin: 0;
-      padding-left: 18px;
+    .success-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      background: #eef2ff;
+      color: #3730a3;
+      margin-bottom: 10px;
     }
 
     .cta-box {
@@ -222,23 +214,8 @@
       padding: 24px;
       text-align: center;
     }
-
-    .cta-box h3 {
-      margin-top: 0;
-      font-size: 24px;
-    }
-
-    .cta-box p {
-      margin-bottom: 16px;
-      color: #444;
-    }
-
-    .mini-note {
-      font-size: 13px;
-      color: #666;
-      margin-top: 10px;
-    }
-
+    .cta-box h3 { margin-top: 0; font-size: 24px; }
+    .cta-box p { margin-bottom: 16px; color: #444; }
     .footer-link {
       display: inline-block;
       margin-top: 20px;
@@ -247,25 +224,18 @@
     }
 
     @media (max-width: 900px) {
-      .top-features,
-      .highlight-grid,
-      .notes {
+      .top-features, .highlight-grid, .notes, .order-layout {
         grid-template-columns: 1fr;
       }
-
-      .hero h1 {
-        font-size: 28px;
-      }
-
-      .section-title {
-        font-size: 22px;
-      }
+      .hero h1 { font-size: 28px; }
+      .section-title { font-size: 22px; }
+      .success-actions { flex-direction: column; }
+      .success-actions a, .success-actions button { width: 100%; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-
     <section class="hero">
       <div class="hero-badge">🇨🇳 China eSIM</div>
       <h1>Хятадын eSIM багцууд</h1>
@@ -305,6 +275,74 @@
       </div>
     </section>
 
+    <section class="order-layout">
+      <div class="order-box">
+        <h2>QPay-ээр төлөөд захиалах</h2>
+        <p class="helper">Сонголтоо хийгээд төлбөрөө хийнэ. Төлбөр амжилттай болмогц WhatsApp эсвэл Messenger рүү шууд орж болно.</p>
+
+        <div class="field">
+          <label for="daysSelect">Хугацаа</label>
+          <select id="daysSelect"></select>
+        </div>
+
+        <div class="field">
+          <label for="dataSelect">Дата</label>
+          <select id="dataSelect">
+            <option value="gb1">1GB / өдөр</option>
+            <option value="gb2">2GB / өдөр</option>
+            <option value="gb3">3GB / өдөр</option>
+            <option value="unlimited">Unlimited</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="customerName">Нэр</label>
+          <input id="customerName" type="text" placeholder="Нэрээ бичнэ үү" />
+        </div>
+
+        <div class="field">
+          <label for="customerPhone">Утас</label>
+          <input id="customerPhone" type="text" placeholder="Утасны дугаар" />
+        </div>
+
+        <button id="payBtn" class="primary-btn" type="button" style="width:100%;">QPay-ээр төлөх</button>
+
+        <div id="paymentBox">
+          <div class="status-pill">QPay QR код</div>
+          <div style="text-align:center;">
+            <img id="qrImage" alt="QPay QR" />
+          </div>
+          <p id="invoiceLabel" class="helper" style="margin-top:10px;"></p>
+          <div class="success-actions">
+            <button id="checkPaymentBtn" class="secondary-btn" type="button">Төлбөр шалгах</button>
+          </div>
+          <div class="mini-note">Төлбөр ороход доорх товчнууд идэвхжинэ.</div>
+        </div>
+
+        <div id="successBox">
+          <div class="status-pill" style="background:#ecfdf5;color:#166534;">Төлбөр амжилттай ✅</div>
+          <div id="successText" class="helper"></div>
+          <div class="success-actions">
+            <a id="waLink" class="wa-btn" target="_blank" rel="noopener">WhatsApp-аар бичих</a>
+            <a id="messengerLink" class="secondary-btn" target="_blank" rel="noopener">Messenger рүү орох</a>
+            <button id="copyOrderBtn" class="primary-btn" type="button">Захиалгын мэдээлэл хуулах</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-box">
+        <h3>Сонгосон багц</h3>
+        <div class="summary-box">
+          <div class="summary-row"><span>Улс</span><strong>🇨🇳 China eSIM</strong></div>
+          <div class="summary-row"><span>Хугацаа</span><strong id="summaryDays">7 хоног</strong></div>
+          <div class="summary-row"><span>Дата</span><strong id="summaryData">2GB / өдөр</strong></div>
+          <div class="summary-row"><span>Дүн</span><strong id="summaryPriceText">30,300₮</strong></div>
+          <div class="summary-price" id="summaryPriceBig">30,300₮</div>
+          <div class="mini-note">Үнэ шинэ supplier орж ирэхэд зөвхөн доорх USD үнийг сольж шинэчилнэ.</div>
+        </div>
+      </div>
+    </section>
+
     <section class="notes">
       <div class="note-box">
         <h3>📌 Анхаарах зүйл</h3>
@@ -322,21 +360,18 @@
           <li>WiFi-д холбогдоно</li>
           <li>Settings → Cellular → Add eSIM</li>
           <li>QR код scan хийнэ</li>
-          <li>Асуудал гарвал бидэнд Messenger-ээр бичнэ үү</li>
+          <li>Асуудал гарвал бидэнд бичнэ үү</li>
         </ul>
       </div>
     </section>
 
     <section class="cta-box">
-      <h3>China eSIM захиалах</h3>
-      <p>
-        Сонгосон багцаа Messenger-ээр бичээд захиалаарай.
-        Жишээ: <strong>7 хоног 2GB</strong>
-      </p>
-      <a class="messenger-btn" href="https://m.me/esimmongolia" target="_blank">
-        Messenger-ээр захиалах
+      <h3>Шууд operator-той холбогдох</h3>
+      <p>Төлбөрөөс өмнө асуух зүйл байвал шууд Messenger-ээр бичээрэй.</p>
+      <a class="messenger-btn" href="https://m.me/esimmongolia" target="_blank" rel="noopener">
+        Messenger-ээр холбогдох
       </a>
-      <div class="mini-note">Хэрэв Messenger page username өөр бол дараа нь энэ link-ийг сольж болно.</div>
+      <div class="mini-note">Messenger page username өөр бол энэ link-ийг дараа нь сольж болно.</div>
     </section>
 
     <a class="footer-link" href="/index.html">← Нүүр хуудас руу буцах</a>
@@ -345,9 +380,10 @@
   <script>
     const usdToMnt = 3600;
     const marginMultiplier = 1.35;
+    const whatsappNumber = "97690283039";
+    const messengerUrl = "https://m.me/esimmongolia";
 
-    // ЭНЭ ХЭСГИЙГ Л ДАРАА НЬ СОЛИНО
-    // Шинэ supplier үнэ орж ирвэл зөвхөн доорх USD үнийг өөрчилнө.
+    // Шинэ supplier үнэ орж ирвэл зөвхөн доорх USD үнийг солино.
     const supplierPrices = [
       { days: "7 хоног", gb1: 3.80, gb2: 6.23, gb3: 9.42, unlimited: 13.83 },
       { days: "14 хоног", gb1: 7.60, gb2: 12.46, gb3: 18.84, unlimited: 27.66 },
@@ -355,39 +391,289 @@
       { days: "30 хоног", gb1: 16.29, gb2: 26.70, gb3: 40.37, unlimited: 59.27 }
     ];
 
+    const dataLabels = {
+      gb1: "1GB / өдөр",
+      gb2: "2GB / өдөр",
+      gb3: "3GB / өдөр",
+      unlimited: "Unlimited"
+    };
+
+    const priceTable = document.getElementById("priceTable");
+    const topPackagesBox = document.getElementById("topPackages");
+    const daysSelect = document.getElementById("daysSelect");
+    const dataSelect = document.getElementById("dataSelect");
+    const summaryDays = document.getElementById("summaryDays");
+    const summaryData = document.getElementById("summaryData");
+    const summaryPriceText = document.getElementById("summaryPriceText");
+    const summaryPriceBig = document.getElementById("summaryPriceBig");
+    const payBtn = document.getElementById("payBtn");
+    const paymentBox = document.getElementById("paymentBox");
+    const successBox = document.getElementById("successBox");
+    const qrImage = document.getElementById("qrImage");
+    const invoiceLabel = document.getElementById("invoiceLabel");
+    const checkPaymentBtn = document.getElementById("checkPaymentBtn");
+    const waLink = document.getElementById("waLink");
+    const messengerLink = document.getElementById("messengerLink");
+    const successText = document.getElementById("successText");
+    const copyOrderBtn = document.getElementById("copyOrderBtn");
+    const customerName = document.getElementById("customerName");
+    const customerPhone = document.getElementById("customerPhone");
+
+    let currentInvoiceId = "";
+    let currentOrderText = "";
+    let currentPaid = false;
+    let paymentPoller = null;
+
     function formatMntFromUsd(usd) {
       const finalPrice = usd * marginMultiplier * usdToMnt;
       const rounded = Math.round(finalPrice / 100) * 100;
       return rounded.toLocaleString("en-US") + "₮";
     }
 
-    const priceTable = document.getElementById("priceTable");
+    function getSelectedPackage() {
+      const dayLabel = daysSelect.value;
+      const dataKey = dataSelect.value;
+      const row = supplierPrices.find(item => item.days === dayLabel);
+      const usd = row ? Number(row[dataKey] || 0) : 0;
+      const mnt = Math.round(usd * marginMultiplier * usdToMnt / 100) * 100;
+      return {
+        dayLabel,
+        dataKey,
+        dataLabel: dataLabels[dataKey],
+        usd,
+        mnt,
+        mntText: mnt.toLocaleString("en-US") + "₮"
+      };
+    }
 
-    priceTable.innerHTML = supplierPrices.map(item => `
-      <tr>
-        <td>${item.days}</td>
-        <td>${formatMntFromUsd(item.gb1)}</td>
-        <td>${formatMntFromUsd(item.gb2)}</td>
-        <td>${formatMntFromUsd(item.gb3)}</td>
-        <td>${formatMntFromUsd(item.unlimited)}</td>
-      </tr>
-    `).join("");
+    function updateSummary() {
+      const pkg = getSelectedPackage();
+      summaryDays.textContent = pkg.dayLabel;
+      summaryData.textContent = pkg.dataLabel;
+      summaryPriceText.textContent = pkg.mntText;
+      summaryPriceBig.textContent = pkg.mntText;
+    }
 
-    const topPackages = [
-      { title: "7 хоног – 2GB", desc: "Богино аялалд хамгийн тохиромжтой", price: formatMntFromUsd(supplierPrices[0].gb2) },
-      { title: "14 хоног – 3GB", desc: "Ихэнх хэрэглэгчдийн сонголт", price: formatMntFromUsd(supplierPrices[1].gb3) },
-      { title: "30 хоног – Unlimited", desc: "Урт хугацааны аялалд", price: formatMntFromUsd(supplierPrices[3].unlimited) }
-    ];
+    function renderTable() {
+      priceTable.innerHTML = supplierPrices.map(item => `
+        <tr>
+          <td>${item.days}</td>
+          <td>${formatMntFromUsd(item.gb1)}</td>
+          <td>${formatMntFromUsd(item.gb2)}</td>
+          <td>${formatMntFromUsd(item.gb3)}</td>
+          <td>${formatMntFromUsd(item.unlimited)}</td>
+        </tr>
+      `).join("");
+    }
 
-    document.getElementById("topPackages").innerHTML = topPackages.map(item => `
-      <div class="highlight-card">
-        <div class="highlight-tag">TOP</div>
-        <h3>${item.title}</h3>
-        <p>${item.desc}</p>
-        <div class="highlight-price">${item.price}</div>
-        <a class="buy-btn" href="https://m.me/esimmongolia" target="_blank">Авах</a>
-      </div>
-    `).join("");
+    function renderTopPackages() {
+      const topPackages = [
+        { title: "7 хоног – 2GB", desc: "Богино аялалд хамгийн тохиромжтой", price: formatMntFromUsd(supplierPrices[0].gb2), day: "7 хоног", data: "gb2" },
+        { title: "14 хоног – 3GB", desc: "Ихэнх хэрэглэгчдийн сонголт", price: formatMntFromUsd(supplierPrices[1].gb3), day: "14 хоног", data: "gb3" },
+        { title: "30 хоног – Unlimited", desc: "Урт хугацааны аялалд", price: formatMntFromUsd(supplierPrices[3].unlimited), day: "30 хоног", data: "unlimited" }
+      ];
+
+      topPackagesBox.innerHTML = topPackages.map(item => `
+        <div class="highlight-card">
+          <div class="highlight-tag">TOP</div>
+          <h3>${item.title}</h3>
+          <p>${item.desc}</p>
+          <div class="highlight-price">${item.price}</div>
+          <button class="buy-btn" type="button" onclick="pickPackage('${item.day}', '${item.data}')">Сонгох</button>
+        </div>
+      `).join("");
+    }
+
+    function renderDayOptions() {
+      daysSelect.innerHTML = supplierPrices.map(item => `<option value="${item.days}">${item.days}</option>`).join("");
+      daysSelect.value = "7 хоног";
+      dataSelect.value = "gb2";
+    }
+
+    window.pickPackage = function(day, dataKey) {
+      daysSelect.value = day;
+      dataSelect.value = dataKey;
+      updateSummary();
+      window.scrollTo({ top: document.querySelector('.order-layout').offsetTop - 20, behavior: 'smooth' });
+    };
+
+    function qrImageSrc(value) {
+      if (!value) return "";
+      if (String(value).startsWith("data:image")) return value;
+      return `data:image/png;base64,${value}`;
+    }
+
+    function buildOrderText() {
+      const pkg = getSelectedPackage();
+      const name = customerName.value.trim() || "-";
+      const phone = customerPhone.value.trim() || "-";
+      return [
+        "China eSIM захиалга",
+        `Нэр: ${name}`,
+        `Утас: ${phone}`,
+        `Багц: ${pkg.dayLabel} - ${pkg.dataLabel}`,
+        `Дүн: ${pkg.mntText}`,
+        "Төлбөр: ТӨЛСӨН"
+      ].join("\n");
+    }
+
+    function resetPaymentState() {
+      currentInvoiceId = "";
+      currentOrderText = "";
+      currentPaid = false;
+      paymentBox.style.display = "none";
+      successBox.style.display = "none";
+      invoiceLabel.textContent = "";
+      qrImage.src = "";
+      if (paymentPoller) {
+        clearInterval(paymentPoller);
+        paymentPoller = null;
+      }
+    }
+
+    async function createInvoice() {
+      const name = customerName.value.trim();
+      const phone = customerPhone.value.trim();
+
+      if (!name || !phone) {
+        alert("Нэр болон утасны дугаараа оруулна уу.");
+        return;
+      }
+
+      const pkg = getSelectedPackage();
+      const orderId = `CHINA-${Date.now()}`;
+      const description = `China eSIM ${pkg.dayLabel} ${pkg.dataLabel}`;
+
+      payBtn.disabled = true;
+      payBtn.textContent = "Үүсгэж байна...";
+      successBox.style.display = "none";
+
+      try {
+        const res = await fetch("/.netlify/functions/qpay-create-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: pkg.mnt,
+            orderId,
+            description
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data?.error || data?.step || "Invoice үүсгэхэд алдаа гарлаа.");
+        }
+
+        currentInvoiceId = data.invoice_id;
+        currentOrderText = buildOrderText();
+        qrImage.src = qrImageSrc(data.qr_image);
+        invoiceLabel.textContent = `Захиалга: ${description} • Дүн: ${pkg.mntText}`;
+        paymentBox.style.display = "block";
+
+        startPaymentPolling();
+      } catch (error) {
+        alert(error.message || "Төлбөрийн QR үүсгэхэд алдаа гарлаа.");
+      } finally {
+        payBtn.disabled = false;
+        payBtn.textContent = "QPay-ээр төлөх";
+      }
+    }
+
+    async function checkPayment(showWaiting = true) {
+      if (!currentInvoiceId) {
+        alert("Эхлээд QPay QR үүсгэнэ үү.");
+        return false;
+      }
+
+      try {
+        const res = await fetch("/.netlify/functions/qpay-check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ invoice_id: currentInvoiceId })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data?.error || "Төлбөр шалгахад алдаа гарлаа.");
+        }
+
+        if (data.paid) {
+          currentPaid = true;
+          showSuccessActions();
+          if (paymentPoller) {
+            clearInterval(paymentPoller);
+            paymentPoller = null;
+          }
+          return true;
+        }
+
+        if (showWaiting) {
+          alert("Төлбөр хараахан баталгаажаагүй байна.");
+        }
+        return false;
+      } catch (error) {
+        if (showWaiting) {
+          alert(error.message || "Төлбөр шалгахад алдаа гарлаа.");
+        }
+        return false;
+      }
+    }
+
+    function showSuccessActions() {
+      currentOrderText = buildOrderText();
+      const encoded = encodeURIComponent(currentOrderText);
+      waLink.href = `https://wa.me/${whatsappNumber}?text=${encoded}`;
+      messengerLink.href = messengerUrl;
+      successText.innerHTML = `
+        Захиалгын мэдээлэл бэлэн боллоо.<br>
+        WhatsApp-аар бичихэд мэдээлэл автоматаар орно.<br>
+        Messenger ашиглах бол <b>Захиалгын мэдээлэл хуулах</b> дээр дараад paste хийнэ.
+      `;
+      successBox.style.display = "block";
+    }
+
+    function startPaymentPolling() {
+      if (paymentPoller) clearInterval(paymentPoller);
+      paymentPoller = setInterval(async () => {
+        if (!currentInvoiceId || currentPaid) return;
+        await checkPayment(false);
+      }, 5000);
+    }
+
+    async function copyOrderText() {
+      currentOrderText = buildOrderText();
+      try {
+        await navigator.clipboard.writeText(currentOrderText);
+        alert("Захиалгын мэдээлэл хууллаа ✅");
+      } catch (e) {
+        alert("Хуулж чадсангүй. Дахин оролдоно уу.");
+      }
+    }
+
+    renderTable();
+    renderTopPackages();
+    renderDayOptions();
+    updateSummary();
+
+    daysSelect.addEventListener("change", () => {
+      updateSummary();
+      resetPaymentState();
+    });
+    dataSelect.addEventListener("change", () => {
+      updateSummary();
+      resetPaymentState();
+    });
+    customerName.addEventListener("input", () => { if (currentPaid) showSuccessActions(); });
+    customerPhone.addEventListener("input", () => { if (currentPaid) showSuccessActions(); });
+    payBtn.addEventListener("click", createInvoice);
+    checkPaymentBtn.addEventListener("click", () => checkPayment(true));
+    copyOrderBtn.addEventListener("click", copyOrderText);
+    messengerLink.addEventListener("click", () => {
+      if (!currentPaid) return;
+      copyOrderText();
+    });
   </script>
 </body>
 </html>
