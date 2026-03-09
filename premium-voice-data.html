@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Premium Voice + Data eSIM | eSIM Mongolia</title>
+  <meta name="description" content="Premium Voice + Data eSIM багцууд. Улсаа сонгоод QPay-р төлөхөд QR код гарна." />
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --soft:#f8fafc;
+      --primary:#111111;
+      --primary-2:#0f766e;
+      --chip:#eef6f5;
+      --card:#ffffff;
+      --shadow:0 8px 24px rgba(15,23,42,.06);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:#fff;
+    }
+    .wrap{max-width:1120px;margin:0 auto;padding:22px}
+    .hero{padding:8px 0 18px}
+    .badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 14px;border-radius:999px;background:var(--chip);
+      border:1px solid #d9ece9;font-size:14px;font-weight:600;color:#0f4d48;
+    }
+    h1{font-size:42px;line-height:1.08;margin:8px 0 10px}
+    .sub{font-size:17px;line-height:1.65;max-width:74ch;color:#374151;margin:0 0 16px}
+    .ctaRow{display:flex;flex-wrap:wrap;gap:10px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:46px;padding:10px 16px;border-radius:14px;
+      border:1px solid #d1d5db;background:#fff;color:#111;text-decoration:none;
+      font-weight:700;cursor:pointer;
+    }
+    .btn.primary{background:#111;color:#fff;border-color:#111}
+    .btn:hover{transform:translateY(-1px)}
+    .tabs{
+      display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 16px;
+    }
+    .tab{
+      border:1px solid var(--line);
+      background:#fff;border-radius:22px;padding:14px 18px;min-width:220px;
+      box-shadow:var(--shadow);
+    }
+    .tab.active{border-color:#abd4cf;background:#f7fbfb}
+    .tab .t1{font-size:18px;font-weight:800}
+    .tab .t2{font-size:14px;color:#6b7280;margin-top:4px}
+    .card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+      background:var(--card);
+      box-shadow:var(--shadow);
+      margin:16px 0;
+    }
+    .sectionTitle{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;margin:0 0 14px}
+    .muted{color:var(--muted)}
+    .plans{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:12px}
+    @media(min-width:820px){
+      .plans{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    .planBtn{
+      width:100%;text-align:left;padding:16px;border-radius:18px;border:1px solid var(--line);
+      background:#fff;cursor:pointer;transition:.18s ease;
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .planBtn:hover{border-color:#bfc7d3;transform:translateY(-1px)}
+    .planBtn.active{
+      background:#111;border-color:#111;color:#fff;
+      box-shadow:0 10px 24px rgba(17,17,17,.18);
+    }
+    .topRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .country{font-size:22px;font-weight:900}
+    .flag{font-size:28px;margin-right:8px}
+    .mini{font-size:13px;color:var(--muted)}
+    .planBtn.active .mini,.planBtn.active .muted{color:rgba(255,255,255,.78)}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{
+      display:inline-flex;align-items:center;gap:6px;padding:7px 10px;
+      border-radius:999px;background:#f8fafc;border:1px solid #e5e7eb;font-size:13px;font-weight:700;
+    }
+    .planBtn.active .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
+    .price{font-size:30px;font-weight:900;letter-spacing:-0.02em}
+    .usd{font-size:14px}
+    .payGrid{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:900px){.payGrid{grid-template-columns:1.2fr .8fr}}
+    .qr{max-width:260px;border:1px solid var(--line);border-radius:16px;padding:8px;background:#fff}
+    .faq p{line-height:1.65}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="badges">
+        <span class="badge">👑 Premium Plans</span>
+        <span class="badge">📞 Voice + Data</span>
+        <span class="badge">💳 QPay + QR</span>
+      </div>
+
+      <h1>Premium Voice + Data eSIM</h1>
+      <p class="sub">
+        Дугаартай, Voice + Data premium багцууд. Улсаа сонгоод багцаа дармагц идэвхтэй болж,
+        QPay invoice үүсээд QR код гарна. Доорх үнэ нь Airhub USD үнэн дээр 35% нэмээд MNT болгосон.
+      </p>
+
+      <div class="ctaRow">
+        <a class="btn primary" href="#plans">Багц сонгох</a>
+        <a class="btn" href="/">⬅ Үндсэн сайт руу буцах</a>
+      </div>
+    </section>
+
+    <div class="tabs">
+      <div class="tab active">
+        <div class="t1">Premium Plans</div>
+        <div class="t2">Best Value • Voice + Data</div>
+      </div>
+      <div class="tab">
+        <div class="t1">8 Countries</div>
+        <div class="t2">Operator мэдээлэлтэй</div>
+      </div>
+      <div class="tab">
+        <div class="t1">Manual Pricing</div>
+        <div class="t2">Airhub үнэ + 35%</div>
+      </div>
+    </div>
+
+    <section class="card" id="plans">
+      <h2 class="sectionTitle">📦 Premium багц сонгох</h2>
+      <p class="muted" style="margin:0 0 14px">Дарсан багц хар өнгөтэй болж идэвхжинэ. Дараа нь QPay box автоматаар гарна.</p>
+      <div class="plans" id="planList"></div>
+    </section>
+
+    <section class="card" id="payBox" style="display:none">
+      <h2 class="sectionTitle">💳 QPay төлбөр</h2>
+      <div class="payGrid">
+        <div>
+          <p id="payMeta" class="muted" style="margin:0 0 12px"></p>
+          <div id="qrBox"></div>
+          <div id="urlBox" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px"></div>
+        </div>
+        <div>
+          <div class="card" style="margin:0">
+            <h3 style="margin:0 0 10px">Төлбөр шалгах</h3>
+            <p class="muted" style="margin:0 0 12px">QPay төлсний дараа доорх товчоор шалгана.</p>
+            <button class="btn primary" id="checkBtn" type="button">Төлбөр шалгах</button>
+            <div id="checkResult" class="muted" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card faq">
+      <h2 class="sectionTitle">❓ Түгээмэл асуулт</h2>
+      <p><strong>Эдгээр багц local number-той юу?</strong><br>Тийм. Эдгээр нь premium voice + data төрлийн багцууд тул дуудлага болон дата ашиглах боломжтой.</p>
+      <p><strong>Үнэ яаж бодсон бэ?</strong><br>Airhub дээрх USD үнийг 35% нэмээд MNT рүү хөрвүүлсэн. FX утгыг script дотор өөрчилж болно.</p>
+      <p><strong>Оператор харагдах уу?</strong><br>Тийм. Багц бүр дээр тухайн улсын операторын мэдээлэл тусдаа харагдана.</p>
+    </section>
+  </div>
+
+  <script>
+    const FX = 3680;
+    const MARKUP = 0.35;
+
+    const PREMIUM_PLANS = [
+      { flag:"🇺🇸", country:"USA", data:"Unlimited", validity:"15 Days", operator:"T-Mobile", usd:26, planCode:"2900617" },
+      { flag:"🇻🇳", country:"Vietnam", data:"Unlimited", validity:"20 Days", operator:"Vietnamobile", usd:14, planCode:"2434470" },
+      { flag:"🇦🇺", country:"Australia", data:"10 GB", validity:"30 Days", operator:"Vodafone", usd:18, planCode:"2897121" },
+      { flag:"🇬🇧", country:"UK", data:"50 GB", validity:"30 Days", operator:"EE", usd:27.5, planCode:"2431581" },
+      { flag:"🇳🇿", country:"New Zealand", data:"Unlimited", validity:"30 Days", operator:"2degrees", usd:42, planCode:"2505661" },
+      { flag:"🇫🇷", country:"France", data:"20 GB", validity:"30 Days", operator:"Orange", usd:17.75, planCode:"2785414" },
+      { flag:"🇲🇻", country:"Maldives", data:"20 GB", validity:"10 Days", operator:"Ooredoo", usd:51.75, planCode:"240990" },
+      { flag:"🇬🇺", country:"Guam", data:"Unlimited", validity:"8 Days", operator:"GTA", usd:24.5, planCode:"800582" }
+    ];
+
+    let lastInvoiceId = "";
+    let activeBtn = null;
+
+    function toMnt(usd){
+      return Math.round(Number(usd) * FX * (1 + MARKUP));
+    }
+
+    function renderPlans(){
+      const list = document.getElementById("planList");
+      list.innerHTML = PREMIUM_PLANS.map((p, i) => {
+        const amount = toMnt(p.usd);
+        return `
+          <button class="planBtn"
+            type="button"
+            data-index="${i}"
+            data-country="${p.country}"
+            data-data="${p.data}"
+            data-validity="${p.validity}"
+            data-operator="${p.operator}"
+            data-usd="${p.usd}"
+            data-plan-code="${p.planCode}"
+            data-amount="${amount}">
+            <div class="topRow">
+              <div>
+                <div class="country"><span class="flag">${p.flag}</span>${p.country}</div>
+                <div class="mini">Plan code: ${p.planCode}</div>
+              </div>
+              <div class="price">${amount.toLocaleString("en-US")} ₮</div>
+            </div>
+
+            <div class="chips">
+              <span class="chip">📶 ${p.data}</span>
+              <span class="chip">🗓 ${p.validity}</span>
+              <span class="chip">📞 Voice + Data</span>
+              <span class="chip">📡 ${p.operator}</span>
+            </div>
+
+            <div class="muted usd">Airhub: $${p.usd} • 35% нэмэгдсэн</div>
+          </button>
+        `;
+      }).join("");
+    }
+
+    renderPlans();
+
+    document.addEventListener("click", async (e) => {
+      const btn = e.target.closest(".planBtn");
+      if (!btn) return;
+
+      if (activeBtn) activeBtn.classList.remove("active");
+      btn.classList.add("active");
+      activeBtn = btn;
+
+      const amount = Number(btn.dataset.amount || 0);
+      const country = btn.dataset.country || "Premium eSIM";
+      const data = btn.dataset.data || "";
+      const validity = btn.dataset.validity || "";
+      const operator = btn.dataset.operator || "";
+      const planCode = btn.dataset.planCode || "";
+      const description = `${country} Premium • ${data} • ${validity} • ${operator}`.trim();
+
+      const payload = {
+        amount,
+        orderId: `PREMIUM-${country.toUpperCase().replace(/\s+/g, "-")}-${Date.now()}`,
+        description
+      };
+
+      try {
+        const r = await fetch("/.netlify/functions/qpay-create-invoice", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const j = await r.json().catch(() => ({}));
+        if (!j.ok) {
+          alert("QPay алдаа: " + JSON.stringify(j));
+          return;
+        }
+
+        lastInvoiceId = j.invoice_id || "";
+
+        document.getElementById("payBox").style.display = "block";
+        document.getElementById("payMeta").textContent =
+          `${description} • Plan code: ${planCode} • ${amount.toLocaleString("en-US")} ₮`;
+
+        document.getElementById("qrBox").innerHTML =
+          j.qr_image
+            ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">`
+            : "QR олдсонгүй";
+
+        const urls = Array.isArray(j.urls) ? j.urls : [];
+        document.getElementById("urlBox").innerHTML = urls.length
+          ? urls.map(u => `<a class="btn" href="${u.link}" target="_blank" rel="noopener">${u.name || "Pay link"}</a>`).join("")
+          : "";
+
+        document.getElementById("payBox").scrollIntoView({ behavior:"smooth", block:"start" });
+      } catch (err) {
+        alert("Төлбөрийн хэсэгт алдаа гарлаа.");
+      }
+    });
+
+    document.getElementById("checkBtn").addEventListener("click", async () => {
+      if (!lastInvoiceId) {
+        alert("Invoice олдсонгүй.");
+        return;
+      }
+
+      document.getElementById("checkResult").textContent = "Шалгаж байна...";
+
+      try {
+        const r = await fetch("/.netlify/functions/qpay-check", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ invoice_id: lastInvoiceId })
+        });
+
+        const j = await r.json().catch(() => ({}));
+        document.getElementById("checkResult").textContent =
+          j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
+      } catch (err) {
+        document.getElementById("checkResult").textContent = "Шалгаж чадсангүй.";
+      }
+    });
+  </script>
+</body>
+</html>
