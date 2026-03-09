@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>China eSIM | eSIM Mongolia</title>
+  <meta name="description" content="China eSIM багцууд - 7, 14, 21, 30 хоног. 1GB, 2GB, 3GB, Unlimited сонголттой. VPN шаардлагагүй." />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f8fb;
+      color: #222;
+      line-height: 1.5;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #111827, #1f2937);
+      color: #fff;
+      border-radius: 20px;
+      padding: 36px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: #f4b400;
+      color: #111;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 36px;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: 17px;
+      color: #e5e7eb;
+      max-width: 760px;
+    }
+
+    .top-features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 24px 0;
+    }
+
+    .feature-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border: 1px solid #ececec;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .highlight-section {
+      margin: 28px 0;
+    }
+
+    .section-title {
+      font-size: 26px;
+      margin: 0 0 16px;
+    }
+
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .highlight-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border: 2px solid #f4b400;
+      position: relative;
+    }
+
+    .highlight-tag {
+      position: absolute;
+      top: -12px;
+      left: 18px;
+      background: #f4b400;
+      color: #111;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .highlight-card h3 {
+      margin: 12px 0 10px;
+      font-size: 22px;
+    }
+
+    .highlight-card p {
+      margin: 6px 0;
+      color: #555;
+    }
+
+    .highlight-price {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 14px 0;
+      color: #111827;
+    }
+
+    .buy-btn,
+    .messenger-btn {
+      display: inline-block;
+      background: #f4b400;
+      color: #111;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 12px;
+      transition: 0.2s ease;
+    }
+
+    .buy-btn:hover,
+    .messenger-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .price-table-section {
+      margin-top: 34px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border: 1px solid #ececec;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    thead th {
+      background: #111827;
+      color: #fff;
+      padding: 16px 12px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    tbody td {
+      border-top: 1px solid #eaeaea;
+      padding: 16px 12px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    tbody td:first-child {
+      font-weight: 700;
+    }
+
+    .notes {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .note-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border: 1px solid #ececec;
+    }
+
+    .note-box h3 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .note-box ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .cta-box {
+      margin-top: 26px;
+      background: linear-gradient(135deg, #fff7d6, #fff1b8);
+      border: 1px solid #f1d56a;
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .cta-box h3 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .cta-box p {
+      margin-bottom: 16px;
+      color: #444;
+    }
+
+    .mini-note {
+      font-size: 13px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .footer-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #2563eb;
+      font-weight: 700;
+    }
+
+    @media (max-width: 900px) {
+      .top-features,
+      .highlight-grid,
+      .notes {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .section-title {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-badge">🇨🇳 China eSIM</div>
+      <h1>Хятадын eSIM багцууд</h1>
+      <p>
+        VPN шаардлагагүй, QR кодоор шууд суулгах боломжтой China eSIM багцууд.
+        7, 14, 21, 30 хоногийн сонголттой.
+      </p>
+    </section>
+
+    <section class="top-features">
+      <div class="feature-card">⚡ 5 минутанд идэвхжинэ</div>
+      <div class="feature-card">📱 QR кодоор суулгана</div>
+      <div class="feature-card">🌐 VPN шаардлагагүй</div>
+      <div class="feature-card">✅ Facebook / Google ажиллана</div>
+    </section>
+
+    <section class="highlight-section">
+      <h2 class="section-title">🔥 Хамгийн их авдаг багцууд</h2>
+      <div class="highlight-grid" id="topPackages"></div>
+    </section>
+
+    <section class="price-table-section">
+      <h2 class="section-title">Үнэний хүснэгт</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Хугацаа</th>
+              <th>1GB / өдөр</th>
+              <th>2GB / өдөр</th>
+              <th>3GB / өдөр</th>
+              <th>Unlimited</th>
+            </tr>
+          </thead>
+          <tbody id="priceTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="notes">
+      <div class="note-box">
+        <h3>📌 Анхаарах зүйл</h3>
+        <ul>
+          <li>Төлбөр баталгаажсаны дараа QR код илгээнэ.</li>
+          <li>QR код 1 удаа л ашиглагдана.</li>
+          <li>Устгавал дахин ашиглах боломжгүй байж болно.</li>
+          <li>Очих улсад сүлжээнд холбогдоход идэвхжинэ.</li>
+        </ul>
+      </div>
+
+      <div class="note-box">
+        <h3>📲 Суулгах заавар</h3>
+        <ul>
+          <li>WiFi-д холбогдоно</li>
+          <li>Settings → Cellular → Add eSIM</li>
+          <li>QR код scan хийнэ</li>
+          <li>Асуудал гарвал бидэнд Messenger-ээр бичнэ үү</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="cta-box">
+      <h3>China eSIM захиалах</h3>
+      <p>
+        Сонгосон багцаа Messenger-ээр бичээд захиалаарай.
+        Жишээ: <strong>7 хоног 2GB</strong>
+      </p>
+      <a class="messenger-btn" href="https://m.me/esimmongolia" target="_blank">
+        Messenger-ээр захиалах
+      </a>
+      <div class="mini-note">Хэрэв Messenger page username өөр бол дараа нь энэ link-ийг сольж болно.</div>
+    </section>
+
+    <a class="footer-link" href="/index.html">← Нүүр хуудас руу буцах</a>
+  </div>
+
+  <script>
+    const usdToMnt = 3600;
+    const marginMultiplier = 1.35;
+
+    // ЭНЭ ХЭСГИЙГ Л ДАРАА НЬ СОЛИНО
+    // Шинэ supplier үнэ орж ирвэл зөвхөн доорх USD үнийг өөрчилнө.
+    const supplierPrices = [
+      { days: "7 хоног", gb1: 3.80, gb2: 6.23, gb3: 9.42, unlimited: 13.83 },
+      { days: "14 хоног", gb1: 7.60, gb2: 12.46, gb3: 18.84, unlimited: 27.66 },
+      { days: "21 хоног", gb1: 11.40, gb2: 18.69, gb3: 28.26, unlimited: 41.49 },
+      { days: "30 хоног", gb1: 16.29, gb2: 26.70, gb3: 40.37, unlimited: 59.27 }
+    ];
+
+    function formatMntFromUsd(usd) {
+      const finalPrice = usd * marginMultiplier * usdToMnt;
+      const rounded = Math.round(finalPrice / 100) * 100;
+      return rounded.toLocaleString("en-US") + "₮";
+    }
+
+    const priceTable = document.getElementById("priceTable");
+
+    priceTable.innerHTML = supplierPrices.map(item => `
+      <tr>
+        <td>${item.days}</td>
+        <td>${formatMntFromUsd(item.gb1)}</td>
+        <td>${formatMntFromUsd(item.gb2)}</td>
+        <td>${formatMntFromUsd(item.gb3)}</td>
+        <td>${formatMntFromUsd(item.unlimited)}</td>
+      </tr>
+    `).join("");
+
+    const topPackages = [
+      { title: "7 хоног – 2GB", desc: "Богино аялалд хамгийн тохиромжтой", price: formatMntFromUsd(supplierPrices[0].gb2) },
+      { title: "14 хоног – 3GB", desc: "Ихэнх хэрэглэгчдийн сонголт", price: formatMntFromUsd(supplierPrices[1].gb3) },
+      { title: "30 хоног – Unlimited", desc: "Урт хугацааны аялалд", price: formatMntFromUsd(supplierPrices[3].unlimited) }
+    ];
+
+    document.getElementById("topPackages").innerHTML = topPackages.map(item => `
+      <div class="highlight-card">
+        <div class="highlight-tag">TOP</div>
+        <h3>${item.title}</h3>
+        <p>${item.desc}</p>
+        <div class="highlight-price">${item.price}</div>
+        <a class="buy-btn" href="https://m.me/esimmongolia" target="_blank">Авах</a>
+      </div>
+    `).join("");
+  </script>
+</body>
+</html>
