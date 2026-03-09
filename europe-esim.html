@@ -5,103 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Europe eSIM Монгол | eSIM Mongolia</title>
   <meta name="description" content="Europe eSIM багцууд. QPay-р төлөөд QR кодоор идэвхжүүлнэ." />
-
   <style>
+
     :root{
-      --fg:#111;
-      --muted:#666;
-      --line:#e8e8e8;
-      --bg:#fff;
-      --chip:#fafafa;
-      --active:#111;
+      --bg:#fffdf7;
+      --card:#ffffff;
+      --text:#111111;
+      --muted:#6b7280;
+      --line:#ece7dc;
+      --soft:#fff8e1;
+      --dark:#111111;
+      --gold:#facc15;
+      --gold-2:#fbbf24;
+      --shadow:0 10px 30px rgba(17,17,17,.08);
+      --radius:20px;
     }
     *{box-sizing:border-box}
     body{
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       margin:0;
-      color:var(--fg);
-      background:var(--bg)
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:linear-gradient(180deg,#fffefb 0%,#fff 100%);
     }
-    .wrap{max-width:980px;margin:0 auto;padding:22px}
-    .hero{padding:10px 0 6px}
-    .badges,.chips{display:flex;flex-wrap:wrap;gap:8px}
-    .badges{margin-bottom:10px}
-    .badge{
-      display:inline-block;
-      padding:6px 10px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background:var(--chip);
-      font-size:13px
+    .wrap{max-width:1080px;margin:0 auto;padding:22px}
+    .hero{padding:8px 0 18px}
+    .badges,.chips,.topActions{display:flex;flex-wrap:wrap;gap:10px}
+    .badge,.chip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;background:#fff;
+      border:1px solid var(--line);font-size:13px;font-weight:700;
     }
-    h1{font-size:40px;line-height:1.08;margin:8px 0 10px}
-    h2{margin:0 0 10px}
-    .sub{opacity:.82;font-size:16px;margin:0 0 14px;max-width:70ch}
-    .ctaRow{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .hero h1{font-size:42px;line-height:1.08;margin:8px 0 10px}
+    .sub{font-size:17px;line-height:1.65;color:#374151;max-width:74ch;margin:0 0 16px}
+    .ctaRow{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
     .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:12px 16px;
-      border:1px solid #dcdcdc;
-      border-radius:14px;
-      text-decoration:none;
-      color:inherit;
-      background:#fff;
-      cursor:pointer;
-      font-weight:600
+      display:inline-flex;align-items:center;justify-content:center;
+      min-height:48px;padding:12px 18px;border-radius:16px;
+      border:1px solid #d6d3d1;background:#fff;color:#111;text-decoration:none;
+      font-weight:800;cursor:pointer;transition:.18s ease;
     }
-    .btn.primary{background:#111;border-color:#111;color:#fff}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      background:#111;color:#facc15;border-color:#111;
+      box-shadow:0 10px 24px rgba(17,17,17,.16);
+    }
+    .btn.gold{
+      background:#facc15;color:#111;border-color:#facc15;
+      box-shadow:0 10px 24px rgba(250,204,21,.28);
+    }
+    .stats{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:14px;margin:18px 0 16px}
+    @media(min-width:780px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .stat{
+      border:1px solid var(--line);background:var(--card);border-radius:24px;padding:18px 22px;
+      box-shadow:var(--shadow);
+    }
+    .stat.active{background:#111;color:#fff;border-color:#111}
+    .stat.active .muted{color:rgba(255,255,255,.75)}
+    .stat .t1{font-size:18px;font-weight:900}
+    .stat .t2{font-size:14px;margin-top:6px}
     .card{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:18px;
-      margin:16px 0;
-      background:#fff
+      border:1px solid var(--line);border-radius:24px;padding:20px;background:var(--card);
+      box-shadow:var(--shadow);margin:16px 0;
     }
-    .planGrid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px
-    }
-    @media (min-width:820px){
-      .planGrid{grid-template-columns:1fr 1fr}
-    }
-    .planBtn{
-      width:100%;
-      text-align:left;
-      padding:14px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      background:#fff;
-      cursor:pointer;
-      transition:.18s ease;
-      box-shadow:0 1px 2px rgba(0,0,0,.03)
-    }
-    .planBtn:hover{
-      border-color:#bbb;
-      transform:translateY(-1px)
-    }
-    .planBtn.active{
-      background:#111;
-      color:#fff;
-      border-color:#111;
-      box-shadow:0 10px 24px rgba(0,0,0,.12)
-    }
-    .price{font-size:30px;font-weight:900;margin:6px 0 2px}
-    .muted{color:var(--muted);opacity:.9}
+    .sectionTitle{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:900;margin:0 0 12px}
+    .muted{color:var(--muted)}
     .small{font-size:13px}
-    .hr{height:1px;background:var(--line);margin:14px 0}
-    .links a{display:inline-flex;margin:6px 10px 0 0}
-    img.qr{
-      max-width:280px;
-      height:auto;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:8px;
-      background:#fff
+    .plans{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:860px){.plans{grid-template-columns:1fr 1fr}}
+    .planBtn{
+      width:100%;text-align:left;padding:18px;border-radius:22px;border:1px solid var(--line);
+      background:#fff;cursor:pointer;transition:.18s ease;display:flex;flex-direction:column;gap:12px;
+      box-shadow:0 2px 6px rgba(17,17,17,.03);
     }
-    .status{margin-top:10px;font-size:14px}
+    .planBtn:hover{transform:translateY(-1px);border-color:#d6c79c}
+    .planBtn.active{
+      background:#111;border-color:#111;color:#fff;
+      box-shadow:0 12px 26px rgba(17,17,17,.18);
+    }
+    .planBtn.active .muted,.planBtn.active .small{color:rgba(255,255,255,.78)}
+    .planBtn.active .chip{background:rgba(250,204,21,.12);border-color:rgba(250,204,21,.28);color:#fff}
+    .topRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .planName{font-size:24px;font-weight:900;line-height:1.1}
+    .price{font-size:34px;font-weight:900;letter-spacing:-0.02em}
+    .selectedBadge{
+      display:none;align-self:flex-start;padding:7px 10px;border-radius:999px;
+      background:#facc15;color:#111;font-size:12px;font-weight:900;
+    }
+    .planBtn.active .selectedBadge{display:inline-flex}
+    .payGrid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:920px){.payGrid{grid-template-columns:1.15fr .85fr}}
+    .qr{max-width:260px;border:1px solid var(--line);border-radius:16px;padding:8px;background:#fff}
+    .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .hr{height:1px;background:var(--line);margin:16px 0}
+    .backNote{margin-top:10px}
+
   </style>
 </head>
 <body>
@@ -109,14 +106,12 @@
     <section class="hero">
       <div class="badges">
         <span class="badge">🇪🇺 Europe eSIM</span>
-        <span class="badge">Олон улсад ажиллана</span>
-        <span class="badge">QPay + QR</span>
+<span class="badge">Regional Travel</span>
+<span class="badge">💳 QPay + QR</span>
       </div>
 
       <h1>Europe eSIM</h1>
-      <p class="sub">
-        Европын олон улсад ашиглах eSIM багцууд. Доороос багцаа сонгоод QPay-р төлнө.
-      </p>
+      <p class="sub">Европын олон улсад ашиглах багцууд. Доороос багцаа сонгоод QPay-р төлнө.</p>
 
       <div class="ctaRow">
         <a class="btn primary" href="#plans">Багц сонгох</a>
@@ -124,149 +119,171 @@
       </div>
     </section>
 
+    <div class="stats">
+      <div class="stat active"><div class="t1">Europe Coverage</div><div class="t2 muted">Regional data plans</div></div>
+<div class="stat"><div class="t1">Travel Data</div><div class="t2 muted">Popular destinations</div></div>
+<div class="stat"><div class="t1">Fast Checkout</div><div class="t2 muted">QPay + QR</div></div>
+    </div>
+
     <section class="card">
-      <h2>✅ Supported Countries</h2>
+      <h2 class="sectionTitle">🌍 Ашиглах боломжтой чиглэлүүд</h2>
       <div class="chips">
-        <span class="badge">France</span>
-        <span class="badge">Germany</span>
-        <span class="badge">Italy</span>
-        <span class="badge">Spain</span>
-        <span class="badge">Netherlands</span>
-        <span class="badge">Belgium</span>
-        <span class="badge">Switzerland</span>
-        <span class="badge">Austria</span>
-        <span class="badge">Czech Republic</span>
-        <span class="badge">Poland</span>
-        <span class="badge">Hungary</span>
-        <span class="badge">Portugal</span>
+        <span class="chip">🇫🇷 France</span>
+<span class="chip">🇩🇪 Germany</span>
+<span class="chip">🇮🇹 Italy</span>
+<span class="chip">🇪🇸 Spain</span>
+<span class="chip">🇳🇱 Netherlands</span>
+<span class="chip">🇧🇪 Belgium</span>
+<span class="chip">🇨🇭 Switzerland</span>
+<span class="chip">🇦🇹 Austria</span>
+<span class="chip">🇨🇿 Czech Republic</span>
+<span class="chip">🇵🇱 Poland</span>
+<span class="chip">🇭🇺 Hungary</span>
+<span class="chip">🇵🇹 Portugal</span>
       </div>
     </section>
 
     <section class="card" id="plans">
-      <h2>🧾 Багц сонгох</h2>
-      <p class="muted">Хэрэглэгчид зөвхөн Монгол үнэ харагдана. Багц дээр дарахад сонгогдоно.</p>
-      <div id="planList" class="planGrid"></div>
-      <div class="status muted small" id="planStatus"></div>
+      <h2 class="sectionTitle">📦 Багц сонгох</h2>
+      <p class="muted" style="margin:0 0 14px">Сонгосон багц хар өнгөтэй болж идэвхжинэ. Дараа нь төлбөрийн хэсэг автоматаар гарна.</p>
+      <div class="plans" id="planList"></div>
+      <div class="small muted backNote" id="planStatus"></div>
     </section>
 
     <section class="card" id="payBox" style="display:none">
-      <h2>💳 QPay төлбөр</h2>
-      <p class="muted" id="payMeta" style="margin:0 0 10px"></p>
-      <div id="qrBox"></div>
-      <div class="links" id="urlBox"></div>
-
-      <div class="hr"></div>
-
-      <div class="ctaRow">
-        <button class="btn primary" id="checkBtn" type="button">Төлбөр шалгах</button>
-        <span class="muted" id="checkResult"></span>
+      <h2 class="sectionTitle">💳 QPay төлбөр</h2>
+      <div class="payGrid">
+        <div>
+          <p id="payMeta" class="muted" style="margin:0 0 12px"></p>
+          <div id="qrBox"></div>
+          <div class="links" id="urlBox"></div>
+        </div>
+        <div>
+          <div class="card" style="margin:0">
+            <h3 style="margin:0 0 10px">Төлбөр шалгах</h3>
+            <p class="muted" style="margin:0 0 12px">QPay төлсний дараа доорх товчоор шалгана.</p>
+            <button class="btn gold" id="checkBtn" type="button">Төлбөр шалгах</button>
+            <div id="checkResult" class="muted" style="margin-top:12px"></div>
+          </div>
+        </div>
       </div>
+    </section>
+    
+    <section class="card">
+      <h2 class="sectionTitle">❓ Түгээмэл асуулт</h2>
+      <p><strong>Яаж идэвхжүүлэх вэ?</strong><br>QR код уншуулж суулгаад Data Roaming асаана.</p>
+<p><strong>Сүлжээ барихгүй бол?</strong><br>Airplane mode ON/OFF хийгээд дахин оролдоорой.</p>
     </section>
   </div>
 
   <script>
     const FX = 3680;
-    const MARGIN = 0.35;
+    const MARKUP = 0.35;
     const ORDER_PREFIX = "EUROPE";
+    const PLANS = [{"title": "Europe eSIM", "data": "1GB", "validity": "7 Days", "type": "Europe eSIM", "usd": 4.5}, {"title": "Europe eSIM", "data": "3GB", "validity": "30 Days", "type": "Europe eSIM", "usd": 11.5}, {"title": "Europe eSIM", "data": "5GB", "validity": "30 Days", "type": "Europe eSIM", "usd": 16.5}, {"title": "Europe eSIM", "data": "10GB", "validity": "30 Days", "type": "Europe eSIM", "usd": 27.0}, {"title": "Europe eSIM", "data": "12GB", "validity": "30 Days", "type": "Europe eSIM", "usd": 29.0}, {"title": "Europe eSIM", "data": "20GB", "validity": "30 Days", "type": "Europe eSIM", "usd": 39.0}, {"title": "Europe eSIM", "data": "30GB", "validity": "30 Days", "type": "Europe eSIM", "usd": 49.0}, {"title": "Europe eSIM", "data": "Unlimited", "validity": "10 Days", "type": "Europe eSIM", "usd": 35.0}];
 
-    const MANUAL_PLANS = [
-      { title: "1GB", days: 7, usd: 4.5 },
-      { title: "3GB", days: 30, usd: 11.5 },
-      { title: "5GB", days: 30, usd: 16.5 },
-      { title: "10GB", days: 30, usd: 27.0 },
-      { title: "12GB", days: 30, usd: 29.0 },
-      { title: "20GB", days: 30, usd: 39.0 },
-      { title: "30GB", days: 30, usd: 49.0 },
-      { title: "Unlimited", days: 10, usd: 35.0 }
-    ];
+    let lastInvoiceId = "";
+    let activeBtn = null;
 
-    function calcMntFromUsd(usd) {
-      return Math.round(Number(usd) * FX * (1 + MARGIN));
+    function toMnt(usd){
+      return Math.round(Number(usd) * FX * (1 + MARKUP));
     }
 
-    function renderPlans() {
+    function renderPlans(){
       const list = document.getElementById("planList");
       const status = document.getElementById("planStatus");
+      status.textContent = `Нийт ${PLANS.length} багц`;
 
-      status.textContent = `Нийт ${MANUAL_PLANS.length} багц`;
-      list.innerHTML = MANUAL_PLANS.map((plan, i) => {
-        const mnt = calcMntFromUsd(plan.usd);
+      list.innerHTML = PLANS.map((p, i) => {
+        const amount = toMnt(p.usd);
+        const chips = [
+          p.data ? `📶 ${p.data}` : "",
+          p.validity ? `🗓 ${p.validity}` : "",
+          p.type ? `📦 ${p.type}` : "",
+          p.operator ? `📡 ${p.operator}` : ""
+        ].filter(Boolean).map(x => `<span class="chip">${x}</span>`).join("");
+
         return `
-          <button
-            class="planBtn"
-            data-title="${plan.title}"
-            data-days="${plan.days}"
-            data-amount="${mnt}"
-            id="plan-${i}"
-          >
-            <div><strong>${plan.title}</strong> • ${plan.days} өдөр</div>
-            <div class="price">${mnt.toLocaleString("en-US")} ₮</div>
-          </button>
-        `;
+          <button class="planBtn"
+            type="button"
+            data-index="${i}"
+            data-title="${p.title || p.data || ''}"
+            data-validity="${p.validity || ''}"
+            data-data="${p.data || ''}"
+            data-type="${p.type || ''}"
+            data-operator="${p.operator || ''}"
+            data-country="${p.country || ''}"
+            data-plan-code="${p.planCode || ''}"
+            data-amount="${amount}">
+            <span class="selectedBadge">Сонгогдсон багц</span>
+            <div class="topRow">
+              <div>
+                <div class="planName">${p.country ? `${p.flag || ''} ${p.country}` : (p.title || '')}</div>
+                <div class="small muted">${p.planCode ? `Plan code: ${p.planCode}` : `${p.title || ''}`}</div>
+              </div>
+              <div class="price">${amount.toLocaleString("en-US")} ₮</div>
+            </div>
+            <div class="chips">${chips}</div>
+          </button>`;
       }).join("");
     }
 
     renderPlans();
 
-    let lastInvoiceId = "";
-    let selectedBtn = null;
-
     document.addEventListener("click", async (e) => {
       const btn = e.target.closest(".planBtn");
       if (!btn) return;
 
-      if (selectedBtn) selectedBtn.classList.remove("active");
+      if (activeBtn) activeBtn.classList.remove("active");
       btn.classList.add("active");
-      selectedBtn = btn;
+      activeBtn = btn;
 
       const amount = Number(btn.dataset.amount || 0);
-      const title = btn.dataset.title || "Europe eSIM";
-      const days = btn.dataset.days || "";
+      const country = btn.dataset.country || "";
+      const title = btn.dataset.title || "";
+      const data = btn.dataset.data || "";
+      const validity = btn.dataset.validity || "";
+      const type = btn.dataset.type || "";
+      const operator = btn.dataset.operator || "";
+      const planCode = btn.dataset.planCode || "";
 
-      if (!amount) {
-        alert("Үнэ бодогдсонгүй.");
-        return;
-      }
-
-      const payload = {
-        amount,
-        orderId: `${ORDER_PREFIX}-${Date.now()}`,
-        description: `${title} ${days} өдөр`
-      };
+      const descriptionParts = [country || title, data, validity, type, operator].filter(Boolean);
+      const description = descriptionParts.join(" • ");
 
       try {
         const r = await fetch("/.netlify/functions/qpay-create-invoice", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({
+            amount,
+            orderId: `${ORDER_PREFIX}-${Date.now()}`,
+            description
+          })
         });
 
         const j = await r.json().catch(() => ({}));
-
         if (!j.ok) {
           alert("QPay алдаа: " + JSON.stringify(j));
           return;
         }
 
         lastInvoiceId = j.invoice_id || "";
-
         document.getElementById("payBox").style.display = "block";
         document.getElementById("payMeta").textContent =
-          `${title} • ${days} өдөр • ${amount.toLocaleString("en-US")} ₮`;
+          `${description}${planCode ? ` • Plan code: ${planCode}` : ""} • ${amount.toLocaleString("en-US")} ₮`;
 
-        document.getElementById("qrBox").innerHTML = j.qr_image
-          ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">`
-          : "QR олдсонгүй";
+        document.getElementById("qrBox").innerHTML =
+          j.qr_image ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">` : "QR олдсонгүй";
 
         const urls = Array.isArray(j.urls) ? j.urls : [];
         document.getElementById("urlBox").innerHTML = urls.length
-          ? urls.map(u => `<a class="btn" href="${u.link}" target="_blank" rel="noopener">${u.name || "Pay link"}</a>`).join("")
+          ? urls.map(u => `<a class="btn gold" href="${u.link}" target="_blank" rel="noopener">${u.name || "Төлбөрийн линк"}</a>`).join("")
           : "";
 
         document.getElementById("checkResult").textContent = "";
-        document.getElementById("payBox").scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById("payBox").scrollIntoView({behavior:"smooth", block:"start"});
       } catch (err) {
-        alert("QPay function дуудах үед алдаа гарлаа.");
+        alert("Төлбөрийн хэсэгт алдаа гарлаа.");
       }
     });
 
@@ -281,7 +298,7 @@
       try {
         const r = await fetch("/.netlify/functions/qpay-check", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type":"application/json" },
           body: JSON.stringify({ invoice_id: lastInvoiceId })
         });
 
@@ -289,7 +306,7 @@
         document.getElementById("checkResult").textContent =
           j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
       } catch (err) {
-        document.getElementById("checkResult").textContent = "⚠️ Шалгах үед алдаа гарлаа";
+        document.getElementById("checkResult").textContent = "Шалгаж чадсангүй.";
       }
     });
   </script>
