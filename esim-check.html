@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eSIM дэмждэг эсэхийг шалгах | eSIM Mongolia</title>
+  <meta name="description" content="Таны утас eSIM дэмждэг эсэхийг шалгаарай. iPhone, Samsung, Google Pixel болон бусад түгээмэл загваруудыг хайж шалгах боломжтой." />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f8fc;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-inner {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: #111827;
+      text-decoration: none;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
+      color: #fff;
+      border-radius: 20px;
+      padding: 32px 24px;
+      margin-top: 24px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: 17px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .checker-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-top: 24px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #eef2f7;
+    }
+
+    .checker-card h2 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 24px;
+      color: #111827;
+    }
+
+    .checker-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .input-wrap {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .checker-input {
+      width: 100%;
+      height: 52px;
+      padding: 0 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      font-size: 16px;
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    .checker-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .checker-btn,
+    .secondary-btn {
+      height: 52px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .checker-btn {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .checker-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .secondary-btn {
+      background: #eef2ff;
+      color: #1e40af;
+    }
+
+    .secondary-btn:hover {
+      background: #dbeafe;
+    }
+
+    .result-box {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      display: none;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .result-success {
+      display: block;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .result-warning {
+      display: block;
+      background: #fff7ed;
+      color: #9a3412;
+      border: 1px solid #fdba74;
+    }
+
+    .tips,
+    .brands-section,
+    .cta-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-top: 24px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #eef2f7;
+    }
+
+    .tips h3,
+    .brands-section h3,
+    .cta-box h3 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 22px;
+      color: #111827;
+    }
+
+    .tips ul,
+    .brands-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .tips li,
+    .brands-list li {
+      margin-bottom: 10px;
+    }
+
+    .brand-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .brand-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .brand-card h4 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: #0f172a;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 12px 18px;
+      background: #16a34a;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .cta-btn:hover {
+      background: #15803d;
+    }
+
+    .small-note {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 16px 20px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .hero h1 {
+        font-size: 26px;
+      }
+
+      .checker-btn,
+      .secondary-btn {
+        width: 100%;
+      }
+
+      .checker-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="index.html" class="brand">eSIM Mongolia</a>
+      <a href="index.html" class="back-link">← Нүүр хуудас</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <section class="hero">
+      <h1>Таны утас eSIM дэмждэг эсэхийг шалгаарай</h1>
+      <p>
+        Утасныхаа марк болон загварыг бичээд eSIM суулгах боломжтой эсэхээ хурдан шалгаарай.
+      </p>
+    </section>
+
+    <section class="checker-card">
+      <h2>eSIM compatibility check</h2>
+
+      <div class="checker-row">
+        <div class="input-wrap">
+          <input
+            type="text"
+            id="phoneModel"
+            class="checker-input"
+            placeholder="Жишээ: iPhone 13, Samsung S23, Pixel 7"
+            list="phoneSuggestions"
+          />
+          <datalist id="phoneSuggestions"></datalist>
+        </div>
+
+        <button class="checker-btn" onclick="checkEsim()">Шалгах</button>
+        <button class="secondary-btn" onclick="clearCheck()">Цэвэрлэх</button>
+      </div>
+
+      <div id="resultBox" class="result-box"></div>
+
+      <p class="small-note">
+        Анхаар: Зарим загварын бүс нутаг, операторын хувилбараас хамаарч eSIM дэмжлэг өөр байж болно.
+      </p>
+    </section>
+
+    <section class="tips">
+      <h3>Яаж давхар шалгах вэ?</h3>
+      <ul>
+        <li><strong>*#06#</strong> гэж залгаад <strong>EID</strong> гарч ирж байвал ихэнхдээ eSIM дэмждэг.</li>
+        <li><strong>Settings → Cellular / Mobile Data</strong> хэсэгт <strong>Add eSIM</strong> эсвэл <strong>Add Cellular Plan</strong> байвал дэмждэг байх магадлал өндөр.</li>
+        <li>Хэрэв та сайн мэдэхгүй бол бидэнд чат бичээд утасныхаа загварыг явуулж шалгуулж болно.</li>
+      </ul>
+    </section>
+
+    <section class="brands-section">
+      <h3>Түгээмэл дэмждэг төхөөрөмжүүд</h3>
+
+      <div class="brand-grid">
+        <div class="brand-card">
+          <h4>Apple iPhone</h4>
+          <ul class="brands-list">
+            <li>iPhone XR / XS / XS Max</li>
+            <li>iPhone 11 / 12 / 13 / 14 / 15 / 16 series</li>
+            <li>iPhone SE (2nd gen, 3rd gen)</li>
+          </ul>
+        </div>
+
+        <div class="brand-card">
+          <h4>Samsung Galaxy</h4>
+          <ul class="brands-list">
+            <li>Galaxy S20 series ба түүнээс дээш</li>
+            <li>Galaxy S21 / S22 / S23 / S24 series</li>
+            <li>Z Flip / Z Fold series</li>
+            <li>Note20 / Note20 Ultra</li>
+          </ul>
+        </div>
+
+        <div class="brand-card">
+          <h4>Google Pixel</h4>
+          <ul class="brands-list">
+            <li>Pixel 3 / 3 XL</li>
+            <li>Pixel 4 / 4 XL / 4a / 5 / 5a</li>
+            <li>Pixel 6 / 7 / 8 / 9 series</li>
+          </ul>
+        </div>
+
+        <div class="brand-card">
+          <h4>Бусад</h4>
+          <ul class="brands-list">
+            <li>Huawei P40 / Mate 40 Pro</li>
+            <li>Motorola Razr series</li>
+            <li>Xiaomi 13 / 14 series-ийн зарим загвар</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-box">
+      <h3>Таны утас eSIM дэмждэг бол шууд авах боломжтой</h3>
+      <p>
+        Манай eSIM-үүд хурдан идэвхждэг, VPN шаардлагагүй, Facebook, YouTube болон банкны апп-ууд саадгүй ажиллана.
+      </p>
+      <a href="index.html" class="cta-btn">eSIM багц үзэх</a>
+    </section>
+  </div>
+
+  <footer>
+    © 2026 eSIM Mongolia. Бүх эрх хуулиар хамгаалагдсан.
+  </footer>
+
+  <script>
+    const esimPhones = [
+      "iphone xr",
+      "iphone xs",
+      "iphone xs max",
+      "iphone 11",
+      "iphone 11 pro",
+      "iphone 11 pro max",
+      "iphone se 2",
+      "iphone se 2020",
+      "iphone 12 mini",
+      "iphone 12",
+      "iphone 12 pro",
+      "iphone 12 pro max",
+      "iphone 13 mini",
+      "iphone 13",
+      "iphone 13 pro",
+      "iphone 13 pro max",
+      "iphone se 3",
+      "iphone se 2022",
+      "iphone 14",
+      "iphone 14 plus",
+      "iphone 14 pro",
+      "iphone 14 pro max",
+      "iphone 15",
+      "iphone 15 plus",
+      "iphone 15 pro",
+      "iphone 15 pro max",
+      "iphone 16",
+      "iphone 16 plus",
+      "iphone 16 pro",
+      "iphone 16 pro max",
+
+      "samsung galaxy s20",
+      "samsung galaxy s20+",
+      "samsung galaxy s20 plus",
+      "samsung galaxy s20 ultra",
+      "samsung galaxy s21",
+      "samsung galaxy s21+",
+      "samsung galaxy s21 plus",
+      "samsung galaxy s21 ultra",
+      "samsung galaxy s22",
+      "samsung galaxy s22+",
+      "samsung galaxy s22 plus",
+      "samsung galaxy s22 ultra",
+      "samsung galaxy s23",
+      "samsung galaxy s23+",
+      "samsung galaxy s23 plus",
+      "samsung galaxy s23 ultra",
+      "samsung galaxy s24",
+      "samsung galaxy s24+",
+      "samsung galaxy s24 plus",
+      "samsung galaxy s24 ultra",
+      "samsung galaxy note20",
+      "samsung galaxy note20 ultra",
+      "samsung galaxy z flip",
+      "samsung galaxy z flip3",
+      "samsung galaxy z flip4",
+      "samsung galaxy z flip5",
+      "samsung galaxy z flip6",
+      "samsung galaxy z fold2",
+      "samsung galaxy z fold3",
+      "samsung galaxy z fold4",
+      "samsung galaxy z fold5",
+      "samsung galaxy z fold6",
+
+      "google pixel 3",
+      "google pixel 3 xl",
+      "google pixel 3a",
+      "google pixel 3a xl",
+      "google pixel 4",
+      "google pixel 4 xl",
+      "google pixel 4a",
+      "google pixel 4a 5g",
+      "google pixel 5",
+      "google pixel 5a",
+      "google pixel 6",
+      "google pixel 6 pro",
+      "google pixel 6a",
+      "google pixel 7",
+      "google pixel 7 pro",
+      "google pixel 7a",
+      "google pixel 8",
+      "google pixel 8 pro",
+      "google pixel 8a",
+      "google pixel 9",
+      "google pixel 9 pro",
+      "google pixel 9 pro xl",
+
+      "huawei p40",
+      "huawei p40 pro",
+      "huawei mate 40 pro",
+      "motorola razr 2019",
+      "motorola razr 5g",
+      "motorola razr 40",
+      "motorola razr 40 ultra",
+      "motorola razr 50",
+      "motorola razr 50 ultra",
+      "xiaomi 13",
+      "xiaomi 13 pro",
+      "xiaomi 13 lite",
+      "xiaomi 14",
+      "xiaomi 14 pro"
+    ];
+
+    const datalist = document.getElementById("phoneSuggestions");
+    const uniquePhones = [...new Set(esimPhones)].sort();
+
+    uniquePhones.forEach(phone => {
+      const option = document.createElement("option");
+      option.value = phone.replace(/\b\w/g, c => c.toUpperCase());
+      datalist.appendChild(option);
+    });
+
+    function normalizeText(text) {
+      return text
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function checkEsim() {
+      const input = document.getElementById("phoneModel");
+      const resultBox = document.getElementById("resultBox");
+      const phone = normalizeText(input.value);
+
+      if (!phone) {
+        resultBox.className = "result-box result-warning";
+        resultBox.innerHTML = "⚠️ Утасныхаа марк эсвэл загварыг оруулна уу.";
+        return;
+      }
+
+      const found = esimPhones.some(model => phone.includes(model) || model.includes(phone));
+
+      if (found) {
+        resultBox.className = "result-box result-success";
+        resultBox.innerHTML = "✅ Таны оруулсан загвар eSIM дэмждэг байх өндөр магадлалтай. Та манай eSIM багцыг авч суулгах боломжтой.";
+      } else {
+        resultBox.className = "result-box result-warning";
+        resultBox.innerHTML = "❌ Энэ загвар манай жагсаалтад олдсонгүй. Гэхдээ бүс нутаг, операторын хувилбараас шалтгаалж eSIM дэмждэг байж болно. *#06# дарж EID байгаа эсэхээ шалгаарай.";
+      }
+    }
+
+    function clearCheck() {
+      document.getElementById("phoneModel").value = "";
+      const resultBox = document.getElementById("resultBox");
+      resultBox.className = "result-box";
+      resultBox.innerHTML = "";
+    }
+
+    document.getElementById("phoneModel").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        checkEsim();
+      }
+    });
+  </script>
+
+</body>
+</html>
