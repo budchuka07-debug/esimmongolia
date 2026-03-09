@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Travel eSIM | eSIM Mongolia</title>
+
+<style>
+
+body{
+font-family:system-ui;
+max-width:1000px;
+margin:auto;
+padding:20px;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+.filterBtn{
+padding:10px 16px;
+border-radius:10px;
+border:1px solid #ddd;
+cursor:pointer;
+background:white;
+}
+
+.filterBtn.active{
+background:black;
+color:white;
+}
+
+.plan{
+border:1px solid #eee;
+border-radius:12px;
+padding:15px;
+margin-bottom:10px;
+cursor:pointer;
+}
+
+.price{
+font-size:22px;
+font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🌍 Travel eSIM</h1>
+
+<div class="filters">
+
+<button class="filterBtn active" data-group="global">
+🌍 Global
+</button>
+
+<button class="filterBtn" data-group="asia">
+🌏 Asia Pacific
+</button>
+
+<button class="filterBtn" data-group="china">
+🇨🇳 China
+</button>
+
+</div>
+
+<div id="plans">
+Loading...
+</div>
+
+<script>
+
+const FX=3680
+const MARGIN=0.35
+
+function calcPrice(usd){
+
+return Math.round(usd*FX*(1+MARGIN))
+
+}
+
+async function loadPlans(group){
+
+document.getElementById("plans").innerHTML="Loading..."
+
+const r=await fetch(`/.netlify/functions/getPlans?group=${group}`)
+
+const j=await r.json()
+
+const plans=j.plans||[]
+
+if(!plans.length){
+
+document.getElementById("plans").innerHTML="Багц олдсонгүй"
+
+return
+
+}
+
+let html=""
+
+plans.forEach(p=>{
+
+const usd=parseFloat(p.portalPrice||p.price||0)
+
+const mnt=calcPrice(usd)
+
+html+=`
+
+<div class="plan">
+
+<div>${p.planName||"eSIM"}</div>
+
+<div class="price">${mnt.toLocaleString()} ₮</div>
+
+</div>
+
+`
+
+})
+
+document.getElementById("plans").innerHTML=html
+
+}
+
+document.querySelectorAll(".filterBtn").forEach(btn=>{
+
+btn.onclick=()=>{
+
+document.querySelectorAll(".filterBtn").forEach(b=>b.classList.remove("active"))
+
+btn.classList.add("active")
+
+loadPlans(btn.dataset.group)
+
+}
+
+})
+
+loadPlans("global")
+
+</script>
+
+</body>
+</html>
