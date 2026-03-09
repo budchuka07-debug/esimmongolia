@@ -127,6 +127,7 @@
       })
       .then((data) => {
         const plans = findPlans(data);
+        console.log("PLANS DATA:", plans);
         const list = document.getElementById("planList");
         const status = document.getElementById("planStatus");
 
@@ -218,3 +219,4 @@
   </script>
 </body>
 </html>
+
