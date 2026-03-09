@@ -1,8 +1,5 @@
-// netlify/functions/getPlans.js
-// Supports:
-//   /.netlify/functions/getPlans?code=CN
-//   /.netlify/functions/getPlans?group=asia
-//   /.netlify/functions/getPlans?group=global
+// netlify/functions/getPlans.js  (CommonJS)
+// GET /.netlify/functions/getPlans?code=CN
 
 const BASE = "https://api.airhubapp.com";
 
@@ -28,60 +25,14 @@ async function airhubLogin(USERNAME, PASSWORD) {
   });
 
   const j = await r.json().catch(() => ({}));
-  const token = j?.token || j?.data?.token || j?.data?.Token || j?.Token;
-  if (!r.ok || !token) return { ok: false, status: r.status, data: j };
-  return { ok: true, token, raw: j };
-}
-
-function extractPlans(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (!payload || typeof payload !== "object") return [];
-  for (const key of ["getInformation", "GetInformation", "data", "Data", "plans", "Plans", "result", "Result"]) {
-    if (Array.isArray(payload[key])) return payload[key];
-  }
-  for (const key of Object.keys(payload)) {
-    if (Array.isArray(payload[key])) return payload[key];
-  }
-  return [];
-}
-
-function normalizeText(v) {
-  return String(v || "").trim().toLowerCase();
-}
-
-function matchesGroup(plan, group) {
-  const text = [
-    plan?.countryName,
-    plan?.Country,
-    plan?.country,
-    plan?.areaName,
-    plan?.regionName,
-    plan?.zoneName,
-    plan?.packageName,
-    plan?.planName,
-    plan?.name,
-    plan?.title,
-    plan?.productName,
-    plan?.operatorName,
-  ].filter(Boolean).join(" ").toLowerCase();
-
-  if (group === "asia") {
-    return text.includes("asia") ||
-           text.includes("asia pacific") ||
-           text.includes("asia-pacific") ||
-           text.includes("apac");
-  }
-  if (group === "global") {
-    return text.includes("global") ||
-           text.includes("world") ||
-           text.includes("worldwide") ||
-           text.includes("international");
-  }
-  return false;
+  if (!r.ok || !j?.token) return { ok: false, status: r.status, data: j };
+  return { ok: true, token: j.token, raw: j };
 }
 
 exports.handler = async (event) => {
+  // CORS preflight
   if (event.httpMethod === "OPTIONS") return res(200, { ok: true });
+
   if (event.httpMethod !== "GET") return res(405, { error: "Method Not Allowed" });
 
   const USERNAME = process.env.AIRHUB_USERNAME;
@@ -96,28 +47,21 @@ exports.handler = async (event) => {
   }
 
   const code = String(event.queryStringParameters?.code || "").trim().toUpperCase();
-  const group = normalizeText(event.queryStringParameters?.group);
-
-  if (!code && !group) {
-    return res(400, {
-      error: "Missing query",
-      examples: [
-        "/.netlify/functions/getPlans?code=CN",
-        "/.netlify/functions/getPlans?group=asia",
-        "/.netlify/functions/getPlans?group=global"
-      ]
-    });
+  if (!code) {
+    return res(400, { error: "Missing query: code", example: "/getPlans?code=CN" });
   }
 
   try {
+    // 1) login
     const login = await airhubLogin(USERNAME, PASSWORD);
     if (!login.ok) return res(401, { error: "Airhub login failed", details: login.data });
 
+    // 2) plans
     const body = {
       partnerCode: Number(PARTNER_CODE),
       flag: 6,
-      countryCode: code || "",
-      multiplecountrycode: [],
+      countryCode: "",
+      multiplecountrycode: [code],
     };
 
     const planRes = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
@@ -127,6 +71,8 @@ exports.handler = async (event) => {
     });
 
     const planJson = await planRes.json().catch(() => ({}));
+
+    // 🔥 хамгийн чухал: унасан үед Airhub юу гэж буцааж байгааг харуулна
     if (!planRes.ok) {
       return res(planRes.status, {
         error: "GetPlanInformation failed",
@@ -135,21 +81,7 @@ exports.handler = async (event) => {
       });
     }
 
-    const plans = extractPlans(planJson);
-
-    if (code) {
-      return res(200, { ok: true, mode: "code", code, count: plans.length, plans, raw: planJson });
-    }
-
-    const filtered = plans.filter((p) => matchesGroup(p, group));
-    return res(200, {
-      ok: true,
-      mode: "group",
-      group,
-      count: filtered.length,
-      plans: filtered,
-      raw: planJson,
-    });
+    return res(200, planJson);
   } catch (e) {
     return res(500, { error: "Server error", message: String(e) });
   }
