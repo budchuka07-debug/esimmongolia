@@ -1313,6 +1313,109 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </div>
 </section>
+    <div id="order-box" style="max-width:500px;margin:30px auto;padding:20px;border:1px solid #ddd;border-radius:12px;background:#fff;">
+  <h3 style="margin-top:0;">eSIM захиалгын мэдээлэл</h3>
+  <p style="font-size:14px;color:#666;">
+    QR код гаргахаас өмнө мэдээллээ бөглөнө үү.
+    Facebook эсвэл Email-ээс аль нэгийг заавал оруулна.
+  </p>
+
+  <form id="orderForm">
+    <div style="margin-bottom:12px;">
+      <label>Нэр</label><br>
+      <input type="text" id="name" placeholder="Нэрээ оруулна уу" required
+        style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;">
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label>Утас</label><br>
+      <input type="text" id="phone" placeholder="Утасны дугаар" required
+        style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;">
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label>Facebook</label><br>
+      <input type="text" id="facebook" placeholder="Facebook нэр эсвэл link"
+        style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;">
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label>Email</label><br>
+      <input type="email" id="email" placeholder="Email хаяг"
+        style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;">
+    </div>
+
+    <input type="hidden" id="package" value="Website order">
+    <input type="hidden" id="price" value="">
+
+    <button type="submit"
+      style="width:100%;padding:12px;background:#111;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">
+      QR код гаргах
+    </button>
+  </form>
+
+  <div id="msg" style="margin-top:12px;font-size:14px;"></div>
+</div>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbykwFQgqdPyB-PNJi7bdI5uVBolt3q3tXXCUaPilNiLr-yiFCxGSNW9ARk4PBN3onHn2A/exec";
+
+function choosePlan(packageName, price) {
+  const pkg = document.getElementById("package");
+  const pr = document.getElementById("price");
+  if (pkg) pkg.value = packageName || "Website order";
+  if (pr) pr.value = price || "";
+  const box = document.getElementById("order-box");
+  if (box) box.scrollIntoView({ behavior: "smooth" });
+}
+
+document.getElementById("orderForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const facebook = document.getElementById("facebook").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const msg = document.getElementById("msg");
+
+  if (!facebook && !email) {
+    msg.style.color = "red";
+    msg.innerHTML = "Facebook эсвэл Email-ээс аль нэгийг бөглөнө үү.";
+    return;
+  }
+
+  const data = {
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    facebook: facebook,
+    email: email,
+    package: document.getElementById("package").value,
+    price: document.getElementById("price").value
+  };
+
+  try {
+    const res = await fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+
+    if (res.ok) {
+      msg.style.color = "green";
+      msg.innerHTML = "Мэдээлэл хадгалагдлаа. Одоо QPay QR гаргаж болно.";
+
+      // Дараа нь энд өөрийн QPay function-оо холбоно
+      // жишээ:
+      // openQPayModal();
+      // createInvoice();
+    } else {
+      msg.style.color = "red";
+      msg.innerHTML = "Алдаа гарлаа. Дахин оролдоно уу.";
+    }
+  } catch (err) {
+    msg.style.color = "red";
+    msg.innerHTML = "Сүлжээний алдаа гарлаа.";
+    console.error(err);
+  }
+});
+</script>
 </body>
 </html>
 
