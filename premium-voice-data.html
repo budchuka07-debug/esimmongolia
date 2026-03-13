@@ -145,7 +145,34 @@
       <div class="plans" id="planList"></div>
       <div class="small muted backNote" id="planStatus"></div>
     </section>
+<section class="card" id="customerForm">
+  <h2 class="sectionTitle">Захиалгын мэдээлэл</h2>
+  <p class="muted" style="margin:0 0 12px">Төлбөрийн дараа QR код болон захиалгын мэдээллийг таны сонгосон сувгаар илгээнэ.</p>
 
+  <input id="customerName" placeholder="Нэр" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+  <input id="phone" placeholder="Утас" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+
+  <select id="deliveryChannel" onchange="toggleDeliveryFields()" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+    <option value="">QR код авах сувгаа сонгоно уу</option>
+    <option value="facebook">Messenger</option>
+    <option value="whatsapp">WhatsApp</option>
+    <option value="email">Email</option>
+  </select>
+
+  <div id="facebookField" style="display:none">
+    <input id="facebook" placeholder="Facebook нэр эсвэл link" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+  </div>
+
+  <div id="whatsappField" style="display:none">
+    <input id="whatsapp" placeholder="WhatsApp дугаар" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+  </div>
+
+  <div id="emailField" style="display:none">
+    <input id="email" placeholder="Email хаяг" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+  </div>
+
+  <textarea id="note" placeholder="Нэмэлт тайлбар" style="width:100%;min-height:90px;padding:12px;border:1px solid #ddd;border-radius:10px;"></textarea>
+</section>
     <section class="card" id="payBox" style="display:none">
       <h2 class="sectionTitle">💳 QPay төлбөр</h2>
       <div class="payGrid">
