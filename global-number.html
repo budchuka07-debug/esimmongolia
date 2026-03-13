@@ -1,381 +1,239 @@
+
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Global дугаар үйлчилгээ | eSIM Mongolia</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f6f8;
-      color: #222;
-      line-height: 1.6;
-    }
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 22px;
-    }
-    .hero, .box {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.06);
-    }
-    .hero {
-      padding: 28px;
-      margin-top: 22px;
-    }
-    .box {
-      padding: 22px;
-      margin-top: 18px;
-      border: 1px solid #ececec;
-    }
-    h1 {
-      margin: 0 0 8px;
-      color: #ff7a00;
-      font-size: 34px;
-    }
-    h2, h3 { margin-top: 0; }
-    .muted { color: #666; }
-    .pill {
-      display: inline-block;
-      background: #fff3e7;
-      color: #b85a00;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .list-check {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .list-check li {
-      padding-left: 26px;
-      position: relative;
-      margin: 8px 0;
-    }
-    .list-check li::before {
-      content: "✔";
-      position: absolute;
-      left: 0;
-      color: #ff7a00;
-      font-weight: 700;
-    }
-    .btn {
-      display: inline-block;
-      padding: 12px 20px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    .btn-primary {
-      background: #ff7a00;
-      color: #fff;
-    }
-    .btn-dark {
-      background: #222;
-      color: #fff;
-    }
-    .btn-light {
-      background: #ececec;
-      color: #222;
-    }
-    .download-buttons {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-    .plans {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-      margin-top: 10px;
-    }
-    .plan {
-      border: 1px solid #ececec;
-      border-radius: 14px;
-      padding: 18px;
-      background: #fafafa;
-    }
-    .plan h4 {
-      margin: 0 0 8px;
-      font-size: 20px;
-    }
-    .price {
-      font-size: 30px;
-      color: #ff7a00;
-      font-weight: 700;
-      margin: 6px 0 10px;
-    }
-    .warning {
-      background: #fff7ea;
-      border: 1px solid #ffd8a8;
-      color: #9a5500;
-      padding: 12px 14px;
-      border-radius: 10px;
-      margin-top: 12px;
-    }
-    .steps {
-      margin: 0;
-      padding-left: 20px;
-    }
-    .steps li { margin: 8px 0; }
-    .shot {
-      background: #f8f8f8;
-      border: 1px dashed #d9d9d9;
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 12px;
-    }
-    .shot code {
-      display: block;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-family: Consolas, monospace;
-      font-size: 14px;
-    }
-    #status {
-      margin-top: 14px;
-      font-weight: 700;
-    }
-    #qrbox {
-      margin-top: 18px;
-      text-align: center;
-    }
-    #qrbox img {
-      max-width: 250px;
-      width: 100%;
-      border-radius: 14px;
-      box-shadow: 0 4px 14px rgba(0,0,0,.08);
-    }
-    .contact a {
-      color: #ff7a00;
-      text-decoration: none;
-      font-weight: 700;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Дугаар | eSIM Mongolia</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f5f6f8;
+margin:0;
+padding:0;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+
+.box{
+background:white;
+padding:20px;
+border-radius:12px;
+margin-top:18px;
+box-shadow:0 5px 15px rgba(0,0,0,0.06);
+}
+
+h1{
+color:#ff7a00;
+}
+
+input,select,textarea{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+button{
+background:#ff7a00;
+color:white;
+border:none;
+padding:12px 18px;
+border-radius:8px;
+margin-top:14px;
+font-weight:bold;
+cursor:pointer;
+}
+
+#qrbox img{
+max-width:240px;
+margin-top:15px;
+}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="hero">
-      <div class="pill">eSIM Mongolia</div>
-      <h1>🌍 Global дугаар үйлчилгээ</h1>
-      <p><strong>Интернеттэй үед ажиллах USA / Global виртуал дугаар.</strong></p>
-      <p class="muted">
-        Энэ нь энгийн үүрэн симийн дугаар биш. Та <strong>Zoiper</strong> апп дээр
-        login мэдээллээ оруулаад Wi‑Fi эсвэл дата байгаа үедээ ашиглана.
-      </p>
-    </div>
 
-    <div class="box">
-      <h3>📞 Global дугаар гэж юу вэ?</h3>
-      <ul class="list-check">
-        <li>USA дугаартай болно</li>
-        <li>Интернет байхад дуудлага хийх боломжтой</li>
-        <li>Дуудлага хүлээн авах боломжтой</li>
-        <li>Монголд байсан ч ашиглаж болно</li>
-        <li>Гадаадад байсан ч ашиглаж болно</li>
-        <li>Zoiper апп дээр ажиллана</li>
-      </ul>
-      <div class="warning">
-        Анхаар: Интернетгүй үед ажиллахгүй. Wi‑Fi эсвэл дата заавал хэрэгтэй.
-      </div>
-    </div>
+<div class="container">
 
-    <div class="box">
-      <h3>📱 Zoiper апп татах</h3>
-      <p>Дугаараа ашиглахын тулд эхлээд Zoiper апп-аа суулгана.</p>
-      <div class="download-buttons">
-        <a class="btn btn-dark" href="https://play.google.com/store/apps/details?id=com.zoiper.android.app" target="_blank" rel="noopener">Android татах</a>
-        <a class="btn btn-light" href="https://apps.apple.com/us/app/zoiper/id438949960" target="_blank" rel="noopener">iPhone татах</a>
-      </div>
-    </div>
+<div class="box">
+<h1>🌍 Global Дугаар</h1>
+<p>Интернеттэй үед ажиллах USA виртуал дугаар.</p>
+</div>
 
-    <div class="box">
-      <h3>💰 Багцын дэлгэрэнгүй</h3>
-      <p class="muted">Эдгээр нь хэрэглэгчид ойлгомжтой байлгах санал болгож буй багцын бүтэц.</p>
+<div class="box">
 
-      <div class="plans">
-        <div class="plan">
-          <h4>7 хоногийн багц</h4>
-          <div class="price">15,000₮</div>
-          <ul class="list-check">
-            <li>7 хоног хүчинтэй</li>
-            <li>60 минут ярих эрхтэй</li>
-            <li>Монголд ашиглаж болно</li>
-            <li>Гадаадад ашиглаж болно</li>
-            <li>Интернеттэй үед ажиллана</li>
-          </ul>
-          <button class="btn btn-primary" onclick="pay(15000, 'Global number 7 day / 60 min')">QPay төлөх</button>
-        </div>
+<h3>Захиалгын мэдээлэл</h3>
 
-        <div class="plan">
-          <h4>30 хоногийн багц</h4>
-          <div class="price">29,000₮</div>
-          <ul class="list-check">
-            <li>30 хоног хүчинтэй</li>
-            <li>180 минут ярих эрхтэй</li>
-            <li>Монголд ашиглаж болно</li>
-            <li>Гадаадад ашиглаж болно</li>
-            <li>Интернеттэй үед ажиллана</li>
-          </ul>
-          <button class="btn btn-primary" onclick="pay(29000, 'Global number 30 day / 180 min')">QPay төлөх</button>
-        </div>
-      </div>
+<input id="customerName" placeholder="Нэр">
+<input id="phone" placeholder="Утас">
 
-      <div class="warning">
-        Сунгалт: 30 хоногийн сунгалтыг <strong>29,000₮</strong>-өөр,
-        7 хоногийн сунгалтыг <strong>15,000₮</strong>-өөр хийж болно гэж page дээрээ тайлбарлаж болно.
-      </div>
+<select id="deliveryChannel" onchange="toggleDeliveryFields()">
+<option value="">QR код хүлээж авах сувгаа сонгоно уу</option>
+<option value="facebook">Facebook Messenger</option>
+<option value="whatsapp">WhatsApp</option>
+<option value="email">Email</option>
+</select>
 
-      <div id="status"></div>
-      <div id="qrbox"></div>
-    </div>
+<div id="facebookField" style="display:none">
+<input id="facebook" placeholder="Facebook нэр">
+</div>
 
-    <div class="box">
-      <h3>🔁 Сар бүр сунгах уу?</h3>
-      <ul class="list-check">
-        <li>Тийм. Дугаараа үргэлжлүүлэн ашиглах бол сар бүр сунгана.</li>
-        <li>30 хоногийн багцтай хэрэглэгч дараагийн сард 29,000₮-өөр сунгана.</li>
-        <li>7 хоногийн багцтай хэрэглэгч 15,000₮-өөр сунгаж болно.</li>
-        <li>Хэрэв хугацаа дуусвал дахин идэвхжүүлэлт хийх шаардлагатай байж болно.</li>
-      </ul>
-    </div>
+<div id="whatsappField" style="display:none">
+<input id="whatsapp" placeholder="WhatsApp дугаар">
+</div>
 
-    <div class="box">
-      <h3>🇲🇳 Монголд ашиглаж болох уу?</h3>
-      <p>
-        Болно. Та Монголд байсан ч Wi‑Fi эсвэл дата байхад Zoiper апп-аараа дугаараа ашиглаж болно.
-        Өөрөөр хэлбэл энэ нь байршлаас хамаарахгүй, <strong>интернетээс</strong> хамаарна.
-      </p>
-    </div>
+<div id="emailField" style="display:none">
+<input id="email" placeholder="Email">
+</div>
 
-    <div class="box">
-      <h3>📖 Zoiper дээрээ хэрхэн хийх вэ?</h3>
-      <ol class="steps">
-        <li>Zoiper апп-аа татаж суулгана</li>
-        <li>Төлбөрөө QPay-ээр төлнө</li>
-        <li>Төлбөр баталгаажсаны дараа Messenger эсвэл WhatsApp-аар бидэнтэй холбогдоно</li>
-        <li>Бид танд дараах мэдээллийг өгнө:
-          <div class="shot">
-            <code>Username: your_login
-Password: your_password
-Domain / Host: sip.yourprovider.com</code>
-          </div>
-        </li>
-        <li>Zoiper апп-аа нээгээд <strong>Add account</strong> эсвэл <strong>Login with SIP account</strong> гэснийг дарна</li>
-        <li><strong>Username</strong>, <strong>Password</strong>, <strong>Domain / Host</strong> гэсэн 3 мэдээллээ оруулна</li>
-        <li>Save / Register хийсний дараа дугаар чинь ажиллана</li>
-      </ol>
-    </div>
+<textarea id="note" placeholder="Тайлбар"></textarea>
 
-    <div class="box">
-      <h3>🧾 Төлбөр хийсний дараа юу болох вэ?</h3>
-      <ul class="list-check">
-        <li>QPay төлбөр амжилттай орсны дараа Messenger рүү шилжинэ</li>
-        <li>Та бидэнд “төлбөр хийсэн” гэж бичнэ</li>
-        <li>Бид дугаар болон Zoiper-ийн нэвтрэх мэдээллийг илгээнэ</li>
-        <li>Та апп дээрээ оруулаад шууд ашиглаж эхэлнэ</li>
-      </ul>
-    </div>
+</div>
 
-    <div class="box contact">
-      <h3>💬 Холбоо барих</h3>
-      <p>
-        <a href="https://m.me/esimmongolia" target="_blank" rel="noopener">Messenger</a>
-        &nbsp;|&nbsp;
-        <a href="https://wa.me/97690283039" target="_blank" rel="noopener">WhatsApp</a>
-      </p>
-    </div>
-  </div>
+<div class="box">
 
-  <script>
-    let invoiceId = null;
-    let timer = null;
+<h3>Багц сонгох</h3>
 
-    async function pay(amount, description) {
-      const status = document.getElementById("status");
-      const qrbox = document.getElementById("qrbox");
-      status.innerHTML = "Төлбөрийн QR үүсгэж байна...";
-      qrbox.innerHTML = "";
+<button onclick="pay(15000,'Global 7 day')">
+7 хоног / 15,000₮
+</button>
 
-      try {
-        const res = await fetch("/.netlify/functions/qpay-create-invoice", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            amount: amount,
-            description: description,
-            orderId: "GLOBAL-" + Date.now()
-          })
-        });
+<button onclick="pay(29000,'Global 30 day')">
+30 хоног / 29,000₮
+</button>
 
-        const data = await res.json();
+<div id="status"></div>
+<div id="qrbox"></div>
 
-        if (!data.ok || !data.invoice_id || !data.qr_image) {
-          status.innerHTML = "QPay invoice үүсгэж чадсангүй.";
-          console.log("Invoice response:", data);
-          return;
-        }
+</div>
 
-        invoiceId = data.invoice_id;
+</div>
 
-        let qrSrc = data.qr_image;
-        if (typeof qrSrc === "string" && !qrSrc.startsWith("data:image")) {
-          qrSrc = "data:image/png;base64," + qrSrc;
-        }
 
-        status.innerHTML = "QPay апп-аараа QR уншуулж төлнө үү.";
-        qrbox.innerHTML = "<img src='" + qrSrc + "' alt='QPay QR'>";
+<script>
 
-        if (timer) clearInterval(timer);
-        startCheckingPayment();
-      } catch (err) {
-        status.innerHTML = "Алдаа гарлаа. Дахин оролдоно уу.";
-        console.log("Pay error:", err);
-      }
-    }
+let invoiceId
 
-    function startCheckingPayment() {
-      if (!invoiceId) return;
+function toggleDeliveryFields(){
 
-      timer = setInterval(async () => {
-        try {
-          const res = await fetch("/.netlify/functions/qpay-check", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              invoice_id: invoiceId
-            })
-          });
+const ch=document.getElementById("deliveryChannel").value
 
-          const data = await res.json();
+document.getElementById("facebookField").style.display="none"
+document.getElementById("whatsappField").style.display="none"
+document.getElementById("emailField").style.display="none"
 
-          if (data.paid) {
-            clearInterval(timer);
-            document.getElementById("status").innerHTML = "Төлбөр амжилттай орлоо. Messenger рүү шилжиж байна...";
-            setTimeout(() => {
-              window.location.href = "https://m.me/esimmongolia";
-            }, 1500);
-          }
-        } catch (err) {
-          console.log("Payment check error:", err);
-        }
-      }, 5000);
-    }
-  </script>
+if(ch==="facebook"){
+document.getElementById("facebookField").style.display="block"
+}
+
+if(ch==="whatsapp"){
+document.getElementById("whatsappField").style.display="block"
+}
+
+if(ch==="email"){
+document.getElementById("emailField").style.display="block"
+}
+
+}
+
+
+async function pay(amount,description){
+
+const name=document.getElementById("customerName").value
+const phone=document.getElementById("phone").value
+const channel=document.getElementById("deliveryChannel").value
+
+const facebook=document.getElementById("facebook")?.value || ""
+const whatsapp=document.getElementById("whatsapp")?.value || ""
+const email=document.getElementById("email")?.value || ""
+const note=document.getElementById("note").value
+
+if(!channel){
+alert("QR код авах сувгаа сонгоно уу")
+return
+}
+
+await fetch("/.netlify/functions/save-customer",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+customerName:name,
+phone:phone,
+deliveryChannel:channel,
+facebook:facebook,
+whatsapp:whatsapp,
+email:email,
+note:note,
+product:description,
+amount:amount
+})
+})
+
+const res=await fetch("/.netlify/functions/qpay-create-invoice",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+amount:amount,
+description:description,
+orderId:"ORDER-"+Date.now()
+})
+})
+
+const data=await res.json()
+
+invoiceId=data.invoice_id
+
+let qr=data.qr_image
+
+if(!qr.startsWith("data")){
+qr="data:image/png;base64,"+qr
+}
+
+document.getElementById("qrbox").innerHTML="<img src='"+qr+"'>"
+document.getElementById("status").innerHTML="QPay апп-аараа QR уншуулж төлнө үү."
+
+checkPayment()
+
+}
+
+
+function checkPayment(){
+
+setInterval(async()=>{
+
+const res=await fetch("/.netlify/functions/qpay-check",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+invoice_id:invoiceId
+})
+})
+
+const data=await res.json()
+
+if(data.paid){
+
+document.getElementById("status").innerHTML="Төлбөр амжилттай!"
+
+setTimeout(()=>{
+window.location="https://m.me/esimmongolia"
+},1500)
+
+}
+
+},5000)
+
+}
+
+</script>
+
+
 </body>
 </html>
