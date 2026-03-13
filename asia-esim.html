@@ -274,7 +274,36 @@
 
       const descriptionParts = [country || title, data, validity, type, operator].filter(Boolean);
       const description = descriptionParts.join(" • ");
+try {
+  await saveCustomer({
+    facebook: document.getElementById("facebook")?.value || "",
+    whatsapp: document.getElementById("whatsapp")?.value || "",
+    email: document.getElementById("email")?.value || "",
+    note: document.getElementById("note")?.value || "",
+    planCode,
+    description,
+    amount,
+    page: window.location.pathname
+  });
 
+  const r = await fetch("/.netlify/functions/qpay-create-invoice", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({
+      amount,
+      orderId: `${ORDER_PREFIX}-${Date.now()}`,
+      description
+    })
+  });
+
+  const j = await r.json().catch(() => ({}));
+  if (!j.ok) {
+    alert("QPay алдаа: " + JSON.stringify(j));
+    return;
+  }
+
+  lastInvoiceId = j.invoice_id || "";
+  ...
       try {
         const r = await fetch("/.netlify/functions/qpay-create-invoice", {
           method: "POST",
@@ -337,4 +366,5 @@
   </script>
 </body>
 </html>
+
 
