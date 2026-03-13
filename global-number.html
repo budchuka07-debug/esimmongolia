@@ -2,14 +2,14 @@
 <html lang="mn">
 <head>
 <meta charset="UTF-8">
-<title>Global дугаар үйлчилгээ | eSIM Mongolia</title>
+<title>Global дугаар | eSIM Mongolia</title>
 
 <style>
 
 body{
 font-family:Arial;
 margin:0;
-background:#f6f6f6;
+background:#f5f5f5;
 }
 
 .container{
@@ -39,6 +39,21 @@ color:white;
 text-decoration:none;
 border-radius:8px;
 font-weight:bold;
+cursor:pointer;
+}
+
+.download a{
+display:inline-block;
+margin-right:10px;
+padding:10px 18px;
+background:#333;
+color:white;
+text-decoration:none;
+border-radius:6px;
+}
+
+#qrbox img{
+max-width:220px;
 }
 
 </style>
@@ -52,18 +67,40 @@ font-weight:bold;
 <h1>🌍 Global дугаар үйлчилгээ</h1>
 
 <p>
-Та гадаадад байна уу?
-Эсвэл Монголд байгаад гадаад руу ярих хэрэгтэй байна уу?
+Интернеттэй үед ажиллах олон улсын дугаар.
 </p>
 
 <div class="box">
 
-<h3>📞 Манай Global дугаар ашиглаад</h3>
+<h3>📞 Global дугаар гэж юу вэ</h3>
 
+✔ USA дугаар ашиглана<br>
+✔ Интернет байхад л ажиллана<br>
 ✔ Монгол руу ярина<br>
 ✔ Гадаад руу ярина<br>
-✔ Дуудлага хүлээн авна<br>
-✔ Интернэт байхад л ашиглана
+✔ Дуудлага хүлээн авна
+
+</div>
+
+<div class="box">
+
+<h3>📱 Апп татах</h3>
+
+<p>
+Манай дугаарыг ашиглахын тулд Zoiper апп татна.
+</p>
+
+<div class="download">
+
+<a href="https://play.google.com/store/apps/details?id=com.zoiper.android.app" target="_blank">
+Android татах
+</a>
+
+<a href="https://apps.apple.com/us/app/zoiper/id438949960" target="_blank">
+iPhone татах
+</a>
+
+</div>
 
 </div>
 
@@ -76,11 +113,107 @@ font-weight:bold;
 
 </div>
 
-<a href="/qpay.html" class="btn">
-Global дугаар авах
+<div class="box">
+
+<h3>💳 QPay төлбөр</h3>
+
+<button class="btn" id="payBtn">
+QPay-ээр төлөх
+</button>
+
+<div id="qrbox"></div>
+
+</div>
+
+<div class="box">
+
+<h3>📖 Ашиглах заавар</h3>
+
+1. Zoiper апп татна<br>
+2. QPay төлбөр төлнө<br>
+3. Messenger дээр бидэнтэй холбогдоно<br>
+4. Бид танд дугаарын login мэдээлэл өгнө<br>
+5. Zoiper дээр ашиглана
+
+</div>
+
+<div class="box">
+
+<a href="https://m.me/esimmongolia">
+Messenger холбогдох
 </a>
 
 </div>
+
+</div>
+
+<script>
+
+let invoiceId=null
+
+document.getElementById("payBtn").onclick=async()=>{
+
+const res=await fetch("/.netlify/functions/qpay-create-invoice",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+amount:8,
+description:"Global number"
+})
+})
+
+const data=await res.json()
+
+if(!data.qr_image){
+
+alert("Invoice үүсгэж чадсангүй")
+
+return
+
+}
+
+invoiceId=data.invoice_id
+
+document.getElementById("qrbox").innerHTML=
+"<img src='"+data.qr_image+"'>"
+
+checkPayment()
+
+}
+
+async function checkPayment(){
+
+if(!invoiceId)return
+
+setInterval(async()=>{
+
+const res=await fetch("/.netlify/functions/qpay-check",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+invoice_id:invoiceId
+})
+})
+
+const data=await res.json()
+
+if(data.paid){
+
+alert("Төлбөр амжилттай")
+
+window.location.href="https://m.me/esimmongolia"
+
+}
+
+},5000)
+
+}
+
+</script>
 
 </body>
 </html>
