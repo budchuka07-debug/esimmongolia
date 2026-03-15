@@ -314,6 +314,15 @@
 <option value="email">Email</option>
 </select>
 
+<div id="emailField" style="display:none; margin-top:10px;">
+  <input
+    id="customerEmail"
+    type="email"
+    placeholder="Email хаяг"
+    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;"
+  />
+</div>
+
 </div>
         <button id="payBtn" class="primary-btn" type="button" style="width:100%;">QPay-ээр төлөх</button>
 
@@ -428,6 +437,9 @@
     const copyOrderBtn = document.getElementById("copyOrderBtn");
     const customerName = document.getElementById("customerName");
     const customerPhone = document.getElementById("customerPhone");
+    const deliveryChannel = document.getElementById("deliveryChannel");
+    const emailField = document.getElementById("emailField");
+    const customerEmail = document.getElementById("customerEmail");
 
     let currentInvoiceId = "";
     let currentOrderText = "";
@@ -527,6 +539,14 @@
       ].join("\n");
     }
 
+    function toggleDeliveryFields() {
+      if (deliveryChannel.value === "email") {
+        emailField.style.display = "block";
+      } else {
+        emailField.style.display = "none";
+      }
+    }
+
     function resetPaymentState() {
       currentInvoiceId = "";
       currentOrderText = "";
@@ -544,9 +564,21 @@
     async function createInvoice() {
       const name = customerName.value.trim();
       const phone = customerPhone.value.trim();
+      const selectedChannel = deliveryChannel.value;
+      const email = customerEmail ? customerEmail.value.trim() : "";
 
       if (!name || !phone) {
         alert("Нэр болон утасны дугаараа оруулна уу.");
+        return;
+      }
+
+      if (!selectedChannel) {
+        alert("QR код авах сувгаа сонгоно уу.");
+        return;
+      }
+
+      if (selectedChannel === "email" && !email) {
+        alert("Email хаягаа оруулна уу.");
         return;
       }
 
@@ -557,21 +589,22 @@
       payBtn.disabled = true;
       payBtn.textContent = "Үүсгэж байна...";
       successBox.style.display = "none";
-// Order хадгалах
-await fetch("/.netlify/functions/customer", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    name,
-    phone,
-    plan: description,
-    price: pkg.mnt,
-    page: window.location.pathname
-  })
-});
+
       try {
+        await fetch("/.netlify/functions/customer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            phone,
+            email,
+            deliveryChannel: selectedChannel,
+            plan: description,
+            price: pkg.mnt,
+            page: window.location.pathname
+          })
+        });
+
         const res = await fetch("/.netlify/functions/qpay-create-invoice", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -690,6 +723,8 @@ await fetch("/.netlify/functions/customer", {
     });
     customerName.addEventListener("input", () => { if (currentPaid) showSuccessActions(); });
     customerPhone.addEventListener("input", () => { if (currentPaid) showSuccessActions(); });
+    deliveryChannel.addEventListener("change", toggleDeliveryFields);
+    toggleDeliveryFields();
     payBtn.addEventListener("click", createInvoice);
     checkPaymentBtn.addEventListener("click", () => checkPayment(true));
     copyOrderBtn.addEventListener("click", copyOrderText);
