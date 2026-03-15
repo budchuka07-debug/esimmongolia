@@ -145,9 +145,39 @@
 
     <section class="card" id="plans">
       <h2 class="sectionTitle">📦 Багц сонгох</h2>
-      <p class="muted" style="margin:0 0 14px">Сонгосон багц хар өнгөтэй болж идэвхжинэ. Дараа нь төлбөрийн хэсэг автоматаар гарна.</p>
+      <p class="muted" style="margin:0 0 14px">Сонгосон багц хар өнгөтэй болж идэвхжинэ. Дараа нь доорх мэдээллээ бөглөөд QPay-ээр төлнө.</p>
       <div class="plans" id="planList"></div>
       <div class="small muted backNote" id="planStatus"></div>
+    </section>
+
+    
+    <section class="card" id="customerForm">
+      <h2 class="sectionTitle">Захиалгын мэдээлэл</h2>
+      <p class="muted" style="margin:0 0 12px">Төлбөрийн дараа QR код болон захиалгын мэдээллийг таны сонгосон сувгаар илгээнэ.</p>
+
+      <input id="customerName" placeholder="Нэр" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+      <input id="phone" placeholder="Утас" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+
+      <select id="deliveryChannel" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+        <option value="">QR код авах сувгаа сонгоно уу</option>
+        <option value="facebook">Messenger</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="email">Email</option>
+      </select>
+
+      <div id="facebookField" style="display:none">
+        <input id="facebook" placeholder="Facebook нэр эсвэл link" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+      </div>
+
+      <div id="whatsappField" style="display:none">
+        <input id="whatsapp" placeholder="WhatsApp дугаар" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+      </div>
+
+      <div id="emailField" style="display:none">
+        <input id="email" placeholder="Email хаяг" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;">
+      </div>
+
+      <textarea id="note" placeholder="Нэмэлт тайлбар" style="width:100%;min-height:90px;padding:12px;border:1px solid #ddd;border-radius:10px;"></textarea>
     </section>
 
     <section class="card" id="payBox" style="display:none">
@@ -168,7 +198,19 @@
         </div>
       </div>
     </section>
-    
+
+    <section class="card" id="successBox" style="display:none">
+      <h2 class="sectionTitle">✅ Захиалгын дараах алхам</h2>
+      <div class="card" style="margin:0">
+        <div id="successText" class="muted" style="margin-bottom:12px"></div>
+        <div class="links" style="display:flex;gap:10px;flex-wrap:wrap">
+          <a id="waLink" class="btn gold" target="_blank" rel="noopener">WhatsApp-аар бичих</a>
+          <a id="messengerLink" class="btn" target="_blank" rel="noopener">Messenger рүү орох</a>
+          <button id="copyOrderBtn" class="btn primary" type="button">Захиалгын мэдээлэл хуулах</button>
+        </div>
+      </div>
+    </section>
+
     <section class="card">
       <h2 class="sectionTitle">❓ Түгээмэл асуулт</h2>
       <p><strong>Яаж идэвхжүүлэх вэ?</strong><br>QR код уншуулж суулгаад Data Roaming асаана.</p>
@@ -176,6 +218,7 @@
     </section>
   </div>
 
+  
   <script>
     const FX = 3680;
     const MARKUP = 0.35;
@@ -184,9 +227,36 @@
 
     let lastInvoiceId = "";
     let activeBtn = null;
+    let selectedPlan = null;
+    let orderMessage = "";
+
+    const customerName = document.getElementById("customerName");
+    const phone = document.getElementById("phone");
+    const deliveryChannel = document.getElementById("deliveryChannel");
+    const facebook = document.getElementById("facebook");
+    const whatsapp = document.getElementById("whatsapp");
+    const email = document.getElementById("email");
+    const note = document.getElementById("note");
+    const payBox = document.getElementById("payBox");
+    const successBox = document.getElementById("successBox");
+    const payMeta = document.getElementById("payMeta");
+    const qrBox = document.getElementById("qrBox");
+    const urlBox = document.getElementById("urlBox");
+    const checkBtn = document.getElementById("checkBtn");
+    const checkResult = document.getElementById("checkResult");
+    const successText = document.getElementById("successText");
+    const waLink = document.getElementById("waLink");
+    const messengerLink = document.getElementById("messengerLink");
+    const copyOrderBtn = document.getElementById("copyOrderBtn");
 
     function toMnt(usd){
       return Math.round(Number(usd) * FX * (1 + MARKUP));
+    }
+
+    function toggleDeliveryFields() {
+      document.getElementById("facebookField").style.display = deliveryChannel.value === "facebook" ? "block" : "none";
+      document.getElementById("whatsappField").style.display = deliveryChannel.value === "whatsapp" ? "block" : "none";
+      document.getElementById("emailField").style.display = deliveryChannel.value === "email" ? "block" : "none";
     }
 
     function renderPlans(){
@@ -228,9 +298,69 @@
       }).join("");
     }
 
-    renderPlans();
+    function resetPayUi() {
+      payBox.style.display = "none";
+      successBox.style.display = "none";
+      qrBox.innerHTML = "";
+      urlBox.innerHTML = "";
+      checkResult.textContent = "";
+      payMeta.textContent = "";
+      lastInvoiceId = "";
+      orderMessage = "";
+    }
 
-    document.addEventListener("click", async (e) => {
+    function validateForm() {
+      if (!selectedPlan) {
+        alert("Эхлээд багцаа сонгоно уу.");
+        return false;
+      }
+      if (!customerName.value.trim() || !phone.value.trim()) {
+        alert("Нэр, утсаа бөглөнө үү.");
+        return false;
+      }
+      if (!deliveryChannel.value) {
+        alert("QR код авах сувгаа сонгоно уу.");
+        return false;
+      }
+      if (deliveryChannel.value === "facebook" && !facebook.value.trim()) {
+        alert("Messenger нэр эсвэл link-ээ оруулна уу.");
+        return false;
+      }
+      if (deliveryChannel.value === "whatsapp" && !whatsapp.value.trim()) {
+        alert("WhatsApp дугаараа оруулна уу.");
+        return false;
+      }
+      if (deliveryChannel.value === "email" && !email.value.trim()) {
+        alert("Email хаягаа оруулна уу.");
+        return false;
+      }
+      return true;
+    }
+
+    function buildOrderMessage() {
+      return [
+        "Europe eSIM захиалга",
+        `Нэр: ${customerName.value.trim()}`,
+        `Утас: ${phone.value.trim()}`,
+        `Суваг: ${deliveryChannel.options[deliveryChannel.selectedIndex].text}`,
+        `Багц: ${selectedPlan.description}`,
+        `Үнэ: ${selectedPlan.amount.toLocaleString("en-US")} ₮`,
+        lastInvoiceId ? `Invoice: ${lastInvoiceId}` : ""
+      ].filter(Boolean).join("\n");
+    }
+
+    function showSuccessActions() {
+      orderMessage = buildOrderMessage();
+      successText.innerHTML = "Төлбөр баталгаажсан бол доорх сувгаар бидэнд бичээд QR кодоо авна уу.";
+      waLink.href = `https://wa.me/97690283039?text=${encodeURIComponent(orderMessage)}`;
+      messengerLink.href = "https://m.me/esimmongolia";
+      successBox.style.display = "block";
+    }
+
+    renderPlans();
+    toggleDeliveryFields();
+
+    document.addEventListener("click", (e) => {
       const btn = e.target.closest(".planBtn");
       if (!btn) return;
 
@@ -250,50 +380,87 @@
       const descriptionParts = [country || title, data, validity, type, operator].filter(Boolean);
       const description = descriptionParts.join(" • ");
 
+      selectedPlan = { amount, description, planCode };
+      resetPayUi();
+      payBox.style.display = "block";
+      payMeta.textContent = `${description}${planCode ? ` • Plan code: ${planCode}` : ""} • ${amount.toLocaleString("en-US")} ₮`;
+      qrBox.innerHTML = `<div class="muted">Багц сонгогдлоо. Мэдээллээ бөглөөд доорх товчоор QPay-ээр төлнө үү.</div>
+      <div style="margin-top:12px"><button class="btn gold" id="payNowBtn" type="button">QPay-ээр төлөх</button></div>`;
+      urlBox.innerHTML = "";
+      document.getElementById("payBox").scrollIntoView({behavior:"smooth", block:"start"});
+    });
+
+    document.addEventListener("click", async (e) => {
+      if (e.target.id !== "payNowBtn") return;
+      if (!validateForm()) return;
+
       try {
+        const customerRes = await fetch("/.netlify/functions/customer", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({
+            name: customerName.value.trim(),
+            phone: phone.value.trim(),
+            email: email.value.trim(),
+            facebook: facebook.value.trim(),
+            whatsapp: whatsapp.value.trim(),
+            deliveryChannel: deliveryChannel.value,
+            note: note.value.trim(),
+            plan: selectedPlan.description,
+            planCode: selectedPlan.planCode,
+            price: selectedPlan.amount,
+            page: window.location.pathname
+          })
+        });
+
+        const customerData = await customerRes.json().catch(() => ({}));
+        if (!customerRes.ok) {
+          throw new Error(customerData.error || "Захиалга хадгалахад алдаа гарлаа.");
+        }
+
+        qrBox.innerHTML = "⏳ QPay үүсгэж байна...";
+
         const r = await fetch("/.netlify/functions/qpay-create-invoice", {
           method: "POST",
           headers: { "Content-Type":"application/json" },
           body: JSON.stringify({
-            amount,
+            amount: selectedPlan.amount,
             orderId: `${ORDER_PREFIX}-${Date.now()}`,
-            description
+            description: selectedPlan.description
           })
         });
 
         const j = await r.json().catch(() => ({}));
         if (!j.ok) {
-          alert("QPay алдаа: " + JSON.stringify(j));
-          return;
+          throw new Error("QPay алдаа: " + JSON.stringify(j));
         }
 
         lastInvoiceId = j.invoice_id || "";
-        document.getElementById("payBox").style.display = "block";
-        document.getElementById("payMeta").textContent =
-          `${description}${planCode ? ` • Plan code: ${planCode}` : ""} • ${amount.toLocaleString("en-US")} ₮`;
+        payMeta.textContent = `${selectedPlan.description}${selectedPlan.planCode ? ` • Plan code: ${selectedPlan.planCode}` : ""} • ${selectedPlan.amount.toLocaleString("en-US")} ₮`;
 
-        document.getElementById("qrBox").innerHTML =
-          j.qr_image ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">` : "QR олдсонгүй";
+        qrBox.innerHTML = j.qr_image
+          ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">`
+          : "QR олдсонгүй";
 
         const urls = Array.isArray(j.urls) ? j.urls : [];
-        document.getElementById("urlBox").innerHTML = urls.length
+        urlBox.innerHTML = urls.length
           ? urls.map(u => `<a class="btn gold" href="${u.link}" target="_blank" rel="noopener">${u.name || "Төлбөрийн линк"}</a>`).join("")
           : "";
 
-        document.getElementById("checkResult").textContent = "";
-        document.getElementById("payBox").scrollIntoView({behavior:"smooth", block:"start"});
+        checkResult.textContent = "";
       } catch (err) {
-        alert("Төлбөрийн хэсэгт алдаа гарлаа.");
+        alert(err.message || "Төлбөрийн хэсэгт алдаа гарлаа.");
+        qrBox.innerHTML = "";
       }
     });
 
-    document.getElementById("checkBtn").addEventListener("click", async () => {
+    checkBtn.addEventListener("click", async () => {
       if (!lastInvoiceId) {
-        alert("Эхлээд багцаа сонгоно уу.");
+        alert("Эхлээд QPay үүсгэнэ үү.");
         return;
       }
 
-      document.getElementById("checkResult").textContent = "Шалгаж байна...";
+      checkResult.textContent = "Шалгаж байна...";
 
       try {
         const r = await fetch("/.netlify/functions/qpay-check", {
@@ -303,12 +470,29 @@
         });
 
         const j = await r.json().catch(() => ({}));
-        document.getElementById("checkResult").textContent =
-          j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
+        if (j.paid) {
+          checkResult.textContent = "✅ ТӨЛӨГДСӨН";
+          showSuccessActions();
+        } else {
+          checkResult.textContent = "⏳ Төлөгдөөгүй байна";
+        }
       } catch (err) {
-        document.getElementById("checkResult").textContent = "Шалгаж чадсангүй.";
+        checkResult.textContent = "Шалгаж чадсангүй.";
       }
     });
+
+    copyOrderBtn.addEventListener("click", async () => {
+      orderMessage = buildOrderMessage();
+      try {
+        await navigator.clipboard.writeText(orderMessage);
+        alert("Захиалгын мэдээлэл хууллаа ✅");
+      } catch (err) {
+        alert("Хуулж чадсангүй.");
+      }
+    });
+
+    deliveryChannel.addEventListener("change", toggleDeliveryFields);
   </script>
+
 </body>
 </html>
