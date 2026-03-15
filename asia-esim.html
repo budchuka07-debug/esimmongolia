@@ -202,168 +202,222 @@
   </div>
 
   <script>
-    const FX = 3680;
-    const MARKUP = 0.35;
-    const ORDER_PREFIX = "ASIA";
-    const PLANS = [{"title": "Asia Pacific", "data": "Unlimited", "validity": "1 Day", "type": "Asia eSIM", "usd": 6.0}, {"title": "Asia Pacific", "data": "3GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 9.5}, {"title": "Asia Pacific", "data": "Unlimited", "validity": "3 Days", "type": "Asia eSIM", "usd": 10.0}, {"title": "Asia Pacific", "data": "4GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 16.5}, {"title": "Asia Pacific", "data": "Unlimited", "validity": "5 Days", "type": "Asia eSIM", "usd": 17.5}, {"title": "Asia Pacific", "data": "7GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 24.5}, {"title": "Asia Pacific", "data": "Unlimited", "validity": "7 Days", "type": "Asia eSIM", "usd": 26.0}, {"title": "Asia Pacific", "data": "Unlimited", "validity": "10 Days", "type": "Asia eSIM", "usd": 32.0}, {"title": "Asia Pacific", "data": "20GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 32.0}, {"title": "Asia Pacific", "data": "23GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 38.5}, {"title": "Asia Pacific", "data": "12GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 44.5}, {"title": "Asia Pacific", "data": "33GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 54.5}, {"title": "Asia Pacific", "data": "Unlimited", "validity": "15 Days", "type": "Asia eSIM", "usd": 56.0}, {"title": "Asia Pacific", "data": "50GB", "validity": "30 Days", "type": "Asia eSIM", "usd": 68.0}];
+  const FX = 3680;
+  const MARKUP = 0.35;
+  const ORDER_PREFIX = "ASIA";
+  const PLANS = [{"title":"Asia Pacific","data":"Unlimited","validity":"1 Day","type":"Asia eSIM","usd":6.0},{"title":"Asia Pacific","data":"3GB","validity":"30 Days","type":"Asia eSIM","usd":9.5},{"title":"Asia Pacific","data":"Unlimited","validity":"3 Days","type":"Asia eSIM","usd":10.0},{"title":"Asia Pacific","data":"4GB","validity":"30 Days","type":"Asia eSIM","usd":16.5},{"title":"Asia Pacific","data":"Unlimited","validity":"5 Days","type":"Asia eSIM","usd":17.5},{"title":"Asia Pacific","data":"7GB","validity":"30 Days","type":"Asia eSIM","usd":24.5},{"title":"Asia Pacific","data":"Unlimited","validity":"7 Days","type":"Asia eSIM","usd":26.0},{"title":"Asia Pacific","data":"Unlimited","validity":"10 Days","type":"Asia eSIM","usd":32.0},{"title":"Asia Pacific","data":"20GB","validity":"30 Days","type":"Asia eSIM","usd":32.0},{"title":"Asia Pacific","data":"23GB","validity":"30 Days","type":"Asia eSIM","usd":38.5},{"title":"Asia Pacific","data":"12GB","validity":"30 Days","type":"Asia eSIM","usd":44.5},{"title":"Asia Pacific","data":"33GB","validity":"30 Days","type":"Asia eSIM","usd":54.5},{"title":"Asia Pacific","data":"Unlimited","validity":"15 Days","type":"Asia eSIM","usd":56.0},{"title":"Asia Pacific","data":"50GB","validity":"30 Days","type":"Asia eSIM","usd":68.0}];
 
-    let lastInvoiceId = "";
-    let activeBtn = null;
+  let lastInvoiceId = "";
+  let activeBtn = null;
+  let selectedPlan = null;
 
-    function toMnt(usd){
-      return Math.round(Number(usd) * FX * (1 + MARKUP));
-    }
-
-    function renderPlans(){
-      const list = document.getElementById("planList");
-      const status = document.getElementById("planStatus");
-      status.textContent = `Нийт ${PLANS.length} багц`;
-
-      list.innerHTML = PLANS.map((p, i) => {
-        const amount = toMnt(p.usd);
-        const chips = [
-          p.data ? `📶 ${p.data}` : "",
-          p.validity ? `🗓 ${p.validity}` : "",
-          p.type ? `📦 ${p.type}` : "",
-          p.operator ? `📡 ${p.operator}` : ""
-        ].filter(Boolean).map(x => `<span class="chip">${x}</span>`).join("");
-
-        return `
-          <button class="planBtn"
-            type="button"
-            data-index="${i}"
-            data-title="${p.title || p.data || ''}"
-            data-validity="${p.validity || ''}"
-            data-data="${p.data || ''}"
-            data-type="${p.type || ''}"
-            data-operator="${p.operator || ''}"
-            data-country="${p.country || ''}"
-            data-plan-code="${p.planCode || ''}"
-            data-amount="${amount}">
-            <span class="selectedBadge">Сонгогдсон багц</span>
-            <div class="topRow">
-              <div>
-                <div class="planName">${p.country ? `${p.flag || ''} ${p.country}` : (p.title || '')}</div>
-                <div class="small muted">${p.planCode ? `Plan code: ${p.planCode}` : `${p.title || ''}`}</div>
-              </div>
-              <div class="price">${amount.toLocaleString("en-US")} ₮</div>
-            </div>
-            <div class="chips">${chips}</div>
-          </button>`;
-      }).join("");
-    }
-
-    renderPlans();
-
-    document.addEventListener("click", async (e) => {
-      const btn = e.target.closest(".planBtn");
-      if (!btn) return;
-
-      if (activeBtn) activeBtn.classList.remove("active");
-      btn.classList.add("active");
-      activeBtn = btn;
-
-      const amount = Number(btn.dataset.amount || 0);
-      const country = btn.dataset.country || "";
-      const title = btn.dataset.title || "";
-      const data = btn.dataset.data || "";
-      const validity = btn.dataset.validity || "";
-      const type = btn.dataset.type || "";
-      const operator = btn.dataset.operator || "";
-      const planCode = btn.dataset.planCode || "";
-
-      const descriptionParts = [country || title, data, validity, type, operator].filter(Boolean);
-      const description = descriptionParts.join(" • ");
-try {
-  await saveCustomer({
-    facebook: document.getElementById("facebook")?.value || "",
-    whatsapp: document.getElementById("whatsapp")?.value || "",
-    email: document.getElementById("email")?.value || "",
-    note: document.getElementById("note")?.value || "",
-    planCode,
-    description,
-    amount,
-    page: window.location.pathname
-  });
-
-  const r = await fetch("/.netlify/functions/qpay-create-invoice", {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({
-      amount,
-      orderId: `${ORDER_PREFIX}-${Date.now()}`,
-      description
-    })
-  });
-
-  const j = await r.json().catch(() => ({}));
-  if (!j.ok) {
-    alert("QPay алдаа: " + JSON.stringify(j));
-    return;
+  function toMnt(usd){
+    return Math.round(Number(usd) * FX * (1 + MARKUP));
   }
 
-  lastInvoiceId = j.invoice_id || "";
-  ...
-      try {
-        const r = await fetch("/.netlify/functions/qpay-create-invoice", {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({
-            amount,
-            orderId: `${ORDER_PREFIX}-${Date.now()}`,
-            description
-          })
-        });
+  function toggleDeliveryFields() {
+    const channel = document.getElementById("deliveryChannel").value;
+    document.getElementById("facebookField").style.display = channel === "facebook" ? "block" : "none";
+    document.getElementById("whatsappField").style.display = channel === "whatsapp" ? "block" : "none";
+    document.getElementById("emailField").style.display = channel === "email" ? "block" : "none";
+  }
 
-        const j = await r.json().catch(() => ({}));
-        if (!j.ok) {
-          alert("QPay алдаа: " + JSON.stringify(j));
-          return;
-        }
+  function renderPlans(){
+    const list = document.getElementById("planList");
+    const status = document.getElementById("planStatus");
+    status.textContent = `Нийт ${PLANS.length} багц`;
 
-        lastInvoiceId = j.invoice_id || "";
-        document.getElementById("payBox").style.display = "block";
-        document.getElementById("payMeta").textContent =
-          `${description}${planCode ? ` • Plan code: ${planCode}` : ""} • ${amount.toLocaleString("en-US")} ₮`;
+    list.innerHTML = PLANS.map((p, i) => {
+      const amount = toMnt(p.usd);
+      const chips = [
+        p.data ? `📶 ${p.data}` : "",
+        p.validity ? `🗓 ${p.validity}` : "",
+        p.type ? `📦 ${p.type}` : "",
+        p.operator ? `📡 ${p.operator}` : ""
+      ].filter(Boolean).map(x => `<span class="chip">${x}</span>`).join("");
 
-        document.getElementById("qrBox").innerHTML =
-          j.qr_image ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">` : "QR олдсонгүй";
+      return `
+        <button class="planBtn"
+          type="button"
+          data-index="${i}"
+          data-title="${p.title || p.data || ''}"
+          data-validity="${p.validity || ''}"
+          data-data="${p.data || ''}"
+          data-type="${p.type || ''}"
+          data-operator="${p.operator || ''}"
+          data-country="${p.country || ''}"
+          data-plan-code="${p.planCode || ''}"
+          data-amount="${amount}">
+          <span class="selectedBadge">Сонгогдсон багц</span>
+          <div class="topRow">
+            <div>
+              <div class="planName">${p.country ? `${p.flag || ''} ${p.country}` : (p.title || '')}</div>
+              <div class="small muted">${p.planCode ? `Plan code: ${p.planCode}` : `${p.title || ''}`}</div>
+            </div>
+            <div class="price">${amount.toLocaleString("en-US")} ₮</div>
+          </div>
+          <div class="chips">${chips}</div>
+        </button>`;
+    }).join("");
+  }
 
-        const urls = Array.isArray(j.urls) ? j.urls : [];
-        document.getElementById("urlBox").innerHTML = urls.length
-          ? urls.map(u => `<a class="btn gold" href="${u.link}" target="_blank" rel="noopener">${u.name || "Төлбөрийн линк"}</a>`).join("")
-          : "";
-
-        document.getElementById("checkResult").textContent = "";
-        document.getElementById("payBox").scrollIntoView({behavior:"smooth", block:"start"});
-      } catch (err) {
-        alert("Төлбөрийн хэсэгт алдаа гарлаа.");
-      }
+  async function saveCustomer(orderData) {
+    const res = await fetch("/.netlify/functions/customer", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(orderData)
     });
 
-    document.getElementById("checkBtn").addEventListener("click", async () => {
-      if (!lastInvoiceId) {
-        alert("Эхлээд багцаа сонгоно уу.");
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || "Customer хадгалах үед алдаа гарлаа");
+    }
+    return data;
+  }
+
+  async function createInvoice() {
+    if (!selectedPlan) {
+      alert("Эхлээд багцаа сонгоно уу.");
+      return;
+    }
+
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const deliveryChannel = document.getElementById("deliveryChannel").value;
+    const facebook = document.getElementById("facebook")?.value.trim() || "";
+    const whatsapp = document.getElementById("whatsapp")?.value.trim() || "";
+    const email = document.getElementById("email")?.value.trim() || "";
+    const note = document.getElementById("note")?.value.trim() || "";
+
+    if (!name || !phone) {
+      alert("Нэр, утсаа бөглөнө үү.");
+      return;
+    }
+
+    if (!deliveryChannel) {
+      alert("QR код авах сувгаа сонгоно уу.");
+      return;
+    }
+
+    try {
+      await saveCustomer({
+        name,
+        phone,
+        email,
+        facebook,
+        whatsapp,
+        deliveryChannel,
+        note,
+        plan: selectedPlan.description,
+        planCode: selectedPlan.planCode,
+        price: selectedPlan.amount,
+        page: window.location.pathname
+      });
+
+      const r = await fetch("/.netlify/functions/qpay-create-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: selectedPlan.amount,
+          orderId: `${ORDER_PREFIX}-${Date.now()}`,
+          description: selectedPlan.description
+        })
+      });
+
+      const j = await r.json().catch(() => ({}));
+      if (!j.ok) {
+        alert("QPay алдаа: " + JSON.stringify(j));
         return;
       }
 
-      document.getElementById("checkResult").textContent = "Шалгаж байна...";
+      lastInvoiceId = j.invoice_id || "";
+      document.getElementById("payBox").style.display = "block";
+      document.getElementById("payMeta").textContent =
+        `${selectedPlan.description}${selectedPlan.planCode ? ` • Plan code: ${selectedPlan.planCode}` : ""} • ${selectedPlan.amount.toLocaleString("en-US")} ₮`;
 
-      try {
-        const r = await fetch("/.netlify/functions/qpay-check", {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({ invoice_id: lastInvoiceId })
-        });
+      document.getElementById("qrBox").innerHTML =
+        j.qr_image ? `<img class="qr" alt="QPay QR" src="data:image/png;base64,${j.qr_image}">` : "QR олдсонгүй";
 
-        const j = await r.json().catch(() => ({}));
-        document.getElementById("checkResult").textContent =
-          j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
-      } catch (err) {
-        document.getElementById("checkResult").textContent = "Шалгаж чадсангүй.";
-      }
-    });
-  </script>
+      const urls = Array.isArray(j.urls) ? j.urls : [];
+      document.getElementById("urlBox").innerHTML = urls.length
+        ? urls.map(u => `<a class="btn gold" href="${u.link}" target="_blank" rel="noopener">${u.name || "Төлбөрийн линк"}</a>`).join("")
+        : "";
+
+      document.getElementById("checkResult").textContent = "";
+      document.getElementById("payBox").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (err) {
+      alert("Алдаа: " + err.message);
+    }
+  }
+
+  renderPlans();
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".planBtn");
+    if (!btn) return;
+
+    if (activeBtn) activeBtn.classList.remove("active");
+    btn.classList.add("active");
+    activeBtn = btn;
+
+    const amount = Number(btn.dataset.amount || 0);
+    const country = btn.dataset.country || "";
+    const title = btn.dataset.title || "";
+    const data = btn.dataset.data || "";
+    const validity = btn.dataset.validity || "";
+    const type = btn.dataset.type || "";
+    const operator = btn.dataset.operator || "";
+    const planCode = btn.dataset.planCode || "";
+
+    const descriptionParts = [country || title, data, validity, type, operator].filter(Boolean);
+    const description = descriptionParts.join(" • ");
+
+    selectedPlan = {
+      amount,
+      description,
+      planCode
+    };
+
+    let payNowBtn = document.getElementById("payNowBtn");
+    if (!payNowBtn) {
+      payNowBtn = document.createElement("button");
+      payNowBtn.id = "payNowBtn";
+      payNowBtn.className = "btn gold";
+      payNowBtn.type = "button";
+      payNowBtn.textContent = "QPay-ээр төлөх";
+      payNowBtn.style.marginTop = "12px";
+      payNowBtn.onclick = createInvoice;
+      document.getElementById("customerForm").appendChild(payNowBtn);
+    }
+
+    payNowBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  document.getElementById("checkBtn").addEventListener("click", async () => {
+    if (!lastInvoiceId) {
+      alert("Эхлээд invoice үүсгэнэ үү.");
+      return;
+    }
+
+    document.getElementById("checkResult").textContent = "Шалгаж байна...";
+
+    try {
+      const r = await fetch("/.netlify/functions/qpay-check", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ invoice_id: lastInvoiceId })
+      });
+
+      const j = await r.json().catch(() => ({}));
+      document.getElementById("checkResult").textContent =
+        j.paid ? "✅ ТӨЛӨГДСӨН" : "⏳ Төлөгдөөгүй байна";
+    } catch (err) {
+      document.getElementById("checkResult").textContent = "Шалгаж чадсангүй.";
+    }
+  });
+</script>
 </body>
 </html>
 
