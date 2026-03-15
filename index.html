@@ -1227,8 +1227,19 @@ function startAutoCheck(){
 // =========================
 // QPay button (single listener)
 // =========================
+
 qpayBtn?.addEventListener("click", async () => {
   if(!currentPlan || !currentCountry) return;
+
+  const name = document.getElementById("customerName")?.value.trim() || "";
+  const phone = document.getElementById("customerPhone")?.value.trim() || "";
+  const facebook = document.getElementById("customerFacebook")?.value.trim() || "";
+  const email = document.getElementById("customerEmail")?.value.trim() || "";
+
+  if(!name || !phone){
+    alert("Нэр, утсаа бөглөнө үү.");
+    return;
+  }
 
   resetPayUI();
   if(qpayBox){
@@ -1241,6 +1252,31 @@ qpayBtn?.addEventListener("click", async () => {
   const amount = Math.round(calculateMNT(currentPlan.price, currentCountry.name || currentCountry.code));
 
   try{
+    // 1. Эхлээд захиалгыг хадгална
+    const customerRes = await fetch("/.netlify/functions/customer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        phone,
+        email,
+        facebook,
+        whatsapp: "",
+        deliveryChannel: facebook ? "facebook" : (email ? "email" : ""),
+        note: "",
+        plan: desc,
+        planCode: currentPlan.planCode,
+        price: amount,
+        page: window.location.pathname
+      })
+    });
+
+    const customerData = await customerRes.json().catch(() => ({}));
+    if(!customerRes.ok){
+      throw new Error(customerData?.error || "Захиалга хадгалахад алдаа гарлаа");
+    }
+
+    // 2. Дараа нь QPay invoice үүсгэнэ
     const res = await fetch("/.netlify/functions/qpay-create-invoice", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1296,13 +1332,12 @@ Invoice: ${window._invoiceId || "-"}`;
     console.error(e);
     if(qpayBox){
       qpayBox.innerHTML = `<div style="border:1px solid #fee2e2;background:#fff1f2;border-radius:14px;padding:12px">
-        <b>❌ QPay алдаа</b>
+        <b>❌ Алдаа</b>
         <div class="sub" style="margin-top:6px">${String(e.message || e)}</div>
       </div>`;
     }
   }
 });
-
 checkPaymentBtn?.addEventListener("click", checkPaymentOnce);
 
 // Quick China
