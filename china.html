@@ -557,7 +557,20 @@
       payBtn.disabled = true;
       payBtn.textContent = "Үүсгэж байна...";
       successBox.style.display = "none";
-
+// Order хадгалах
+await fetch("/.netlify/functions/customer", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    name,
+    phone,
+    plan: description,
+    price: pkg.mnt,
+    page: window.location.pathname
+  })
+});
       try {
         const res = await fetch("/.netlify/functions/qpay-create-invoice", {
           method: "POST",
