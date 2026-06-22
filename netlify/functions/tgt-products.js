@@ -1,47 +1,48 @@
 exports.handler = async () => {
   try {
-    // Token авах
-    const tokenRes = await fetch(
-      `${process.env.TGT_BASE_URL}/oauth/token`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          accountId: process.env.TGT_ACCOUNT_ID,
-          secret: process.env.TGT_SECRET
-        })
-      }
-    );
+    const baseUrl = process.env.TGT_BASE_URL?.trim();
+    const accountId = process.env.TGT_ACCOUNT_ID?.trim();
+    const secret = process.env.TGT_SECRET?.trim();
+
+    const tokenRes = await fetch(`${baseUrl}/oauth/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        accountId,
+        secret
+      })
+    });
 
     const tokenData = await tokenRes.json();
 
-    const accessToken = tokenData?.data?.accessToken;
-
-    if (!accessToken) {
+    if (tokenData.code !== "0000") {
       return {
         statusCode: 500,
-        body: JSON.stringify(tokenData)
+        body: JSON.stringify({
+          step: "token",
+          error: tokenData
+        })
       };
     }
 
-    // Product жагсаалт авах
-    const productRes = await fetch(
-      `${process.env.TGT_BASE_URL}/eSIMApi/v2/products/list`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          pageNum: 1,
-          pageSize: 100,
-          lang: "en"
-        })
-      }
-    );
+    const accessToken = tokenData.data.accessToken;
+
+    const productRes = await fetch(`${baseUrl}/eSIMApi/v2/products/list`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        pageNum: 1,
+        pageSize: 100,
+        lang: "en"
+      })
+    });
 
     const products = await productRes.json();
 
@@ -49,7 +50,6 @@ exports.handler = async () => {
       statusCode: 200,
       body: JSON.stringify(products)
     };
-
   } catch (err) {
     return {
       statusCode: 500,
