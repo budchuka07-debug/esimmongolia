@@ -1,38 +1,69 @@
 exports.handler = async (event) => {
   try {
-    const { productCode, email } = JSON.parse(event.body);
+    if (event.httpMethod !== "POST") {
+      return {
+        statusCode: 405,
+        body: JSON.stringify({ error: "Only POST allowed" })
+      };
+    }
 
-    const baseUrl = process.env.TGT_BASE_URL;
-    const accountId = process.env.TGT_ACCOUNT_ID;
-    const secret = process.env.TGT_SECRET;
+    const body = JSON.parse(event.body || "{}");
+    const productCode = body.productCode;
+    const email = body.email || "";
 
-    // Token авах
+    if (!productCode) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "productCode is required" })
+      };
+    }
+
+    const baseUrl = process.env.TGT_BASE_URL?.trim();
+    const accountId = process.env.TGT_ACCOUNT_ID?.trim();
+    const secret = process.env.TGT_SECRET?.trim();
+
     const tokenRes = await fetch(`${baseUrl}/oauth/token`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json;charset=UTF-8"
+        "Content-Type": "application/json;charset=UTF-8",
+        "Accept": "application/json"
       },
-      body: JSON.stringify({
-        accountId,
-        secret
-      })
+      body: JSON.stringify({ accountId, secret })
     });
 
     const tokenData = await tokenRes.json();
-    const accessToken = tokenData.data.accessToken;
 
-    // Order үүсгэх
+    const accessToken =
+      tokenData?.data?.accessToken ||
+      tokenData?.data?.token ||
+      tokenData?.accessToken ||
+      tokenData?.token;
+
+    if (!accessToken) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          step: "token",
+          tokenData
+        })
+      };
+    }
+
     const orderRes = await fetch(`${baseUrl}/eSIMApi/v2/order/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
+        "Accept": "application/json",
         "Authorization": accessToken
       },
       body: JSON.stringify({
         productCode,
         email,
         channelOrderNo: `ESIM-${Date.now()}`,
-        idempotencyKey: crypto.randomUUID()
+        idempotencyKey:
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`
       })
     });
 
@@ -40,9 +71,12 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(orderData)
+      body: JSON.stringify({
+        tokenCode: tokenData.code,
+        tokenMsg: tokenData.msg,
+        orderResult: orderData
+      })
     };
-
   } catch (err) {
     return {
       statusCode: 500,
