@@ -33,11 +33,9 @@ exports.handler = async (event) => {
 
     const tokenData = await tokenRes.json();
 
-    const accessToken =
-      tokenData?.data?.accessToken ||
-      tokenData?.data?.token ||
-      tokenData?.accessToken ||
-      tokenData?.token;
+   const accessToken =
+  tokenData?.data?.accessToken ||
+  tokenData?.data?.token;
 
     if (!accessToken) {
       return {
