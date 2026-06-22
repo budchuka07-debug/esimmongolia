@@ -10,25 +10,26 @@ exports.handler = async () => {
         "Content-Type": "application/json;charset=UTF-8",
         "Accept": "application/json"
       },
-      body: JSON.stringify({
-        accountId,
-        secret
-      })
+      body: JSON.stringify({ accountId, secret })
     });
 
     const tokenData = await tokenRes.json();
 
-    if (tokenData.code !== "0000") {
+    const accessToken =
+      tokenData?.data?.accessToken ||
+      tokenData?.data?.token ||
+      tokenData?.accessToken ||
+      tokenData?.token;
+
+    if (!accessToken) {
       return {
         statusCode: 500,
         body: JSON.stringify({
           step: "token",
-          error: tokenData
+          tokenData
         })
       };
     }
-
-    const accessToken = tokenData.data.accessToken;
 
     const productRes = await fetch(`${baseUrl}/eSIMApi/v2/products/list`, {
       method: "POST",
@@ -48,14 +49,16 @@ exports.handler = async () => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(products)
+      body: JSON.stringify({
+        tokenCode: tokenData.code,
+        tokenMsg: tokenData.msg,
+        productResult: products
+      })
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: err.message
-      })
+      body: JSON.stringify({ error: err.message })
     };
   }
 };
