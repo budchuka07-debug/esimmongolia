@@ -275,8 +275,7 @@
 <div class="tp-form-grid">
 <div class="tp-field"><label>Хот</label><input data-field="city" value="Шанхай"></div>
 <div class="tp-field"><label>Ирэх</label><input data-field="checkin" type="date"></div>
-<div class="tp-field"><label>Гарах</label><input data-field="checkout" type="date"></div>
-<div class="tp-field"><label>Хоног</label><input data-field="days" type="number" value="5"></div>
+<div class="tp-field"><label>Хоног</label><input data-field="days" type="number" value="5" min="1"></div>
 </div>
 <div class="tp-search-actions">
 <button type="button" class="tp-btn primary" data-search-run="hotel">Буудал хайх</button>
@@ -1742,6 +1741,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <script src="/data/travel-data.js"></script>
+<script src="/data/mock-search-results.js"></script>
 <script src="/booking.js"></script>
 <script src="/ai-agent.js"></script>
 
@@ -1751,27 +1751,19 @@ document.addEventListener("DOMContentLoaded", () => {
 <h3 id="inquiryModalTitle">📋 Захиалга үүсгэх</h3>
 <p class="tp-lead" style="margin:-8px 0 14px;font-size:13px">Зөвхөн захиалах үед л бөглөнө. QPay төлбөр — админ үнэ баталсны дараа.</p>
 <form id="inquiryForm">
+<input type="hidden" name="service_type" id="inqServiceType" value="flight">
+<input type="hidden" name="destination_country" id="inqCountry" value="">
+<input type="hidden" name="destination_city" id="inqCity" value="">
+<input type="hidden" name="people_count" id="inqPeople" value="2">
+<input type="hidden" name="budget_mnt" id="inqBudget" value="">
 <div class="tp-form-grid">
 <div class="tp-field"><label>Нэр *</label><input name="customer_name" id="inqName" required></div>
 <div class="tp-field"><label>Утас / WhatsApp *</label><input name="customer_phone" id="inqPhone" required></div>
 <div class="tp-field"><label>Email</label><input name="customer_email" id="inqEmail" type="email"></div>
-<div class="tp-field"><label>Сонгосон үйлчилгээ</label>
-<select name="service_type" id="inqServiceType">
-<option value="flight">Нислэг</option>
-<option value="hotel">Буудал</option>
-<option value="train">Галт тэрэг</option>
-<option value="attraction">Үзвэр</option>
-<option value="esim">eSIM</option>
-<option value="visa">Виз</option>
-<option value="route">Бүтэн аялал</option>
-</select></div>
-<div class="tp-field"><label>Очих улс / чиглэл</label><input name="destination_country" id="inqCountry"></div>
-<div class="tp-field"><label>Очих хот</label><input name="destination_city" id="inqCity"></div>
 <div class="tp-field"><label>Огноо</label><input name="travel_date" id="inqTravelDate" type="date"></div>
-<div class="tp-field"><label>Аялагчдын тоо</label><input name="people_count" id="inqPeople" type="number" value="2" min="1"></div>
 </div>
-<div class="tp-field" style="margin-top:12px"><label>Нэмэлт тэмдэглэл</label><textarea name="extra_notes" id="inqNotes" rows="3"></textarea></div>
-<input type="hidden" name="budget_mnt" id="inqBudget" value="">
+<div class="tp-field" style="margin-top:12px"><label>Сонгосон зүйл</label><input name="selected_item" id="inqSelectedItem" readonly placeholder="Хайлтаас сонгоно"></div>
+<div class="tp-field" style="margin-top:12px"><label>Нэмэлт тэмдэглэл</label><textarea name="extra_notes" id="inqNotes" rows="3" placeholder="Нэмэлт хүсэлт, асуулт…"></textarea></div>
 <div class="tp-search-actions" style="margin-top:14px">
 <button type="submit" class="tp-btn primary">Захиалга илгээх</button>
 </div>

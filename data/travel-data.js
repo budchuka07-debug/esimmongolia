@@ -23,6 +23,16 @@ window.TRAVEL_DATA = {
     { id: "route", icon: "🗺️", title: "Аяллын маршрут", desc: "Хот, маршрут, зөвлөгөө", href: "/marshrut.html" }
   ],
 
+  /** Admin-configurable pricing (default 15%, range 10–20%) */
+  pricing: {
+    defaultMarkupPercent: 15,
+    minMarkupPercent: 10,
+    maxMarkupPercent: 20,
+    exchangeRateCny: 520,
+    exchangeRateUsd: 3680,
+    serviceFeeMnt: 5000
+  },
+
   chinaCities: [
     {
       id: "beijing", name: "Бээжин", cn: "北京",
@@ -126,20 +136,33 @@ window.TRAVEL_DATA = {
     }
   ],
 
-  /** Supplier-ready price model (MVP mock) */
+  /** Supplier price + markup → final MNT (admin can change markupPercent) */
   calcFinalPriceMnt(item) {
-    const rate = Number(item.exchange_rate || 520);
+    const p = window.TRAVEL_DATA?.pricing || {};
+    const rate = Number(item.exchange_rate || p.exchangeRateCny || 520);
     const orig = Number(item.original_price || 0);
-    const markup = Number(item.markup_percent ?? 15) / 100;
-    const fee = Number(item.service_fee_mnt || 0);
+    const markupPct = item.markup_percent ?? p.defaultMarkupPercent ?? 15;
+    const markup = Number(markupPct) / 100;
+    const fee = Number(item.service_fee_mnt ?? p.serviceFeeMnt ?? 0);
     const baseMnt = orig * rate * (1 + markup);
     return {
       original_price: orig,
       currency: item.currency || "CNY",
       exchange_rate: rate,
-      markup_percent: item.markup_percent ?? 15,
-      service_fee: fee,
+      markup_percent: markupPct,
+      service_fee_mnt: fee,
       final_price_mnt: Math.round((baseMnt + fee) / 100) * 100
+    };
+  },
+
+  /** Apply pricing to a search result item */
+  priceItem(item, markupPercent) {
+    return {
+      ...item,
+      ...this.calcFinalPriceMnt({
+        ...item,
+        markup_percent: markupPercent ?? this.pricing.defaultMarkupPercent
+      })
     };
   }
 };

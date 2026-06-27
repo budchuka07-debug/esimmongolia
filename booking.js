@@ -67,7 +67,8 @@
       travelDate: "inqTravelDate",
       people: "inqPeople",
       budget: "inqBudget",
-      notes: "inqNotes"
+      notes: "inqNotes",
+      selectedItem: "inqSelectedItem"
     };
     if (preset) {
       Object.keys(preset).forEach((k) => {
@@ -181,36 +182,151 @@
     });
   }
 
+  function stars(n) {
+    return "★".repeat(n) + "☆".repeat(Math.max(0, 5 - n));
+  }
+
+  function priceItem(item) {
+    const td = window.TRAVEL_DATA;
+    if (td && td.priceItem) return td.priceItem(item);
+    const calc = td?.calcFinalPriceMnt || (() => ({ final_price_mnt: 0 }));
+    return { ...item, ...calc(item) };
+  }
+
+  function itemLabel(item) {
+    if (item.type === "hotel") return `${item.name} — ${item.city}, ${item.area}`;
+    if (item.type === "train") return `${item.train_number} ${item.from_city}→${item.to_city} ${item.depart_time}`;
+    if (item.type === "flight") return `${item.airline} ${item.from_city}→${item.to_city} ${item.depart_time}`;
+    return item.title || item.name || "Сонголт";
+  }
+
   function mockSearch(type, formData) {
-    const calc = window.TRAVEL_DATA?.calcFinalPriceMnt || ((x) => ({ final_price_mnt: 0 }));
-    const city = formData.city || "Шанхай";
-    const people = Number(formData.people || 2);
-    const days = Number(formData.days || 5);
+    const mock = window.MOCK_SEARCH;
+    if (!mock) return [];
 
-    const templates = {
-      flight: [
-        { title: `Улаанбаатар → ${city} (шууд)`, supplier: "mock_amadeus", original_price: 1850, currency: "CNY", meta: "2 цаг • China Southern" },
-        { title: `Улаанбаатар → ${city} (1 зогсоол)`, supplier: "mock_duffel", original_price: 1420, currency: "CNY", meta: "6 цаг • Air China" }
-      ],
-      hotel: [
-        { title: `${city} төв — 4 од`, supplier: "mock_booking", original_price: 380 * days, currency: "CNY", meta: `${days} шөнө • өглөөний цай` },
-        { title: `${city} — 3 од`, supplier: "mock_trip", original_price: 220 * days, currency: "CNY", meta: `${days} шөнө • метротой ойр` }
-      ],
-      train: [
-        { title: `Хөх хот → Бээжин HSR`, supplier: "mock_12306", original_price: 200, currency: "CNY", meta: "~2 цаг • 2-р зэрэглэл" },
-        { title: `Бээжин → ${city} HSR`, supplier: "mock_12306", original_price: 550, currency: "CNY", meta: "4–6 цаг" }
-      ],
-      attraction: [
-        { title: `Disneyland ${city.includes("Шанхай") ? "Shanghai" : "Park"}`, supplier: "mock_klook", original_price: 499 * people, currency: "CNY", meta: "1 өдрийн тасалбар" },
-        { title: "Great Wall tour", supplier: "mock_klook", original_price: 280 * people, currency: "CNY", meta: "Тээвэр + хоол" }
-      ]
-    };
+    if (type === "hotel") {
+      const city = formData.city || "Шанхай";
+      const nights = formData.days || formData.checkout ? formData.days : 5;
+      return mock.hotels(city, nights).map(priceItem);
+    }
+    if (type === "train") {
+      return mock.trains(formData.from || "Хөх хот", formData.city || "Бээжин").map(priceItem);
+    }
+    if (type === "flight") {
+      return mock.flights(formData.from || "Улаанбаатар", formData.city || "Шанхай").map(priceItem);
+    }
+    if (type === "attraction") {
+      const city = formData.city || "Шанхай";
+      const people = Number(formData.people || 2);
+      return [
+        { type: "attraction", id: "att-1", supplier: "mock_klook", name: `Disneyland ${city}`, description: "1 өдрийн тасалбар", original_price: 499 * people, currency: "CNY" },
+        { type: "attraction", id: "att-2", supplier: "mock_klook", name: "Great Wall Tour", description: "Тээвэр + хоол", original_price: 280 * people, currency: "CNY" }
+      ].map(priceItem);
+    }
+    return mock.flights("Улаанбаатар", formData.city || "Шанхай").map(priceItem);
+  }
 
-    const list = templates[type] || templates.flight;
-    return list.map((item) => {
-      const pricing = calc({ ...item, markup_percent: 15, service_fee_mnt: 5000 });
-      return { ...item, ...pricing, people, days };
-    });
+  function renderHotelCard(h) {
+    const badges = (h.badges || []).map((b) => `<span class="tp-badge">${b}</span>`).join("");
+    return `
+      <article class="tp-hotel-card" data-item-id="${h.id}">
+        <img class="tp-hotel-img" src="${h.image}" alt="${h.name}" loading="lazy">
+        <div class="tp-hotel-body">
+          <div class="tp-hotel-stars">${stars(h.stars)}</div>
+          <h4 class="tp-hotel-name">${h.name}</h4>
+          <div class="tp-hotel-area">${h.city} • ${h.area}</div>
+          <p class="tp-hotel-desc">${h.description}</p>
+          <div class="tp-hotel-dist">📍 ${h.distance}</div>
+          <div class="tp-hotel-badges">${badges}</div>
+          <div class="tp-card-price-row">
+            <div>
+              <div class="tp-price-final">${fmtMnt(h.final_price_mnt)}</div>
+              <div class="tp-price-supplier">${h.original_price} ${h.currency} • ${h.nights} шөнө (+${h.markup_percent}%)</div>
+            </div>
+            <button type="button" class="tp-btn-book" data-book-type="hotel" data-item-id="${h.id}">Захиалах</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderTrainCard(t) {
+    return `
+      <article class="tp-train-card" data-item-id="${t.id}">
+        <div class="tp-train-route">
+          <div class="tp-train-city">
+            <div class="tp-train-time">${t.depart_time}</div>
+            <div class="tp-train-place">${t.from_city}</div>
+          </div>
+          <div class="tp-train-mid">
+            <div class="tp-train-dur">${t.duration}</div>
+            <div class="tp-train-line"></div>
+            <div class="tp-train-num">${t.train_number}</div>
+          </div>
+          <div class="tp-train-city align-right">
+            <div class="tp-train-time">${t.arrive_time}</div>
+            <div class="tp-train-place">${t.to_city}</div>
+          </div>
+        </div>
+        <div class="tp-train-meta">
+          <span class="tp-badge">${t.seat_type}</span>
+          <span class="tp-badge muted">${t.supplier}</span>
+        </div>
+        <div class="tp-card-price-row">
+          <div>
+            <div class="tp-price-final">${fmtMnt(t.final_price_mnt)}</div>
+            <div class="tp-price-supplier">${t.original_price} ${t.currency} (+${t.markup_percent}%)</div>
+          </div>
+          <button type="button" class="tp-btn-book" data-book-type="train" data-item-id="${t.id}">Захиалах</button>
+        </div>
+      </article>`;
+  }
+
+  function renderFlightCard(f) {
+    return `
+      <article class="tp-flight-card" data-item-id="${f.id}">
+        <div class="tp-flight-airline">✈️ ${f.airline}</div>
+        <div class="tp-train-route">
+          <div class="tp-train-city">
+            <div class="tp-train-time">${f.depart_time}</div>
+            <div class="tp-train-place">${f.depart_airport}</div>
+            <div class="tp-flight-sub">${f.from_city}</div>
+          </div>
+          <div class="tp-train-mid">
+            <div class="tp-train-dur">${f.duration}</div>
+            <div class="tp-train-line"></div>
+          </div>
+          <div class="tp-train-city align-right">
+            <div class="tp-train-time">${f.arrive_time}</div>
+            <div class="tp-train-place">${f.arrive_airport}</div>
+            <div class="tp-flight-sub">${f.to_city}</div>
+          </div>
+        </div>
+        <div class="tp-train-meta">
+          <span class="tp-badge">🧳 ${f.baggage}</span>
+        </div>
+        <div class="tp-card-price-row">
+          <div>
+            <div class="tp-price-final">${fmtMnt(f.final_price_mnt)}</div>
+            <div class="tp-price-supplier">${f.original_price} ${f.currency} (+${f.markup_percent}%)</div>
+          </div>
+          <button type="button" class="tp-btn-book" data-book-type="flight" data-item-id="${f.id}">Захиалах</button>
+        </div>
+      </article>`;
+  }
+
+  function renderAttractionCard(a) {
+    return `
+      <article class="tp-train-card" data-item-id="${a.id}">
+        <h4 class="tp-hotel-name">${a.name}</h4>
+        <p class="tp-hotel-desc">${a.description}</p>
+        <div class="tp-card-price-row">
+          <div>
+            <div class="tp-price-final">${fmtMnt(a.final_price_mnt)}</div>
+            <div class="tp-price-supplier">${a.original_price} ${a.currency}</div>
+          </div>
+          <button type="button" class="tp-btn-book" data-book-type="attraction" data-item-id="${a.id}">Захиалах</button>
+        </div>
+      </article>`;
   }
 
   function showMockResults(type, results) {
@@ -219,29 +335,45 @@
     if (!box) return;
     const label = SERVICE_TYPES[type] || type;
     box.style.display = "block";
+
+    let gridClass = "tp-results-grid";
+    let cards = "";
+    if (type === "hotel") {
+      gridClass = "tp-hotel-grid";
+      cards = results.map(renderHotelCard).join("");
+    } else if (type === "train") {
+      gridClass = "tp-train-grid";
+      cards = results.map(renderTrainCard).join("");
+    } else if (type === "flight") {
+      gridClass = "tp-flight-grid";
+      cards = results.map(renderFlightCard).join("");
+    } else {
+      cards = results.map(renderAttractionCard).join("");
+    }
+
     box.innerHTML = `
-      <h3 style="margin:0 0 10px;font-size:1rem">🔍 ${label} — жишээ үр дүн (MVP)</h3>
-      <p class="tp-lead" style="margin:0 0 12px">Жишээ үр дүн. «Захиалах» дарвал л form нээгдэнэ.</p>
-      <div class="tp-results">
-        ${results.map((r) => `
-          <div class="tp-result-card">
-            <div>
-              <strong>${r.title}</strong>
-              <div class="tp-price-note">${r.meta} • ${r.supplier}</div>
-            </div>
-            <div style="text-align:right">
-              <div class="price">${fmtMnt(r.final_price_mnt)}</div>
-              <button type="button" class="tp-btn primary" style="margin-top:8px;padding:8px 14px;font-size:13px" data-book-result="${r.title}">Захиалах</button>
-            </div>
-          </div>
-        `).join("")}
+      <div class="tp-results-header">
+        <h3>🔍 ${label} — ${results.length} үр дүн</h3>
+        <p class="tp-lead">Жишээ өгөгдөл (supplier API удахгүй). «Захиалах» дарвал хүсэлт илгээнэ.</p>
       </div>
+      <div class="${gridClass}">${cards}</div>
     `;
-    box.querySelectorAll("[data-book-result]").forEach((btn) => {
+
+    box.querySelectorAll("[data-book-type]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        openBookingForm(type, { notes: `Сонгосон: ${btn.dataset.bookResult}` }, BOOKING_TITLES[type]);
+        const item = results.find((r) => r.id === btn.dataset.itemId);
+        if (!item) return;
+        const bookType = btn.dataset.bookType || type;
+        openBookingForm(bookType, {
+          selectedItem: itemLabel(item),
+          notes: `Үнэ: ${fmtMnt(item.final_price_mnt)} (${item.original_price} ${item.currency})`,
+          city: item.city || item.to_city || "",
+          country: item.from_city ? "" : "Хятад"
+        }, BOOKING_TITLES[bookType]);
       });
     });
+
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function collectForm(panel) {
@@ -260,6 +392,9 @@
     const payload = Object.fromEntries(new FormData(form));
     payload.service_type = payload.service_type || "flight";
     payload.status = "new";
+    if (payload.selected_item) {
+      payload.extra_notes = [payload.selected_item, payload.extra_notes].filter(Boolean).join("\n");
+    }
 
     if (statusEl) statusEl.textContent = "Илгээж байна…";
 
