@@ -699,7 +699,7 @@ function updatePriceBanner(){
   box.style.display = "block";
   box.className = "priceBanner";
   box.innerHTML = `
-    <div style="font-size:13px;opacity:.9">Сонгосон багцын үнэ (TGT + 40%)</div>
+    <div style="font-size:13px;opacity:.9">Сонгосон багцын үнэ</div>
     <div class="amount">${fmt(mnt)}</div>
     <div class="meta">${formatPlanMeta(currentPlan)}</div>
   `;
@@ -1136,7 +1136,6 @@ function updateModal(){
             <div style="font-weight:700;font-size:15px">${p.planName}${un}</div>
             <div class="sub" style="margin-top:6px;line-height:1.5">${meta || "Багцын дэлгэрэнгүй"}</div>
             <div class="planPrice" style="margin-top:8px">${fmt(mnt)}</div>
-            <div class="sub" style="margin-top:4px">TGT үнэ: $${Number(p.price || 0).toFixed(2)} + 40%</div>
           </div>
           <button class="btn ${selected ? '' : 'primary'} planSelect" type="button" onclick="selectPlan('${safeCode}')">
             ${selected ? "Сонгосон" : "Сонгох"}
