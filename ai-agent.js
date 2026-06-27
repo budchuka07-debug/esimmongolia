@@ -1,76 +1,154 @@
 /**
- * AI Travel Agent — MVP mock UI
- * Production: Frontend → Supabase Edge Function → OpenAI → DB
- * No API keys in frontend.
+ * AI Travel Advisor — free ChatGPT-style chat (no form required)
  */
 (function () {
   const ENDPOINT = "/.netlify/functions/ai-travel-agent";
 
+  const history = [];
+  let lastContext = {};
+
   const chatEl = () => document.getElementById("aiChat");
   const inputEl = () => document.getElementById("aiAgentInput");
+  const heroInput = () => document.getElementById("aiSearchInput");
 
-  function appendMsg(role, text) {
+  function scrollChat() {
+    const box = chatEl();
+    if (box) box.scrollTop = box.scrollHeight;
+  }
+
+  function appendUser(text) {
     const box = chatEl();
     if (!box) return;
-    const div = document.createElement("div");
-    div.className = "tp-msg " + role;
-    div.textContent = text;
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
+    const wrap = document.createElement("div");
+    wrap.className = "tp-msg-row user";
+    wrap.innerHTML = `<div class="tp-msg user">${escapeHtml(text)}</div>`;
+    box.appendChild(wrap);
+    scrollChat();
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function formatReply(text) {
+    return escapeHtml(text).replace(/\n/g, "<br>");
+  }
+
+  function appendAi(text, ctas, context) {
+    const box = chatEl();
+    if (!box) return;
+    if (context) lastContext = { ...lastContext, ...context };
+
+    const wrap = document.createElement("div");
+    wrap.className = "tp-msg-row ai";
+
+    let ctaHtml = "";
+    if (ctas && ctas.length) {
+      ctaHtml = `<div class="tp-msg-ctas">${ctas.map((c) =>
+        `<button type="button" class="tp-cta-chip" data-cta-id="${c.id}">${escapeHtml(c.label)}</button>`
+      ).join("")}</div>`;
+    }
+
+    wrap.innerHTML = `
+      <div class="tp-msg-avatar" aria-hidden="true">🤖</div>
+      <div class="tp-msg-bubble">
+        <div class="tp-msg ai">${formatReply(text)}</div>
+        ${ctaHtml}
+      </div>`;
+    box.appendChild(wrap);
+
+    wrap.querySelectorAll("[data-cta-id]").forEach((btn) => {
+      btn.addEventListener("click", () => handleCta(btn.dataset.ctaId));
+    });
+    scrollChat();
   }
 
   function showTyping() {
     const box = chatEl();
     if (!box) return null;
-    const div = document.createElement("div");
-    div.className = "tp-msg ai typing";
-    div.id = "aiTyping";
-    div.textContent = "AI бодож байна…";
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
-    return div;
+    const el = document.createElement("div");
+    el.className = "tp-msg-row ai typing-row";
+    el.id = "aiTyping";
+    el.innerHTML = `
+      <div class="tp-msg-avatar">🤖</div>
+      <div class="tp-msg ai typing"><span class="tp-dots"><span></span><span></span><span></span></span></div>`;
+    box.appendChild(el);
+    scrollChat();
+    return el;
   }
 
-  function parseLocalIntent(text) {
-    const t = text.toLowerCase();
-    const out = {
-      country: t.includes("шанхай") || t.includes("shanghai") ? "Хятад / Шанхай" :
-        t.includes("бээжин") || t.includes("beijing") ? "Хятад / Бээжин" :
-        t.includes("солонгос") || t.includes("korea") ? "Солонгос" :
-        t.includes("япон") || t.includes("japan") ? "Япон" : "Хятад",
-      days: (t.match(/(\d+)\s*хоног/) || [])[1] || "5",
-      people: (t.match(/(\d+)\s*хүн/) || [])[1] || "2",
-      month: (t.match(/(\d+)\s*сар/) || [])[1] || null,
-      wantsDisney: /disneyland|дисней/i.test(text),
-      wantsEsim: /esim|интернэт/i.test(text)
+  function ctaFollowUpMessages() {
+    const city = lastContext.city || lastContext.country || "тэнд";
+    return {
+      route_plan: `${city} руу ${lastContext.days || 5} хоногийн дэлгэрэнгүй маршрут өгнө үү. Өдөр бүр ямар газар очих, хэдэн цаг зарцуулахыг жагсаана уу.`,
+      flight_check: `${city} руу нислэгийн боломж, үнийн хязгаар, аль үед захиалах нь дээр вэ?`,
+      hotel_suggest: `${city} дотор метротой ойр, аюулгүй буудлын бүс, өдрийн үнийн санал өгнө үү.`,
+      ticket_suggest: `${city} дотор үзвэр, музей, Disneyland зэрэг тасалбарын үнэ, захиалгын зөвлөмж.`,
+      visa_info: `${lastContext.country || "Хятад"} руу Монгол иргэний визийн мэдээлэл, шаардлагатай материал.`,
+      esim_view: null,
+      create_booking: null,
+      book_flight: null,
+      book_hotel: null,
+      book_train: null,
+      book_attraction: null,
+      book_esim: null,
+      book_full: null
     };
-    return out;
   }
 
-  function localMockReply(intent, raw) {
-    const days = intent.days;
-    const people = intent.people;
-    let reply = `📋 **${intent.country}** — ${days} хоног, ${people} хүн\n\n`;
-    reply += `**Маршрут (жишээ):**\n`;
-    reply += `• 1-р өдөр: Ирэх, буудал шилжих, ойролцоох үзэх газар\n`;
-    reply += `• 2–${Math.max(2, Number(days) - 1)}-р өдөр: Гол дурсгалт газрууд\n`;
-    if (intent.wantsDisney) reply += `• Disneyland — 1 бүтэн өдөр (~500 CNY/хүн)\n`;
-    reply += `• Сүүлийн өдөр: Буцах нислэг\n\n`;
-    reply += `**Төсөв (ойролцоо):** ${Number(days) * 350 * Number(people)}–${Number(days) * 600 * Number(people)} CNY\n\n`;
-    reply += `**eSIM:** China eSIM 7–14 хоног — esimmongolia.com/china.html\n`;
-    reply += `**Буудлын бүс:** Метротой ойр төв эсвэл гол дурсгалт ойр\n`;
-    reply += `**Нислэг:** Улаанбаатар–${intent.country.includes("Шанхай") ? "Шанхай" : "Бээжин"} ~2 цаг шууд\n`;
-    reply += `**Тээвэр:** Метро + Alipay; VPN (Google/FB-д)\n\n`;
-    reply += `Захиалах уу? Доорх «Захиалгын хүсэлт» товч дарна уу.`;
-    return reply.replace(/\*\*/g, "");
+  function handleCta(id) {
+    const bookingMap = {
+      create_booking: { type: "full", title: "Бүтэн аяллын захиалга үүсгэх" },
+      book_flight: { type: "flight", title: "Нислэг захиалах" },
+      book_hotel: { type: "hotel", title: "Буудал захиалах" },
+      book_train: { type: "train", title: "Галт тэрэгний тасалбар захиалах" },
+      book_attraction: { type: "attraction", title: "Үзвэр захиалах" },
+      book_esim: { type: "esim", title: "eSIM авах" }
+    };
+
+    if (id === "esim_view") {
+      document.querySelector("#esim")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    const book = bookingMap[id];
+    if (book && window.TravelBooking) {
+      window.TravelBooking.openBookingForm(book.type, buildPresetFromContext(), book.title);
+      return;
+    }
+
+    const followUps = ctaFollowUpMessages();
+    const msg = followUps[id];
+    if (msg) ask(msg, { silentUser: false });
   }
 
-  async function ask(question) {
+  function buildPresetFromContext() {
+    const c = lastContext;
+    return {
+      country: c.country || "",
+      city: c.city || "",
+      people: c.people ? String(c.people) : "",
+      travelDate: c.month ? `2026-${String(c.month).padStart(2, "0")}-${String(c.day || "15").padStart(2, "0")}` : "",
+      notes: [c.country, c.city, c.days ? c.days + " хоног" : "", c.people ? c.people + " хүн" : ""].filter(Boolean).join(", ")
+    };
+  }
+
+  async function ask(question, opts) {
     const q = String(question || "").trim();
     if (!q) return;
 
-    appendMsg("user", q);
+    const silent = opts && opts.silentUser;
+
+    if (!silent) {
+      appendUser(q);
+      history.push({ role: "user", content: q });
+    }
+
     if (inputEl()) inputEl().value = "";
+    if (heroInput()) heroInput().value = "";
 
     const typing = showTyping();
 
@@ -81,6 +159,7 @@
         body: JSON.stringify({
           message: q,
           sessionId: sessionStorage.getItem("aiSessionId") || null,
+          history: history.slice(-10),
           locale: "mn"
         })
       });
@@ -89,43 +168,56 @@
 
       if (data.sessionId) sessionStorage.setItem("aiSessionId", data.sessionId);
 
-      appendMsg("ai", data.reply || localMockReply(parseLocalIntent(q), q));
+      const reply = data.reply || "Уучлаарай, одоогоор хариу өгч чадсангүй. Дахин оролдоно уу.";
+      appendAi(reply, data.ctas || [], data.context || {});
 
-      if (data.suggestedAction === "inquiry" && window.TravelBooking) {
-        const intent = parseLocalIntent(q);
-        window.TravelBooking.openInquiryModal("ai", {
-          country: intent.country.split("/")[0]?.trim() || "Хятад",
-          city: intent.country.split("/")[1]?.trim() || "",
-          travelDate: intent.month ? `2026-${String(intent.month).padStart(2, "0")}-15` : "",
-          people: intent.people,
-          notes: q
-        });
-      }
+      history.push({ role: "assistant", content: reply });
     } catch (err) {
       if (typing) typing.remove();
-      appendMsg("ai", localMockReply(parseLocalIntent(q), q));
+      appendAi("Холболт түр алдаатай байна. Дахин асуугаарай — form бөглөх шаардлагагүй.", [], {});
     }
+  }
+
+  function goToChatAndAsk(text) {
+    document.getElementById("aiAgentSection")?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => ask(text || heroInput()?.value || inputEl()?.value), 300);
   }
 
   function init() {
     const form = document.getElementById("aiAgentForm");
-    const syncInput = document.getElementById("aiSearchInput");
+    const input = inputEl();
 
     form?.addEventListener("submit", (e) => {
       e.preventDefault();
-      ask(inputEl()?.value);
+      ask(input?.value);
     });
 
-    if (syncInput && inputEl()) {
-      syncInput.addEventListener("input", () => {
-        inputEl().value = syncInput.value;
-      });
-    }
+    input?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        ask(input.value);
+      }
+    });
 
-    appendMsg("ai", "Сайн байна уу! Би eSIM Mongolia AI аяллын туслах. Улс, огноо, хоног, хүний тоо, төсөвөө бичээрэй — маршрут, eSIM, нислэгийн зөвлөгөө өгнө.");
+    document.getElementById("aiSearchBtn")?.addEventListener("click", () => {
+      goToChatAndAsk(heroInput()?.value);
+    });
+
+    heroInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        goToChatAndAsk(heroInput()?.value);
+      }
+    });
+
+    appendAi(
+      "Сайн байна уу! Би таны AI аяллын зөвлөх. Хаашаа явах, хэзээ, хэдэн хүн, төсөв — ямар ч зүйл асуугаарай. Form бөглөх шаардлагагүй, чөлөөтэй чатлаарай.",
+      [],
+      {}
+    );
   }
 
-  window.TravelAI = { ask, parseLocalIntent };
+  window.TravelAI = { ask, goToChatAndAsk, handleCta, getContext: () => ({ ...lastContext }) };
 
   document.addEventListener("DOMContentLoaded", init);
 })();

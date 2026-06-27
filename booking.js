@@ -34,12 +34,30 @@
     return new Intl.NumberFormat("mn-MN").format(Number(n || 0)) + "₮";
   }
 
-  function openInquiryModal(serviceType, preset) {
+  const BOOKING_TITLES = {
+    full: "Бүтэн аяллын захиалга үүсгэх",
+    flight: "Нислэг захиалах",
+    hotel: "Буудал захиалах",
+    train: "Галт тэрэгний тасалбар захиалах",
+    attraction: "Үзвэр захиалах",
+    esim: "eSIM авах",
+    visa: "Визийн зөвлөгөө",
+    route: "Маршрут захиалах"
+  };
+
+  function openBookingForm(serviceType, preset, title) {
     const modal = $("inquiryModal");
     const bd = $("inquiryModalBd");
     if (!modal || !bd) return;
+    const type = serviceType === "full" ? "route" : (serviceType || "flight");
     const typeEl = $("inqServiceType");
-    if (typeEl) typeEl.value = serviceType || "flight";
+    if (typeEl) typeEl.value = type;
+    const titleEl = $("inquiryModalTitle");
+    if (titleEl) {
+      titleEl.textContent = title || BOOKING_TITLES[type] || "Захиалга үүсгэх";
+    }
+    const statusEl = $("inqStatus");
+    if (statusEl) statusEl.textContent = "";
     const fieldMap = {
       name: "inqName",
       phone: "inqPhone",
@@ -59,6 +77,10 @@
     }
     modal.style.display = "block";
     bd.style.display = "block";
+  }
+
+  function openInquiryModal(serviceType, preset) {
+    openBookingForm(serviceType, preset);
   }
 
   function closeInquiryModal() {
@@ -116,20 +138,20 @@
               <a class="tp-btn" href="${c.map}" target="_blank" rel="noopener">📍 Map</a>
               <a class="tp-btn" href="${c.route}">🗺 Маршрут</a>
               <a class="tp-btn" href="${c.esim}">📶 eSIM</a>
-              <button type="button" class="tp-btn primary" data-inquiry-city="${c.name}">Захиалах</button>
+              <button type="button" class="tp-btn primary" data-book-city="${c.name}">Захиалах</button>
             </div>
           </div>
         </div>
       </article>
     `).join("");
 
-    box.querySelectorAll("[data-inquiry-city]").forEach((btn) => {
+    box.querySelectorAll("[data-book-city]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        openInquiryModal("route", {
+        openBookingForm("full", {
           country: "Хятад",
-          city: btn.dataset.inquiryCity,
-          notes: `${btn.dataset.inquiryCity} хот — маршрут, буудал, eSIM зөвлөгөө хүсэж байна.`
-        });
+          city: btn.dataset.bookCity,
+          notes: `${btn.dataset.bookCity} — бүтэн аяллын захиалга`
+        }, BOOKING_TITLES.full);
       });
     });
   }
@@ -199,7 +221,7 @@
     box.style.display = "block";
     box.innerHTML = `
       <h3 style="margin:0 0 10px;font-size:1rem">🔍 ${label} — жишээ үр дүн (MVP)</h3>
-      <p class="tp-lead" style="margin:0 0 12px">Бодит API холбогдоогүй. Захиалгын хүсэлт илгээвэл админ үнэ батална.</p>
+      <p class="tp-lead" style="margin:0 0 12px">Жишээ үр дүн. «Захиалах» дарвал л form нээгдэнэ.</p>
       <div class="tp-results">
         ${results.map((r) => `
           <div class="tp-result-card">
@@ -217,7 +239,7 @@
     `;
     box.querySelectorAll("[data-book-result]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        openInquiryModal(type, { notes: `Сонгосон: ${btn.dataset.bookResult}` });
+        openBookingForm(type, { notes: `Сонгосон: ${btn.dataset.bookResult}` }, BOOKING_TITLES[type]);
       });
     });
   }
@@ -250,7 +272,7 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Алдаа");
       if (statusEl) {
-        statusEl.innerHTML = `✅ Хүсэлт хүлээн авлаа! Дугаар: <b>${data.requestId || "—"}</b><br><small>Төлөв: ${STATUS_LABELS.new}. Админ үнэ илгээхэд QPay-р төлнө.</small>`;
+        statusEl.innerHTML = `✅ Захиалга хүлээн авлаа! Дугаар: <b>${data.requestId || "—"}</b><br><small>Төлөв: ${STATUS_LABELS.new}. Админ үнэ баталсны дараа танд мэдэгдэнэ. Төлбөр (QPay) зөвхөн үнэ батлагдсаны дараа.</small>`;
       }
       form.reset();
     } catch (err) {
@@ -263,11 +285,8 @@
       btn.addEventListener("click", () => setTab(btn.dataset.tab));
     });
 
-    $("aiSearchBtn")?.addEventListener("click", () => {
-      const q = $("aiSearchInput")?.value?.trim();
-      document.getElementById("aiAgentSection")?.scrollIntoView({ behavior: "smooth" });
-      if (q && window.TravelAI) window.TravelAI.ask(q);
-      else setTab("ai");
+    $("openInquiryBtn")?.addEventListener("click", () => {
+      openBookingForm("flight", {}, BOOKING_TITLES.flight);
     });
 
     document.querySelectorAll("[data-search-run]").forEach((btn) => {
@@ -279,8 +298,6 @@
         showMockResults(type, results);
       });
     });
-
-    $("openInquiryBtn")?.addEventListener("click", () => openInquiryModal("flight"));
   }
 
   function initInquiryModal() {
@@ -291,10 +308,12 @@
 
   window.TravelBooking = {
     openInquiryModal,
+    openBookingForm,
     closeInquiryModal,
     setTab,
     STATUS_LABELS,
-    SERVICE_TYPES
+    SERVICE_TYPES,
+    BOOKING_TITLES
   };
 
   document.addEventListener("DOMContentLoaded", () => {
