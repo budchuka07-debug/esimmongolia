@@ -195,9 +195,15 @@
   color:#fff;
   border:0;
 }
-.planSelect.isSelected{
-  background:#16a34a;
+.planPrice{font-size:24px;font-weight:900;color:#047857;line-height:1.2}
+.priceBanner{
+  background:linear-gradient(135deg,#0f766e,#10b981);
+  color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;
 }
+.priceBanner .amount{font-size:30px;font-weight:900;margin-top:4px}
+.priceBanner .meta{opacity:.92;font-size:13px;margin-top:6px}
+.esimQrBox{margin-top:14px;padding:16px;border:2px solid #10b981;border-radius:16px;background:#f0fdf4;text-align:center}
+.esimQrBox .qrTitle{font-size:18px;font-weight:900;color:#065f46;margin-bottom:10px}
 
 </style>
 </head>
@@ -590,6 +596,7 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
 <button aria-label="Close" class="close" id="x" type="button" data-close>×</button>
 </header>
 <div class="body">
+<div id="selectedPriceBanner" style="display:none"></div>
 <div id="out"></div>
 <!-- Data selector -->
 <div style="margin-top:12px">
@@ -632,8 +639,8 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
 </div>
 
 <div style="margin-top:10px;">
-  <span class="sub">Email</span>
-  <input type="email" id="customerEmail" placeholder="Email хаяг"
+  <span class="sub">Email *</span>
+  <input type="email" id="customerEmail" placeholder="Email (eSIM QR илгээнэ)" required
   style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;">
 </div>
 </div>
@@ -683,12 +690,46 @@ eSIM үйлчилгээний тасралтгүй, найдвартай ажи�
 // =========================
 // CONFIG
 // =========================
-const USD_RATE = 3566;
+const USD_RATE = 3680;
 const MARKUP = 1.40; // TGT үнэ + 40% ашиг
 
 function calculateMNT(usd){
   const u = Number(usd || 0);
-  return Math.round((u * USD_RATE * MARKUP) / 100) * 100; // 100₮ rounding
+  if (!Number.isFinite(u) || u <= 0) return 0;
+  return Math.round((u * USD_RATE * MARKUP) / 100) * 100;
+}
+
+function planPriceMnt(p){
+  if (!p) return 0;
+  if (p.sellPriceMnt != null) return p.sellPriceMnt;
+  return calculateMNT(p.price);
+}
+
+function formatPlanMeta(p){
+  const parts = [];
+  if (p.dataLabel) parts.push(`📶 ${p.dataLabel}`);
+  else if (p.capacity) parts.push(`📶 ${p.capacity}${p.capacityUnit || ""}`);
+  if (p.daysLabel) parts.push(`🗓 ${p.daysLabel}`);
+  else if (p.vaildity) parts.push(`🗓 ${p.vaildity} хоног`);
+  if (p.activateLabel) parts.push(`⏳ ${p.activateLabel}`);
+  return parts.join(" • ");
+}
+
+function updatePriceBanner(){
+  const box = document.getElementById("selectedPriceBanner");
+  if (!box || !currentPlan || !currentCountry) {
+    if (box) box.style.display = "none";
+    return;
+  }
+  const mnt = planPriceMnt(currentPlan);
+  box.style.display = "block";
+  box.className = "priceBanner";
+  box.innerHTML = `
+    <div style="font-size:13px;opacity:.9">Сонгосон багцын үнэ (TGT + 40%)</div>
+    <div class="amount">${fmt(mnt)}</div>
+    <div class="meta">${formatPlanMeta(currentPlan)}</div>
+  `;
+  if(qpayBtn) qpayBtn.textContent = `QPay-р ${fmt(mnt)} төлөх`;
 }
 
 function fmt(n){
@@ -879,7 +920,7 @@ function renderCountries(){
 }
 
   countriesBox.innerHTML = list.map(c => {
-  const from = (c.fromPrice != null) ? fmt(calculateMNT(c.fromPrice, c.name)) : "--";
+  const from = (c.fromPrice != null) ? fmt(c.fromPrice) : "--";
   return `
     <div class="card" style="cursor:pointer"
       data-code="${String(c.code||"")}"
@@ -971,10 +1012,8 @@ async function openCountryPlans(c){
 
     if(modalPlanEl){
       modalPlanEl.innerHTML = currentPlans.map(p => {
-        const mnt = calculateMNT(p.price, c.name || c.code);
-        const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
-        const dur = (p.vaildity && p.validityType) ? `${p.vaildity}${p.validityType}` : "";
-        const meta = [cap, dur].filter(Boolean).join(" / ");
+        const mnt = planPriceMnt(p);
+        const meta = formatPlanMeta(p);
         const un = isUnlimitedPlan(p) ? " • Unlimited" : "";
         return `<option value="${p.planCode}">${meta ? meta + " — " : ""}${fmt(mnt)}${un}</option>`;
       }).join("");
@@ -1008,22 +1047,20 @@ function updateModal(){
   }
 
   out.innerHTML = currentPlans.map(p => {
-    const mnt = calculateMNT(p.price, currentCountry.name || currentCountry.code);
+    const mnt = planPriceMnt(p);
     const selected = currentPlan && String(currentPlan.planCode) === String(p.planCode);
-    const cap = (p.capacity && p.capacityUnit) ? `${p.capacity}${p.capacityUnit}` : "";
-    const dur = (p.vaildity && p.validityType) ? `${p.vaildity} ${p.validityType}` : "";
-    const meta = [cap, dur].filter(Boolean).join(" • ");
-    const travel = travelRequirement(p);
+    const meta = formatPlanMeta(p);
     const un = isUnlimitedPlan(p) ? `<span class="pill" style="margin-left:8px">Unlimited</span>` : "";
 
     const safeCode = String(p.planCode).replace(/'/g, "\\'");
     return `
-      <div style="border-bottom:1px solid #eee;padding:10px 0;${selected ? "background:#fafafa" : ""}">
+      <div style="border-bottom:1px solid #eee;padding:12px 0;${selected ? "background:#f0fdf4;border-radius:12px;padding:12px" : ""}">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
           <div style="min-width:0">
-            <div style="font-weight:700">${p.planName}${un}</div>
-            <div class="sub" style="margin-top:4px">${meta}${meta ? " • " : ""}TravelDate: ${travel}</div>
-            <div style="margin-top:6px;font-size:18px"><b>${fmt(mnt)}</b></div>
+            <div style="font-weight:700;font-size:15px">${p.planName}${un}</div>
+            <div class="sub" style="margin-top:6px;line-height:1.5">${meta || "Багцын дэлгэрэнгүй"}</div>
+            <div class="planPrice" style="margin-top:8px">${fmt(mnt)}</div>
+            <div class="sub" style="margin-top:4px">TGT үнэ: $${Number(p.price || 0).toFixed(2)} + 40%</div>
           </div>
           <button class="btn ${selected ? '' : 'primary'} planSelect" type="button" onclick="selectPlan('${safeCode}')">
             ${selected ? "Сонгосон" : "Сонгох"}
@@ -1033,6 +1070,7 @@ function updateModal(){
     `;
   }).join("");
 
+  updatePriceBanner();
   if(orderBtn) orderBtn.disabled = !currentPlan;
 }
 
@@ -1046,7 +1084,7 @@ modalPlanEl?.addEventListener("change", updateModal);
 orderBtn?.addEventListener("click", async ()=>{
   if(!currentPlan || !currentCountry) return;
 
-  const mnt = calculateMNT(currentPlan.price, currentCountry.name || currentCountry.code);
+  const mnt = planPriceMnt(currentPlan);
   const travel = travelRequirement(currentPlan);
 
   const msg =
@@ -1140,11 +1178,52 @@ function resetPayUI(){
   window._tgtOrderDone = false;
 }
 
+async function pollForEsimQr(orderNo, attempts = 15){
+  for(let i = 0; i < attempts; i++){
+    const res = await fetch(`/.netlify/functions/tgt-order-detail?orderNo=${encodeURIComponent(orderNo)}`, { cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
+    const qr = data?.qrCode || "";
+    if(qr) return { qr, data };
+    if(qpayBox){
+      qpayBox.innerHTML = `
+        <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px;text-align:center">
+          <b>✅ Төлбөр амжилттай</b>
+          <div class="sub" style="margin-top:8px">eSIM QR бэлтгэж байна… (${i + 1}/${attempts})</div>
+        </div>
+      `;
+    }
+    await new Promise(r => setTimeout(r, 3000));
+  }
+  return null;
+}
+
+function renderEsimQrBox(qrText){
+  if(!qpayBox) return;
+  qpayBox.style.display = "block";
+  qpayBox.innerHTML = `
+    <div class="esimQrBox">
+      <div class="qrTitle">📱 eSIM QR код</div>
+      <div class="sub" style="margin-bottom:10px">Утасныхаа Settings → Add eSIM → Scan QR</div>
+      <div id="esimQrMount" style="display:inline-block"></div>
+      <div class="sub" style="margin-top:10px;word-break:break-all">${qrText}</div>
+    </div>
+  `;
+  const mount = document.getElementById("esimQrMount");
+  if(mount && typeof QRCode !== "undefined"){
+    new QRCode(mount, { text: qrText, width: 260, height: 260 });
+  }
+}
+
 async function fulfillTgtOrder(){
-  if(window._tgtOrderDone || !currentPlan?.productCode && !currentPlan?.planCode) return;
+  if(window._tgtOrderDone || (!currentPlan?.productCode && !currentPlan?.planCode)) return null;
   const productCode = currentPlan.productCode || currentPlan.planCode;
   const email = document.getElementById("customerEmail")?.value.trim() || "";
   const channelOrderNo = window._orderId || `TGT-${Date.now()}`;
+
+  if(qpayBox){
+    qpayBox.style.display = "block";
+    qpayBox.innerHTML = `<div class="sub" style="text-align:center">⏳ TGT захиалга үүсгэж байна...</div>`;
+  }
 
   try{
     const res = await fetch("/.netlify/functions/tgt-order", {
@@ -1153,6 +1232,8 @@ async function fulfillTgtOrder(){
       body: JSON.stringify({ productCode, email, channelOrderNo })
     });
     const data = await res.json();
+    if(!res.ok) throw new Error(data?.error || "TGT order failed");
+
     window._tgtOrderDone = true;
     window._tgtOrderResult = data;
 
@@ -1162,33 +1243,41 @@ async function fulfillTgtOrder(){
       data?.orderResult?.orderNo ||
       "";
 
-    if(orderNo && qpayBox){
-      qpayBox.innerHTML += `
-        <div style="border:1px solid #d1fae5;background:#ecfdf5;border-radius:14px;padding:12px;margin-top:10px">
-          <b>✅ TGT захиалга үүслээ</b>
-          <div class="sub" style="margin-top:6px">OrderNo: ${orderNo}</div>
-          <div class="sub">eSIM мэдээлэл имэйл рүү илгээгдэнэ.</div>
+    if(!orderNo) throw new Error("TGT orderNo олдсонгүй");
+
+    const qrResult = await pollForEsimQr(orderNo);
+    if(qrResult?.qr){
+      renderEsimQrBox(qrResult.qr);
+      return qrResult;
+    }
+
+    if(qpayBox){
+      qpayBox.innerHTML = `
+        <div style="border:1px solid #fef3c7;background:#fffbeb;border-radius:14px;padding:12px">
+          <b>✅ Төлбөр + захиалга амжилттай</b>
+          <div class="sub" style="margin-top:8px">OrderNo: ${orderNo}</div>
+          <div class="sub">QR код бэлэн болоход имэйл рүү илгээнэ. Хэсэг хугацааны дараа дахин "Төлбөр шалгах" дарж үзнэ үү.</div>
         </div>
       `;
     }
+    return { orderNo };
   }catch(e){
     console.error("TGT order error:", e);
+    if(qpayBox){
+      qpayBox.innerHTML = `
+        <div style="border:1px solid #fee2e2;background:#fff1f2;border-radius:14px;padding:12px">
+          <b>❌ eSIM захиалгын алдаа</b>
+          <div class="sub" style="margin-top:6px">${String(e.message || e)}</div>
+        </div>
+      `;
+    }
+    return null;
   }
 }
 
 async function onPaymentSuccess(){
   if(chatBtns) chatBtns.style.display = "flex";
   await fulfillTgtOrder();
-  if(qpayBox && !window._tgtOrderDone){
-    qpayBox.innerHTML = `
-      <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-        <b style="color:green">✅ Төлбөр амжилттай</b>
-        <div class="sub" style="margin-top:8px">
-          WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
-        </div>
-      </div>
-    `;
-  }
 }
 
 async function checkPaymentOnce(){
@@ -1272,6 +1361,10 @@ qpayBtn?.addEventListener("click", async () => {
     alert("Нэр, утсаа бөглөнө үү.");
     return;
   }
+  if(!email){
+    alert("eSIM QR код авахын тулд Email хаягаа бөглөнө үү.");
+    return;
+  }
 
   resetPayUI();
   if(qpayBox){
@@ -1284,7 +1377,7 @@ qpayBtn?.addEventListener("click", async () => {
   window._tgtOrderDone = false;
   const productCode = currentPlan.productCode || currentPlan.planCode;
   const desc = `${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code} • ${currentPlan.planName} • ProductCode:${productCode}`;
-  const amount = Math.round(calculateMNT(currentPlan.price, currentCountry.name || currentCountry.code));
+  const amount = planPriceMnt(currentPlan);
 
   try{
     // 1. Эхлээд захиалгыг хадгална

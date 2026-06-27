@@ -1,5 +1,8 @@
 // Shared TGT API helpers for Netlify functions
 
+const USD_RATE = 3680;
+const MARKUP = 1.4;
+
 const RESTCOUNTRIES_ALL =
   "https://restcountries.com/v3.1/all?fields=cca2,name,altSpellings";
 
@@ -211,18 +214,41 @@ function getProductCountryCodes(p) {
   return [...codes];
 }
 
+function calculateSellPriceMnt(usd) {
+  const u = Number(usd || 0);
+  if (!Number.isFinite(u) || u <= 0) return null;
+  return Math.round((u * USD_RATE * MARKUP) / 100) * 100;
+}
+
 function parseDataCapacity(p) {
   const name = String(pick(p, ["productName", "name", "title"]) || "").toLowerCase();
   const limited = String(p.dataLimited || "").toUpperCase();
+  const productType = String(p.productType || "").toUpperCase();
 
-  if (name.includes("unlimited") || limited === "N") {
-    return { capacity: "Unlimited", capacityUnit: "" };
+  if (productType === "DAILY_PACK") {
+    const hs = pick(p, ["highSpeed", "showGradeContent"]) || "";
+    if (name.includes("unlimited") || limited === "N") {
+      return { capacity: "Өдөр бүр", capacityUnit: "Unlimited", dataLabel: "Өдөр бүр Unlimited" };
+    }
+    if (hs) {
+      return { capacity: String(hs), capacityUnit: "/өдөр", dataLabel: `${hs}/өдөр` };
+    }
+  }
+
+  if (name.includes("unlimited") && productType !== "DAILY_PACK") {
+    return { capacity: "Unlimited", capacityUnit: "", dataLabel: "Unlimited" };
   }
 
   const dataTotal = p.dataTotal;
   const dataUnit = pick(p, ["dataUnit", "flowUnit", "capacityUnit", "unit"]) || "GB";
   if (dataTotal != null && dataTotal !== "") {
-    return { capacity: String(dataTotal), capacityUnit: String(dataUnit).toUpperCase() };
+    const cap = String(dataTotal);
+    const unit = String(dataUnit).toUpperCase();
+    return {
+      capacity: cap,
+      capacityUnit: unit,
+      dataLabel: `${cap}${unit}`,
+    };
   }
 
   const flow = pick(p, ["flow", "dataVolume", "data", "capacity", "flowSize", "packageFlow", "highFlowSize"]);
@@ -253,27 +279,33 @@ function parseDataCapacity(p) {
 }
 
 function parseValidity(p) {
-  const days = pick(p, [
-    "usagePeriod",
-    "validityPeriod",
-    "validity",
-    "period",
-    "days",
-    "effectiveDays",
-    "validDays",
-    "periodDays",
-    "validityDays",
-  ]);
-  if (days) {
-    const n = Number(days);
-    if (Number.isFinite(n)) return { vaildity: String(n), validityType: "Days" };
-    const m = String(days).match(/(\d+)/);
-    if (m) return { vaildity: m[1], validityType: "Days" };
-  }
   const name = String(pick(p, ["productName", "name"]) || "");
-  const m = name.match(/(\d+)\s*days?/i);
-  if (m) return { vaildity: m[1], validityType: "Days" };
-  return { vaildity: "", validityType: "Days" };
+  const usage = Number(p.usagePeriod);
+  const activate = Number(p.validityPeriod);
+
+  let days = "";
+  const patterns = [/(\d+)\s*days?/i, /(\d+)D\/\d+D/i, /(\d+)D\b/i];
+  for (const re of patterns) {
+    const m = name.match(re);
+    if (m) {
+      days = m[1];
+      break;
+    }
+  }
+  if (!days && Number.isFinite(usage) && usage > 0) days = String(usage);
+
+  const activateWithin =
+    Number.isFinite(activate) && Number.isFinite(usage) && activate > usage
+      ? String(activate)
+      : "";
+
+  return {
+    vaildity: days,
+    validityType: "хоног",
+    activateWithin,
+    daysLabel: days ? `${days} хоног` : "",
+    activateLabel: activateWithin ? `${activateWithin} хоногийн дотор идэвхжүүлнэ` : "",
+  };
 }
 
 function getProductCountryCode(p) {
@@ -289,20 +321,25 @@ function normalizeProduct(p) {
   const productCode = String(pick(p, ["productCode", "code", "sku", "id"]) || "");
   const planName = String(pick(p, ["productName", "name", "title"]) || "eSIM");
   const price = parsePrice(p);
-  const { capacity, capacityUnit } = parseDataCapacity(p);
-  const { vaildity, validityType } = parseValidity(p);
+  const capInfo = parseDataCapacity(p);
+  const valInfo = parseValidity(p);
   const countryCode = getProductCountryCode(p);
   const countryName = getProductCountryName(p);
+  const sellPriceMnt = calculateSellPriceMnt(price);
 
   return {
     productCode,
     planCode: productCode,
     planName,
     price,
-    capacity,
-    capacityUnit,
-    vaildity,
-    validityType,
+    sellPriceMnt,
+    capacity: capInfo.capacity,
+    capacityUnit: capInfo.capacityUnit,
+    dataLabel: capInfo.dataLabel || "",
+    vaildity: valInfo.vaildity,
+    validityType: valInfo.validityType,
+    daysLabel: valInfo.daysLabel,
+    activateLabel: valInfo.activateLabel,
     countryCode,
     countryName,
     travel_date: "No Need",
@@ -375,8 +412,8 @@ function buildCountriesFromProducts(products, codeToName) {
       const name = p.countryName || codeToName.get(code) || CODE_TO_NAME[code] || code;
       const entry = byCode.get(code) || { code, name, fromPrice: null };
       if (!entry.name || entry.name === code) entry.name = name;
-      if (p.price > 0 && (entry.fromPrice == null || p.price < entry.fromPrice)) {
-        entry.fromPrice = p.price;
+      if (p.sellPriceMnt != null && (entry.fromPrice == null || p.sellPriceMnt < entry.fromPrice)) {
+        entry.fromPrice = p.sellPriceMnt;
       }
       byCode.set(code, entry);
     }
@@ -391,6 +428,53 @@ function buildCountriesFromProducts(products, codeToName) {
       fromPrice: c.fromPrice,
     }))
     .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+}
+
+async function fetchOrderDetail(orderNo) {
+  const { baseUrl, accessToken } = await getTgtToken();
+
+  const detailRes = await fetch(`${baseUrl}/eSIMApi/v2/order/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json;charset=UTF-8",
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ orderNo }),
+  });
+
+  const detailData = await detailRes.json().catch(() => ({}));
+  return { ok: detailRes.ok, status: detailRes.status, detailData };
+}
+
+function extractEsimQrFromOrder(payload) {
+  const candidates = [];
+
+  const walk = (obj) => {
+    if (!obj || typeof obj !== "object") return;
+    for (const [k, v] of Object.entries(obj)) {
+      const key = k.toLowerCase();
+      if (typeof v === "string" && v.length > 15) {
+        if (key.includes("qr") || key.includes("lpa") || v.startsWith("LPA:")) {
+          candidates.push(v);
+        }
+      } else if (v && typeof v === "object") {
+        walk(v);
+      }
+    }
+  };
+
+  walk(payload);
+
+  const lpa = candidates.find((s) => s.startsWith("LPA:"));
+  if (lpa) return lpa;
+
+  const data = payload?.data?.list?.[0] || payload?.data || payload;
+  if (data?.smdpAddress && data?.matchingId) {
+    return `LPA:1$${data.smdpAddress}$${data.matchingId}`;
+  }
+
+  return candidates[0] || "";
 }
 
 async function createTgtOrder(productCode, email, channelOrderNo) {
@@ -422,13 +506,18 @@ module.exports = {
   getTgtToken,
   fetchAllProducts,
   normalizeProduct,
+  calculateSellPriceMnt,
   getProductCountryCodes,
   productMatchesCountry,
   productMatchesGroup,
   buildCountriesFromProducts,
   buildRestCountriesNameMap,
   createTgtOrder,
+  fetchOrderDetail,
+  extractEsimQrFromOrder,
   flagFromCode,
   detectContinent,
   normalizeName,
+  USD_RATE,
+  MARKUP,
 };
