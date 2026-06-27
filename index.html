@@ -70,6 +70,7 @@
     .select{ border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:#fff; font-weight:900; }
 
     .grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+    @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
     .card{
       background:var(--card); border:1px solid var(--border); border-radius:var(--r);
       padding:14px; box-shadow:0 1px 0 rgba(0,0,0,.02);
@@ -315,7 +316,7 @@ text-decoration:none;
 </div>
 
 <!-- 🌍 Countries list -->
-<div id="countries"></div>
+<div id="countries" class="grid"></div>
 <div class="sub">
       Та аял — бидэнд датагaa даатга. <b>eSIMMongolia</b> таньтай хамт, таны хэрэглээг тасралтгүй хангана.<br/>
       ✈️ Эдгээр улсууд руу аялахыг хүсвэл <b><a href="https://www.facebook.com/chukatravel" target="_blank">ChukaTravel</a></b> page руу хандана уу.
@@ -981,38 +982,25 @@ function renderCountries(){
 
   countriesBox.innerHTML = list.map(c => {
   const from = (c.fromPrice != null) ? fmt(c.fromPrice) : "--";
+  const code = String(c.code || "").toLowerCase();
   return `
     <div class="card" style="cursor:pointer"
       data-code="${String(c.code||"")}"
       data-name="${String(c.name||"")}"
       data-flag="${String(c.flag||"")}">
-
       <div class="cardHead">
-        <div>
-
-          <div class="name" style="display:flex;align-items:center;gap:10px;font-weight:600">
-
-            <img
-              src="https://flagcdn.com/24x18/${String(c.code||"").toLowerCase()}.png"
-              alt=""
-              style="width:24px;height:18px;border-radius:4px;object-fit:cover;box-shadow:0 1px 6px rgba(0,0,0,.15)"
-              onerror="this.style.display='none'"
-            />
-
-            <span>${c.name || c.code}</span>
-
+        <div style="min-width:0">
+          <div class="name" style="display:flex;align-items:center;gap:10px">
+            <img src="https://flagcdn.com/24x18/${code}.png" alt=""
+              style="width:24px;height:18px;border-radius:4px;object-fit:cover"
+              onerror="this.style.display='none'" />
+            <span>${c.flag ? c.flag + " " : ""}${c.name || c.code}</span>
           </div>
-  <span style="font-size:20px;margin-right:6px;display:inline-block">
-    ${c.flag || "🌍"}
-  </span>
-  ${c.name || c.code}
-</div>
-            <div class="sub">From <b>${from}</b></div>
-          </div>
-          <button class="btn primary" type="button">Багц харах</button>
+          <div class="sub" style="margin-top:8px">Эхлэх үнэ: <b>${from}</b></div>
         </div>
+        <button class="btn primary" type="button">Багц харах</button>
       </div>
-    `;
+    </div>`;
   }).join("");
 
   // attach listeners once via delegation
@@ -1031,6 +1019,9 @@ countriesBox?.addEventListener("click", (e) => {
 // Load countries (single source of truth)
 // =========================
 async function loadCountries(){
+  if(countriesBox){
+    countriesBox.innerHTML = `<div class="card"><div class="name">⏳ Улсууд ачаалж байна…</div></div>`;
+  }
   try{
     const res = await fetch("/.netlify/functions/getCountries", { cache:"no-store" });
     const data = await res.json();
