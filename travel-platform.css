@@ -1,0 +1,336 @@
+/* eSIM Mongolia — AI Travel Platform */
+:root {
+  --tp-bg: #f5f7fb;
+  --tp-white: #ffffff;
+  --tp-text: #0f172a;
+  --tp-muted: #64748b;
+  --tp-blue: #1d4ed8;
+  --tp-blue-dark: #1e3a8a;
+  --tp-blue-light: #dbeafe;
+  --tp-green: #059669;
+  --tp-border: #e2e8f0;
+  --tp-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --tp-r: 14px;
+}
+
+.platform-body { background: var(--tp-bg); }
+.platform-wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* Nav */
+.tp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  flex-wrap: wrap;
+}
+.tp-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--tp-text);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.tp-logo img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.tp-nav-links { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tp-nav-links a, .tp-nav-links button {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--tp-border);
+  background: var(--tp-white);
+  color: var(--tp-text);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tp-nav-links a.primary, .tp-nav-links button.primary {
+  background: var(--tp-blue);
+  color: #fff;
+  border-color: var(--tp-blue);
+}
+
+/* Hero */
+.tp-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+  color: #fff;
+  border-radius: 20px;
+  padding: 36px 28px;
+  margin: 8px 0 24px;
+  box-shadow: var(--tp-shadow);
+}
+.tp-hero h1 { margin: 0 0 10px; font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1.25; }
+.tp-hero .tp-sub { margin: 0; opacity: .92; font-size: 15px; max-width: 62ch; line-height: 1.6; }
+.tp-badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.tp-badge {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Search card */
+.tp-search-card {
+  background: var(--tp-white);
+  border-radius: 18px;
+  box-shadow: var(--tp-shadow);
+  border: 1px solid var(--tp-border);
+  margin-top: -20px;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+.tp-tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--tp-border);
+  -webkit-overflow-scrolling: touch;
+}
+.tp-tab {
+  flex-shrink: 0;
+  padding: 14px 16px;
+  border: 0;
+  background: transparent;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--tp-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+.tp-tab.active { color: var(--tp-blue); border-bottom-color: var(--tp-blue); background: #f8fafc; }
+.tp-panel { display: none; padding: 20px; }
+.tp-panel.active { display: block; }
+.tp-ai-box {
+  width: 100%;
+  min-height: 88px;
+  border: 2px solid var(--tp-border);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+}
+.tp-ai-box:focus { outline: none; border-color: var(--tp-blue); }
+.tp-form-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+.tp-field label { display: block; font-size: 12px; font-weight: 700; color: var(--tp-muted); margin-bottom: 4px; }
+.tp-field input, .tp-field select, .tp-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--tp-border);
+  border-radius: 10px;
+  font-size: 14px;
+}
+.tp-search-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.tp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid var(--tp-border);
+  background: var(--tp-white);
+  color: var(--tp-text);
+  cursor: pointer;
+  text-decoration: none;
+}
+.tp-btn.primary { background: var(--tp-blue); color: #fff; border-color: var(--tp-blue); }
+.tp-btn.green { background: var(--tp-green); color: #fff; border-color: var(--tp-green); }
+
+/* Sections */
+.tp-section { margin: 40px 0; }
+.tp-section h2 { font-size: 1.35rem; margin: 0 0 6px; color: var(--tp-text); }
+.tp-section .tp-lead { color: var(--tp-muted); font-size: 14px; margin: 0 0 16px; }
+
+/* Destination cards */
+.tp-dest-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+.tp-dest-card {
+  border-radius: var(--tp-r);
+  overflow: hidden;
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  transition: transform .15s, box-shadow .15s;
+}
+.tp-dest-card:hover { transform: translateY(-2px); box-shadow: var(--tp-shadow); }
+.tp-dest-card img { width: 100%; height: 100px; object-fit: cover; display: block; }
+.tp-dest-card .tp-dest-body { padding: 10px 12px; }
+.tp-dest-card .tp-dest-name { font-weight: 800; font-size: 14px; }
+.tp-dest-card .tp-dest-sub { font-size: 11px; color: var(--tp-muted); margin-top: 2px; }
+
+/* Service grid */
+.tp-service-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+.tp-service-card {
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: var(--tp-r);
+  padding: 18px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.tp-service-card:hover { border-color: var(--tp-blue); box-shadow: var(--tp-shadow); }
+.tp-service-card .icon { font-size: 1.6rem; }
+.tp-service-card h3 { margin: 8px 0 4px; font-size: 15px; }
+.tp-service-card p { margin: 0; font-size: 13px; color: var(--tp-muted); }
+
+/* China city cards */
+.tp-china-grid { display: grid; gap: 16px; }
+.tp-china-card {
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.tp-china-head {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .tp-china-head { grid-template-columns: 200px 1fr; }
+}
+.tp-china-card img { width: 100%; height: 140px; object-fit: cover; }
+@media (min-width: 700px) {
+  .tp-china-card img { height: 100%; min-height: 160px; }
+}
+.tp-china-body { padding: 16px; }
+.tp-china-body h3 { margin: 0 0 8px; font-size: 1.1rem; }
+.tp-china-meta { font-size: 13px; color: var(--tp-muted); line-height: 1.55; }
+.tp-china-meta ul { margin: 8px 0; padding-left: 18px; }
+.tp-china-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+/* AI Agent */
+.tp-ai-section {
+  background: linear-gradient(180deg, #eff6ff, #f8fafc);
+  border: 1px solid var(--tp-blue-light);
+  border-radius: 18px;
+  padding: 24px;
+}
+.tp-chat {
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 14px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 14px;
+  margin: 14px 0;
+}
+.tp-msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.55; max-width: 92%; }
+.tp-msg.user { background: var(--tp-blue); color: #fff; margin-left: auto; }
+.tp-msg.ai { background: #f1f5f9; color: var(--tp-text); }
+.tp-msg.typing { color: var(--tp-muted); font-style: italic; }
+
+/* Mock results */
+.tp-results { display: grid; gap: 12px; margin-top: 14px; }
+.tp-result-card {
+  border: 1px solid var(--tp-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fafbfc;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.tp-result-card .price { font-size: 1.2rem; font-weight: 800; color: var(--tp-green); }
+.tp-price-note { font-size: 11px; color: var(--tp-muted); }
+
+/* Trust */
+.tp-trust { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 24px 0; }
+.tp-trust span {
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* eSIM legacy section */
+.esim-legacy-section {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 3px solid var(--tp-blue-light);
+}
+.esim-legacy-section .esim-legacy-label {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.esim-legacy-section .esim-legacy-label h2 { color: var(--tp-blue-dark); margin: 0 0 6px; }
+
+/* Inquiry modal */
+.tp-modal-bd {
+  position: fixed; inset: 0; background: rgba(15,23,42,.5);
+  display: none; z-index: 100010;
+}
+.tp-modal {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(520px, 94vw); max-height: 90vh; overflow-y: auto;
+  background: #fff; border-radius: 18px; padding: 24px;
+  display: none; z-index: 100011; box-shadow: 0 24px 60px rgba(0,0,0,.2);
+}
+.tp-modal h3 { margin: 0 0 16px; }
+.tp-modal-close {
+  position: absolute; top: 14px; right: 14px;
+  border: 0; background: #f1f5f9; width: 32px; height: 32px;
+  border-radius: 8px; cursor: pointer; font-size: 18px;
+}
+
+/* Sticky mobile */
+.tp-sticky-mobile {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--tp-white);
+  border-top: 1px solid var(--tp-border);
+  padding: 10px 12px;
+  gap: 8px;
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+}
+@media (max-width: 768px) {
+  .tp-sticky-mobile { display: flex; }
+  .tp-sticky-mobile a, .tp-sticky-mobile button {
+    flex: 1; text-align: center; padding: 10px 8px;
+    border-radius: 10px; font-size: 12px; font-weight: 700;
+    text-decoration: none; border: 1px solid var(--tp-border);
+    background: #fff; color: var(--tp-text);
+  }
+  .tp-sticky-mobile .primary { background: var(--tp-blue); color: #fff; border-color: var(--tp-blue); }
+  body.platform-body { padding-bottom: 70px; }
+}
+
+/* Platform FAQ */
+.tp-faq details {
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+.tp-faq summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+.tp-faq .ans { margin-top: 8px; font-size: 14px; color: var(--tp-muted); line-height: 1.55; }
