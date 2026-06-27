@@ -129,6 +129,56 @@
 .budget-table th { background: #f9fafb; font-weight: 700; }
 .tips-list { padding-left: 20px; line-height: 1.7; }
 .tips-list li { margin-bottom: 8px; }
+.city-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 24px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+.city-nav a {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #111;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+.city-nav a:hover { background: #e5e7eb; }
+.city-section {
+  margin: 40px 0;
+  scroll-margin-top: 12px;
+}
+.city-section > h2 {
+  font-size: 1.35rem;
+  margin: 0 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #111;
+}
+.city-section > .city-intro {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 8px 0 16px;
+}
+.transport-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  margin: 16px 0;
+}
+.transport-card {
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 14px;
+  background: #eff6ff;
+}
+.transport-card h4 { margin: 0 0 8px; font-size: 14px; }
+.transport-card p { margin: 0; font-size: 13px; color: #374151; line-height: 1.5; }
+.transport-card .price { font-weight: 800; color: #1d4ed8; margin-top: 8px; font-size: 13px; }
 @media (max-width: 640px) {
   .poi-grid { grid-template-columns: 1fr; }
 }

@@ -1,23 +1,55 @@
 <!doctype html>
 <html lang="mn">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Малайз маршрут | eSIM Mongolia</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Малайз — 5 хоногийн маршрут | eSIM Mongolia</title>
   <link rel="stylesheet" href="/common.css">
+  <link rel="stylesheet" href="/route-detail.css">
 </head>
 <body>
-  <div class="wrap" style="padding:24px;max-width:900px;margin:0 auto;">
-    <a href="/marshrut.html" class="btn" style="text-decoration:none;">← Маршрут</a>
-    <h1 style="margin-top:16px;">🇲🇾 Малайз (5 хоног)</h1>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0;">
+  <div class="wrap">
+    <a href="/marshrut.html" class="btn">← Маршрут</a>
+    <header class="route-hero">
+      <h1>🇲🇾 Малайз — 5 хоног</h1>
+      <p class="lead">Kuala Lumpur, Penang, Langkawi — зураг, үнэ (MYR), Maps.</p>
       <a class="btn primary" href="/?plan=MY">📶 Malaysia eSIM</a>
-    </div>
-    <ol>
-      <li><b>Day 1–2:</b> Kuala Lumpur – Petronas, Batu Caves</li>
-      <li><b>Day 3:</b> Penang George Town</li>
-      <li><b>Day 4:</b> Langkawi cable car</li>
-      <li><b>Day 5:</b> Пүү, буцах</li>
-    </ol>
+    </header>
+    <section class="day-block">
+      <div class="day-header"><span class="day-num">1</span><div><h2>Kuala Lumpur</h2></div></div>
+      <div class="poi-grid">
+        <article class="poi">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Petronas_Twin_Towers_2010.jpg/640px-Petronas_Twin_Towers_2010.jpg" alt="Petronas" loading="lazy">
+          <div class="poi-body">
+            <h3>Petronas Twin Towers</h3>
+            <table class="poi-price"><tr><td>Skybridge + 86 давхар</td><td>~98 MYR (~28,000₮)</td></tr></table>
+            <div class="poi-meta"><a href="https://www.google.com/maps/search/?api=1&query=Petronas+Towers" target="_blank" rel="noopener">📍 Maps</a></div>
+          </div>
+        </article>
+        <article class="poi">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Batu_Caves_Malaysia.jpg/640px-Batu_Caves_Malaysia.jpg" alt="Batu Caves" loading="lazy">
+          <div class="poi-body">
+            <span class="poi-type temple">Хийд</span>
+            <h3>Batu Caves</h3>
+            <table class="poi-price"><tr><td>Орж үзэх</td><td>Үнэгүй</td></tr></table>
+            <div class="poi-meta"><a href="https://www.google.com/maps/search/?api=1&query=Batu+Caves" target="_blank" rel="noopener">📍 Maps</a></div>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="day-block">
+      <div class="day-header"><span class="day-num">3</span><div><h2>Penang</h2></div></div>
+      <div class="poi-grid">
+        <article class="poi">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/George_Town_Penang_street_art.jpg/640px-George_Town_Penang_street_art.jpg" alt="George Town" loading="lazy" onerror="this.style.display='none'">
+          <div class="poi-body">
+            <h3>George Town UNESCO</h3>
+            <p class="poi-desc">Street art, hawker food — хоолны хот.</p>
+            <div class="poi-meta"><a href="https://www.google.com/maps/search/?api=1&query=George+Town+Penang" target="_blank" rel="noopener">📍 Maps</a></div>
+          </div>
+        </article>
+      </div>
+    </section>
   </div>
 </body>
 </html>
