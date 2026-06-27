@@ -261,7 +261,7 @@
 <div class="tp-panel" data-panel="flight">
 <div class="tp-form-grid">
 <div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Улаанбаатар"></div>
-<div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Шанхай"></div>
+<div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Шанхай" list="chinaCitiesList"></div>
 <div class="tp-field"><label>Огноо</label><input data-field="date" type="date"></div>
 <div class="tp-field"><label>Хүн</label><input data-field="people" type="number" value="2" min="1"></div>
 </div>
@@ -273,7 +273,7 @@
 
 <div class="tp-panel" data-panel="hotel">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хот</label><input data-field="city" value="Шанхай"></div>
+<div class="tp-field"><label>Хот</label><input data-field="city" value="Шанхай" list="chinaCitiesList" placeholder="Шанхай, Beijing, 上海…"></div>
 <div class="tp-field"><label>Ирэх</label><input data-field="checkin" type="date"></div>
 <div class="tp-field"><label>Хоног</label><input data-field="days" type="number" value="5" min="1"></div>
 </div>
@@ -285,8 +285,8 @@
 
 <div class="tp-panel" data-panel="train">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Хөх хот"></div>
-<div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Бээжин"></div>
+<div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Хөх хот" list="chinaCitiesList"></div>
+<div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Бээжин" list="chinaCitiesList"></div>
 <div class="tp-field"><label>Огноо</label><input data-field="date" type="date"></div>
 <div class="tp-field"><label>Хүн</label><input data-field="people" value="2"></div>
 </div>
@@ -297,7 +297,7 @@
 
 <div class="tp-panel" data-panel="attraction">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хот</label><input data-field="city" value="Шанхай"></div>
+<div class="tp-field"><label>Хот</label><input data-field="city" value="Шанхай" list="chinaCitiesList"></div>
 <div class="tp-field"><label>Үзвэр</label><input data-field="attraction" value="Disneyland"></div>
 <div class="tp-field"><label>Хүн</label><input data-field="people" value="2"></div>
 </div>
@@ -1740,6 +1740,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<datalist id="chinaCitiesList"></datalist>
+
+<script src="/data/cities.js"></script>
 <script src="/data/travel-data.js"></script>
 <script src="/data/mock-search-results.js"></script>
 <script src="/booking.js"></script>
@@ -1755,7 +1758,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <input type="hidden" name="service_type" id="inqServiceType" value="flight">
 <input type="hidden" name="destination_country" id="inqCountry" value="">
 <input type="hidden" name="destination_city" id="inqCity" value="">
-<input type="hidden" name="people_count" id="inqPeople" value="2">
 <input type="hidden" name="budget_mnt" id="inqBudget" value="">
 <div class="tp-booking-price-row">
   <span class="tp-booking-price-label">Төлөх дүн</span>
@@ -1766,6 +1768,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="tp-field"><label>Утас / WhatsApp *</label><input name="customer_phone" id="inqPhone" required></div>
 <div class="tp-field"><label>Email</label><input name="customer_email" id="inqEmail" type="email"></div>
 <div class="tp-field"><label>Огноо</label><input name="travel_date" id="inqTravelDate" type="date"></div>
+<div class="tp-field"><label>Хүний тоо</label><input name="people_count" id="inqPeople" type="number" value="2" min="1"></div>
 </div>
 <div class="tp-field" style="margin-top:12px"><label>Сонгосон зүйл</label><input name="selected_item" id="inqSelectedItem" readonly placeholder="Хайлтаас сонгоно"></div>
 <div class="tp-field" style="margin-top:12px"><label>Нэмэлт тэмдэглэл</label><textarea name="extra_notes" id="inqNotes" rows="3" placeholder="Нэмэлт хүсэлт…"></textarea></div>
@@ -1783,6 +1786,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <div id="bookingStepSuccess" style="display:none">
   <div id="bookingSuccessBox"></div>
 </div>
+</div>
+
+<div class="tp-modal-bd" id="hotelDetailModalBd"></div>
+<div class="tp-modal tp-modal-wide" id="hotelDetailModal" style="position:fixed;display:none">
+<button type="button" class="tp-modal-close" id="hotelDetailModalClose" aria-label="Хаах">×</button>
+<h3>Буудлын дэлгэрэнгүй</h3>
+<div id="hotelDetailBody" class="tp-hotel-detail-body"></div>
 </div>
 
 <div class="tp-sticky-mobile">

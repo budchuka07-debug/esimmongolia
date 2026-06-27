@@ -44,6 +44,7 @@
 
   let activeTab = "ai";
   let lastMockResults = [];
+  let lastSearchMeta = {};
   let pendingBooking = null;
   let bookingPayInterval = null;
   let currentInvoiceId = null;
@@ -227,16 +228,17 @@
 
     const qrHtml = qrImage
       ? `<img class="tp-qpay-qr" alt="QPay" src="${String(qrImage).startsWith("data:") ? qrImage : "data:image/png;base64," + qrImage}">`
-      : "";
+      : `<div class="tp-qpay-mock" aria-label="QPay QR"><span>QPay</span><small>QR код</small></div>`;
     const linkHtml = payUrl
       ? `<a class="tp-btn primary" href="${payUrl}" target="_blank" rel="noopener" style="margin-top:12px">QPay-ээр төлөх</a>`
-      : "";
+      : `<button type="button" class="tp-btn primary" style="margin-top:12px" disabled>QPay-ээр төлөх</button>`;
 
     showBookingPayStep(`
-      <p class="tp-lead" style="margin:0 0 12px">Төлбөр: <strong class="tp-price-final">${fmtMnt(amount)}</strong></p>
+      <p class="tp-lead" style="margin:0 0 6px">Захиалгын дугаар: <strong>${orderId}</strong></p>
+      <p class="tp-lead" style="margin:0 0 12px">Төлөх дүн: <strong class="tp-price-final">${fmtMnt(amount)}</strong></p>
       <div class="tp-qpay-wrap">${qrHtml}${linkHtml}</div>
       <p class="tp-lead" style="margin-top:12px;font-size:13px">QPay апп-аар QR уншуулна уу. Төлбөр амжилттай бол автоматаар баталгаажина.</p>
-      <button type="button" class="tp-btn" id="bookingCheckPayBtn" style="margin-top:10px">Төлсөн</button>
+      <button type="button" class="tp-btn" id="bookingCheckPayBtn" style="margin-top:10px">Төлбөр шалгах</button>
     `);
 
     $("bookingCheckPayBtn")?.addEventListener("click", async () => {
@@ -347,6 +349,26 @@
     });
   }
 
+  const HOTEL_IMG_FALLBACK = "/images/china/guide/hero.jpg";
+
+  function cityLabel(cityId) {
+    return window.TRAVEL_CITIES?.getCityLabelMn(cityId) || cityId || "";
+  }
+
+  function hotelCover(h) {
+    if (h.images?.length) return h.images[0];
+    if (h.image) return h.image;
+    return window.MOCK_SEARCH?.FALLBACK_IMG || HOTEL_IMG_FALLBACK;
+  }
+
+  function hotelImgTag(h, className) {
+    const src = hotelCover(h);
+    const name = h.name_mn || h.name || "Буудал";
+    const alt = `${name} — ${cityLabel(h.city_id || h.city)}`;
+    const fb = window.MOCK_SEARCH?.FALLBACK_IMG || HOTEL_IMG_FALLBACK;
+    return `<img class="${className}" src="${src}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">`;
+  }
+
   function stars(n) {
     return "★".repeat(n) + "☆".repeat(Math.max(0, 5 - n));
   }
@@ -359,56 +381,143 @@
   }
 
   function itemLabel(item) {
-    if (item.type === "hotel") return `${item.name} — ${item.city}, ${item.area}`;
+    if (item.type === "hotel") {
+      const nm = item.name_mn || item.name_en || item.name;
+      const dist = item.district || item.area || "";
+      return `${nm} — ${cityLabel(item.city_id)}, ${dist}`;
+    }
     if (item.type === "train") return `${item.train_number} ${item.from_city}→${item.to_city} ${item.depart_time}`;
     if (item.type === "flight") return `${item.airline} ${item.from_city}→${item.to_city} ${item.depart_time}`;
-    return item.title || item.name || "Сонголт";
+    return item.title || item.name_mn || item.name || "Сонголт";
   }
 
   function mockSearch(type, formData) {
     const mock = window.MOCK_SEARCH;
-    if (!mock) return [];
+    if (!mock) return { results: [], meta: {} };
 
     if (type === "hotel") {
-      const city = formData.city || "Шанхай";
-      const nights = formData.days || formData.checkout ? formData.days : 5;
-      return mock.hotels(city, nights).map(priceItem);
+      const cityInput = formData.city || "Шанхай";
+      const cityId = window.TRAVEL_CITIES?.normalizeCity(cityInput) || "shanghai";
+      const nights = formData.days || 5;
+      const results = mock.hotels(cityInput, nights).map(priceItem);
+      return { results, meta: { cityId, cityInput, nights } };
     }
     if (type === "train") {
-      return mock.trains(formData.from || "Хөх хот", formData.city || "Бээжин").map(priceItem);
+      const route = mock.trains(formData.from || "Хөх хот", formData.city || "Бээжин");
+      const results = (route.trains || []).map(priceItem);
+      return { results, meta: { fromId: route.fromId, toId: route.toId, routeKey: route.routeKey } };
     }
     if (type === "flight") {
-      return mock.flights(formData.from || "Улаанбаатар", formData.city || "Шанхай").map(priceItem);
+      const results = mock.flights(formData.from || "Улаанбаатар", formData.city || "Шанхай").map(priceItem);
+      const toId = window.TRAVEL_CITIES?.normalizeCity(formData.city);
+      return { results, meta: { toId } };
     }
     if (type === "attraction") {
-      const city = formData.city || "Шанхай";
+      const cityId = window.TRAVEL_CITIES?.normalizeCity(formData.city || "Шанхай") || "shanghai";
+      const cityName = cityLabel(cityId);
       const people = Number(formData.people || 2);
-      return [
-        { type: "attraction", id: "att-1", supplier: "mock_klook", name: `Disneyland ${city}`, description: "1 өдрийн тасалбар", original_price: 499 * people, currency: "CNY" },
-        { type: "attraction", id: "att-2", supplier: "mock_klook", name: "Great Wall Tour", description: "Тээвэр + хоол", original_price: 280 * people, currency: "CNY" }
+      const results = [
+        { type: "attraction", id: `att-${cityId}-1`, city_id: cityId, name_mn: `Disneyland ${cityName}`, description_mn: "1 өдрийн тасалбар", original_price: 499 * people, currency: "CNY", internal_supplier_reference: { supplier_price: 499 * people, currency: "CNY" } },
+        { type: "attraction", id: `att-${cityId}-2`, city_id: cityId, name_mn: "Great Wall Tour", description_mn: "Тээвэр + хоол", original_price: 280 * people, currency: "CNY", internal_supplier_reference: { supplier_price: 280 * people, currency: "CNY" } }
       ].map(priceItem);
+      return { results, meta: { cityId } };
     }
-    return mock.flights("Улаанбаатар", formData.city || "Шанхай").map(priceItem);
+    const results = mock.flights("Улаанбаатар", formData.city || "Шанхай").map(priceItem);
+    return { results, meta: {} };
+  }
+
+  function openHotelDetail(hotel) {
+    const modal = $("hotelDetailModal");
+    const bd = $("hotelDetailModalBd");
+    const body = $("hotelDetailBody");
+    if (!modal || !bd || !body) return;
+
+    const imgs = hotel.images?.length ? hotel.images : [hotelCover(hotel)];
+    const fb = window.MOCK_SEARCH?.FALLBACK_IMG || HOTEL_IMG_FALLBACK;
+    const gallery = imgs.map((src, i) => {
+      const labels = ["Гадна тал", "Өрөө", "Лобби", "Угаалга", "Ресторан"];
+      return `<figure class="tp-hotel-gallery-item"><img src="${src}" alt="${hotel.name_mn} — ${labels[i] || "Зураг"}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'"><figcaption>${labels[i] || ""}</figcaption></figure>`;
+    }).join("");
+
+    const rooms = (hotel.rooms || []).map((r) => `
+      <div class="tp-hotel-room">
+        ${r.image ? `<img src="${r.image}" alt="${r.name}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">` : ""}
+        <div><strong>${r.name}</strong>${r.beds ? `<span class="tp-muted"> • ${r.beds} ор</span>` : ""}</div>
+      </div>`).join("");
+
+    const amenities = (hotel.amenities || []).map((a) => `<span class="tp-badge">${a}</span>`).join("");
+
+    body.innerHTML = `
+      <div class="tp-hotel-detail-hero">${hotelImgTag(hotel, "tp-hotel-detail-cover")}</div>
+      <div class="tp-hotel-detail-gallery">${gallery}</div>
+      <div class="tp-hotel-detail-main">
+        <div class="tp-hotel-stars">${stars(hotel.stars || 0)}</div>
+        <h3>${hotel.name_mn || hotel.name_en}</h3>
+        <p class="tp-hotel-detail-en">${hotel.name_en || ""} ${hotel.name_cn ? `· ${hotel.name_cn}` : ""}</p>
+        <p class="tp-hotel-detail-loc">📍 ${cityLabel(hotel.city_id)} • ${hotel.district || ""}</p>
+        <p>${hotel.description_mn || hotel.description || ""}</p>
+        <ul class="tp-hotel-detail-facts">
+          <li><strong>Хаяг:</strong> ${hotel.address || "—"}</li>
+          <li><strong>Метро:</strong> ${hotel.metro_distance || "—"}</li>
+          <li><strong>Үзвэр:</strong> ${hotel.attraction_distance || "—"}</li>
+        </ul>
+        <div class="tp-hotel-badges">${amenities}</div>
+        <h4>Өрөөний төрөл</h4>
+        <div class="tp-hotel-rooms">${rooms || "<p class='tp-muted'>Стандарт өрөө</p>"}</div>
+        <div class="tp-hotel-detail-price">
+          <div class="tp-price-final">${fmtMnt(hotel.final_price_mnt)}</div>
+          ${hotel.nights ? `<div class="tp-price-note">${hotel.nights} шөнө</div>` : ""}
+        </div>
+        <button type="button" class="tp-btn primary tp-hotel-detail-book" data-item-id="${hotel.id}">Захиалах</button>
+      </div>`;
+
+    body.querySelector(".tp-hotel-detail-book")?.addEventListener("click", () => {
+      closeHotelDetail();
+      openBookingForm("hotel", {
+        selectedItem: itemLabel(hotel),
+        city: cityLabel(hotel.city_id),
+        country: "Хятад",
+        bookingItem: {
+          final_price_mnt: hotel.final_price_mnt,
+          selected_item: itemLabel(hotel),
+          supplier_internal: hotel.internal_supplier_reference
+        }
+      }, BOOKING_TITLES.hotel);
+    });
+
+    modal.style.display = "block";
+    bd.style.display = "block";
+  }
+
+  function closeHotelDetail() {
+    const modal = $("hotelDetailModal");
+    const bd = $("hotelDetailModalBd");
+    if (modal) modal.style.display = "none";
+    if (bd) bd.style.display = "none";
   }
 
   function renderHotelCard(h) {
-    const badges = (h.badges || []).map((b) => `<span class="tp-badge">${b}</span>`).join("");
+    const badges = (h.amenities || h.badges || []).slice(0, 3).map((b) => `<span class="tp-badge">${b}</span>`).join("");
+    const dist = [h.metro_distance, h.attraction_distance].filter(Boolean).join(" • ");
     return `
       <article class="tp-hotel-card" data-item-id="${h.id}">
-        <img class="tp-hotel-img" src="${h.image}" alt="${h.name}" loading="lazy">
+        ${hotelImgTag(h, "tp-hotel-img")}
         <div class="tp-hotel-body">
           <div class="tp-hotel-stars">${stars(h.stars)}</div>
-          <h4 class="tp-hotel-name">${h.name}</h4>
-          <div class="tp-hotel-area">${h.city} • ${h.area}</div>
-          <p class="tp-hotel-desc">${h.description}</p>
-          <div class="tp-hotel-dist">📍 ${h.distance}</div>
+          <h4 class="tp-hotel-name">${h.name_mn || h.name_en}</h4>
+          <div class="tp-hotel-area">${cityLabel(h.city_id)} • ${h.district || h.area || ""}</div>
+          <p class="tp-hotel-desc">${h.description_mn || h.description || ""}</p>
+          ${dist ? `<div class="tp-hotel-dist">📍 ${dist}</div>` : ""}
           <div class="tp-hotel-badges">${badges}</div>
           <div class="tp-card-price-row">
             <div>
               <div class="tp-price-final">${fmtMnt(h.final_price_mnt)}</div>
               ${h.nights ? `<div class="tp-price-note">${h.nights} шөнө</div>` : ""}
             </div>
-            <button type="button" class="tp-btn-book" data-book-type="hotel" data-item-id="${h.id}">Захиалах</button>
+            <div class="tp-card-actions">
+              <button type="button" class="tp-btn tp-btn-detail" data-detail-type="hotel" data-item-id="${h.id}">Дэлгэрэнгүй</button>
+              <button type="button" class="tp-btn-book" data-book-type="hotel" data-item-id="${h.id}">Захиалах</button>
+            </div>
           </div>
         </div>
       </article>`;
@@ -479,8 +588,8 @@
   function renderAttractionCard(a) {
     return `
       <article class="tp-train-card" data-item-id="${a.id}">
-        <h4 class="tp-hotel-name">${a.name}</h4>
-        <p class="tp-hotel-desc">${a.description}</p>
+        <h4 class="tp-hotel-name">${a.name_mn || a.name}</h4>
+        <p class="tp-hotel-desc">${a.description_mn || a.description || ""}</p>
         <div class="tp-card-price-row">
           <div>
             <div class="tp-price-final">${fmtMnt(a.final_price_mnt)}</div>
@@ -490,8 +599,9 @@
       </article>`;
   }
 
-  function showMockResults(type, results) {
+  function showMockResults(type, results, meta) {
     lastMockResults = results;
+    lastSearchMeta = meta || {};
     const box = $("mockResults");
     if (!box) return;
     const label = SERVICE_TYPES[type] || type;
@@ -512,12 +622,33 @@
       cards = results.map(renderAttractionCard).join("");
     }
 
+    let sub = "";
+    if (type === "hotel" && meta?.cityId) {
+      sub = `<p class="tp-lead">${window.TRAVEL_CITIES?.getCityLabel(meta.cityId) || meta.cityInput}</p>`;
+    }
+    if (type === "train") {
+      if (meta?.fromId && meta?.toId) {
+        sub = `<p class="tp-lead">${cityLabel(meta.fromId)} → ${cityLabel(meta.toId)}</p>`;
+      }
+      if (!results.length) {
+        sub += `<p class="tp-lead tp-warn">Энэ чиглэлд одоогоор тасалбар олдсонгүй. Жишээ: Хөх хот→Бээжин, Эрээн→Бээжин, Бээжин→Шанхай.</p>`;
+      }
+    }
+
     box.innerHTML = `
       <div class="tp-results-header">
         <h3>🔍 ${label} — ${results.length} сонголт</h3>
+        ${sub}
       </div>
-      <div class="${gridClass}">${cards}</div>
+      <div class="${gridClass}">${cards || "<p class='tp-lead'>Үр дүн олдсонгүй.</p>"}</div>
     `;
+
+    box.querySelectorAll("[data-detail-type]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const item = results.find((r) => r.id === btn.dataset.itemId);
+        if (item) openHotelDetail(item);
+      });
+    });
 
     box.querySelectorAll("[data-book-type]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -526,17 +657,12 @@
         const bookType = btn.dataset.bookType || type;
         openBookingForm(bookType, {
           selectedItem: itemLabel(item),
-          city: item.city || item.to_city || "",
-          country: item.from_city ? "" : "Хятад",
+          city: item.city_id ? cityLabel(item.city_id) : (item.to_city || ""),
+          country: "Хятад",
           bookingItem: {
             final_price_mnt: item.final_price_mnt,
             selected_item: itemLabel(item),
-            supplier_internal: {
-              original_price: item.original_price,
-              currency: item.currency,
-              supplier: item.supplier,
-              markup_percent: item.markup_percent
-            }
+            supplier_internal: item.internal_supplier_reference || null
           }
         }, BOOKING_TITLES[bookType]);
       });
@@ -610,10 +736,22 @@
         const type = btn.dataset.searchRun;
         const panel = document.querySelector(`.tp-panel[data-panel="${type}"]`);
         const fd = collectForm(panel);
-        const results = mockSearch(type, fd);
-        showMockResults(type, results);
+        const { results, meta } = mockSearch(type, fd);
+        showMockResults(type, results, meta);
       });
     });
+  }
+
+  function initHotelDetailModal() {
+    $("hotelDetailModalBd")?.addEventListener("click", closeHotelDetail);
+    $("hotelDetailModalClose")?.addEventListener("click", closeHotelDetail);
+  }
+
+  function initCityDatalists() {
+    const opts = window.TRAVEL_CITIES?.allCityOptions?.() || [];
+    const list = $("chinaCitiesList");
+    if (!list || !opts.length) return;
+    list.innerHTML = opts.map((o) => `<option value="${o.label.split(" — ")[0]}"></option>`).join("");
   }
 
   function initInquiryModal() {
@@ -626,6 +764,8 @@
     openInquiryModal,
     openBookingForm,
     closeInquiryModal,
+    closeHotelDetail,
+    openHotelDetail,
     setTab,
     STATUS_LABELS,
     SERVICE_TYPES,
@@ -638,6 +778,8 @@
     bindServices();
     initTabs();
     initInquiryModal();
+    initHotelDetailModal();
+    initCityDatalists();
     setTab("ai");
 
     if (location.hash === "#esim") {
