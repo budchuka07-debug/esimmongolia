@@ -376,7 +376,14 @@ function productMatchesCountry(product, code) {
   if (codes.length > 1) return false;
 
   const combined = name.toLowerCase();
-  if (c === "CN" && combined.includes("china") && !isRegionalPackName(name)) return true;
+  const op = String(raw.operatorDesc || "").toLowerCase();
+
+  if (c === "CN") {
+    if (combined.includes("china") && !isRegionalPackName(name)) return true;
+    if (op.includes("china mobile") && !isRegionalPackName(name) && codes.includes("CN")) return true;
+    return false;
+  }
+
   if (c === "US" && (combined.includes("usa") || combined.includes("united states")) && !isRegionalPackName(name)) return true;
   if (c === "GB" && (combined.includes("uk") || combined.includes("united kingdom")) && !isRegionalPackName(name)) return true;
 
@@ -525,6 +532,24 @@ async function createTgtOrder(productCode, email, channelOrderNo) {
   return { ok: orderRes.ok, status: orderRes.status, orderData, tokenData };
 }
 
+function getPlansForCountryCode(normalized, code) {
+  const c = String(code || "").toUpperCase();
+  let filtered = normalized.filter((p) => productMatchesCountry(p, c));
+
+  if (c === "CN") {
+    const { getChinaPlans } = require("./china-plans");
+    const seen = new Set(filtered.map((p) => p.planCode));
+    for (const p of getChinaPlans()) {
+      if (!seen.has(p.planCode)) {
+        filtered.push(p);
+        seen.add(p.planCode);
+      }
+    }
+  }
+
+  return filtered.sort((a, b) => Number(a.price) - Number(b.price));
+}
+
 module.exports = {
   getTgtToken,
   fetchAllProducts,
@@ -538,6 +563,8 @@ module.exports = {
   createTgtOrder,
   fetchOrderDetail,
   extractEsimQrFromOrder,
+  getPlansForCountryCode,
+  isRegionalPackName,
   flagFromCode,
   detectContinent,
   normalizeName,

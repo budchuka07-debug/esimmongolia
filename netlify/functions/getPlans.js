@@ -5,10 +5,9 @@
 const {
   fetchAllProducts,
   normalizeProduct,
-  productMatchesCountry,
   productMatchesGroup,
+  getPlansForCountryCode,
 } = require("./tgt-lib");
-const { getChinaPlans } = require("./china-plans");
 
 function res(statusCode, obj) {
   return {
@@ -44,10 +43,7 @@ exports.handler = async (event) => {
 
     let filtered = normalized;
     if (code) {
-      filtered = normalized.filter((p) => productMatchesCountry(p, code));
-      if (code === "CN" && !filtered.length) {
-        filtered = getChinaPlans();
-      }
+      filtered = getPlansForCountryCode(normalized, code);
     } else if (group) {
       filtered = normalized.filter((p) => productMatchesGroup(p, group));
     }
