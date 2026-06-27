@@ -162,6 +162,7 @@ async function fetchAllProducts() {
 
 function parsePrice(p) {
   const raw = pick(p, [
+    "netPrice",
     "price",
     "portalPrice",
     "settlementPrice",
@@ -175,8 +176,55 @@ function parsePrice(p) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function getProductCountryCodes(p) {
+  const codes = new Set();
+
+  const single = pick(p, ["countryCode", "countrycode", "isoCode", "iso2", "iso", "regionCode"]);
+  if (single) {
+    const up = String(single).toUpperCase() === "UK" ? "GB" : String(single).toUpperCase();
+    if (/^[A-Z]{2}$/.test(up)) codes.add(up);
+  }
+
+  const lists = [
+    p.countryCodeList,
+    p.countryList,
+    p.countries,
+    p.countryCodes,
+    p.coverCountry,
+    p.coverage,
+  ];
+
+  for (const list of lists) {
+    if (!Array.isArray(list)) continue;
+    for (const item of list) {
+      if (typeof item === "string") {
+        const up = item.toUpperCase() === "UK" ? "GB" : item.toUpperCase();
+        if (/^[A-Z]{2}$/.test(up)) codes.add(up);
+      } else {
+        const ic = pick(item, ["countryCode", "code", "iso", "cca2"]);
+        const up = String(ic || "").toUpperCase();
+        if (/^[A-Z]{2}$/.test(up)) codes.add(up === "UK" ? "GB" : up);
+      }
+    }
+  }
+
+  return [...codes];
+}
+
 function parseDataCapacity(p) {
   const name = String(pick(p, ["productName", "name", "title"]) || "").toLowerCase();
+  const limited = String(p.dataLimited || "").toUpperCase();
+
+  if (name.includes("unlimited") || limited === "N") {
+    return { capacity: "Unlimited", capacityUnit: "" };
+  }
+
+  const dataTotal = p.dataTotal;
+  const dataUnit = pick(p, ["dataUnit", "flowUnit", "capacityUnit", "unit"]) || "GB";
+  if (dataTotal != null && dataTotal !== "") {
+    return { capacity: String(dataTotal), capacityUnit: String(dataUnit).toUpperCase() };
+  }
+
   const flow = pick(p, ["flow", "dataVolume", "data", "capacity", "flowSize", "packageFlow", "highFlowSize"]);
   const unit = pick(p, ["flowUnit", "dataUnit", "capacityUnit", "unit"]) || "GB";
 
@@ -205,7 +253,17 @@ function parseDataCapacity(p) {
 }
 
 function parseValidity(p) {
-  const days = pick(p, ["validity", "period", "days", "effectiveDays", "validDays", "periodDays", "validityDays"]);
+  const days = pick(p, [
+    "usagePeriod",
+    "validityPeriod",
+    "validity",
+    "period",
+    "days",
+    "effectiveDays",
+    "validDays",
+    "periodDays",
+    "validityDays",
+  ]);
   if (days) {
     const n = Number(days);
     if (Number.isFinite(n)) return { vaildity: String(n), validityType: "Days" };
@@ -219,22 +277,8 @@ function parseValidity(p) {
 }
 
 function getProductCountryCode(p) {
-  let code = pick(p, ["countryCode", "countrycode", "isoCode", "iso2", "iso", "regionCode", "mcc"]);
-  code = String(code || "").trim().toUpperCase();
-  if (code === "UK") return "GB";
-  if (/^[A-Z]{2}$/.test(code)) return code;
-
-  const list = p.countryList || p.countries || p.countryCodes || p.coverCountry || p.coverage;
-  if (Array.isArray(list) && list.length === 1) {
-    const item = list[0];
-    const c = typeof item === "string" ? item : pick(item, ["countryCode", "code", "iso", "cca2"]);
-    if (c) {
-      const up = String(c).toUpperCase();
-      return up === "UK" ? "GB" : up;
-    }
-  }
-
-  return "";
+  const codes = getProductCountryCodes(p);
+  return codes.length === 1 ? codes[0] : "";
 }
 
 function getProductCountryName(p) {
@@ -269,18 +313,8 @@ function normalizeProduct(p) {
 function productMatchesCountry(product, code) {
   const c = String(code || "").toUpperCase();
   const raw = product._raw || product;
-  const pCode = product.countryCode || getProductCountryCode(raw);
-  if (pCode === c) return true;
-
-  const list = raw.countryList || raw.countries || raw.countryCodes || raw.coverCountry || raw.coverage;
-  if (Array.isArray(list)) {
-    return list.some((item) => {
-      if (typeof item === "string") return item.toUpperCase() === c || (item.toUpperCase() === "UK" && c === "GB");
-      const ic = pick(item, ["countryCode", "code", "iso", "cca2"]);
-      const up = String(ic || "").toUpperCase();
-      return up === c || (up === "UK" && c === "GB");
-    });
-  }
+  const codes = getProductCountryCodes(raw);
+  if (product.countryCode === c || codes.includes(c)) return true;
 
   const combined = `${product.planName || ""} ${product.countryName || ""}`.toLowerCase();
   if (c === "CN" && combined.includes("china")) return true;
@@ -335,23 +369,7 @@ function buildCountriesFromProducts(products, codeToName) {
 
   for (const raw of products) {
     const p = normalizeProduct(raw);
-    const codes = new Set();
-
-    if (p.countryCode) codes.add(p.countryCode);
-
-    const list = raw.countryList || raw.countries || raw.countryCodes || raw.coverCountry || raw.coverage;
-    if (Array.isArray(list)) {
-      for (const item of list) {
-        if (typeof item === "string") {
-          const up = item.toUpperCase() === "UK" ? "GB" : item.toUpperCase();
-          if (/^[A-Z]{2}$/.test(up)) codes.add(up);
-        } else {
-          const ic = pick(item, ["countryCode", "code", "iso", "cca2"]);
-          const up = String(ic || "").toUpperCase();
-          if (/^[A-Z]{2}$/.test(up)) codes.add(up === "UK" ? "GB" : up);
-        }
-      }
-    }
+    const codes = getProductCountryCodes(raw);
 
     for (const code of codes) {
       const name = p.countryName || codeToName.get(code) || CODE_TO_NAME[code] || code;
@@ -404,6 +422,7 @@ module.exports = {
   getTgtToken,
   fetchAllProducts,
   normalizeProduct,
+  getProductCountryCodes,
   productMatchesCountry,
   productMatchesGroup,
   buildCountriesFromProducts,

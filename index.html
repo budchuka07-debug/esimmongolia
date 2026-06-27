@@ -881,7 +881,7 @@ function renderCountries(){
 }
 
   countriesBox.innerHTML = list.map(c => {
-  const from = (c.fromPrice != null) ? fmt(c.fromPrice) : "--";
+  const from = (c.fromPrice != null) ? fmt(calculateMNT(c.fromPrice, c.name)) : "--";
   return `
     <div class="card" style="cursor:pointer"
       data-code="${String(c.code||"")}"
