@@ -1,10 +1,10 @@
-/** Travel inquiry — MVP (logs + returns ID). Wire to Supabase later. */
-const STATUS = "new";
+/** Travel booking — creates order + returns amount for immediate QPay */
+const STATUS = "awaiting_payment";
 
 function genRequestId() {
   const d = new Date();
   const p = (n, l = 2) => String(n).padStart(l, "0");
-  return `TR-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}${p(Math.floor(Math.random() * 100))}`;
+  return `EM-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(Math.floor(Math.random() * 100))}`;
 }
 
 exports.handler = async (event) => {
@@ -30,8 +30,17 @@ exports.handler = async (event) => {
     return json(400, { error: "Утас эсвэл email заавал" });
   }
 
-  const request = {
-    requestId: genRequestId(),
+  const finalPriceMnt = Number(body.final_price_mnt || body.amount || 0);
+  if (!finalPriceMnt || finalPriceMnt <= 0) {
+    return json(400, { error: "Үнэ олдсонгүй" });
+  }
+
+  const orderId = genRequestId();
+  const selectedItem = String(body.selected_item || "").trim();
+
+  // Supplier data — admin/logs only, never returned to client
+  const adminRecord = {
+    orderId,
     status: STATUS,
     service_type: String(body.service_type || "flight"),
     customer_name: name,
@@ -41,19 +50,26 @@ exports.handler = async (event) => {
     destination_city: String(body.destination_city || body.city || ""),
     travel_date: body.travel_date || body.travelDate || null,
     people_count: Number(body.people_count || body.people || 1) || 1,
-    budget_mnt: body.budget_mnt ? Number(body.budget_mnt) : null,
+    selected_item: selectedItem,
     extra_notes: String(body.extra_notes || body.notes || ""),
+    final_price_mnt: finalPriceMnt,
+    supplier_internal: body.supplier_internal || null,
     created_at: new Date().toISOString()
   };
 
-  // TODO: Supabase insert into travel_requests
-  console.log("[travel-inquiry]", JSON.stringify(request));
+  console.log("[travel-booking-admin]", JSON.stringify(adminRecord));
+
+  // TODO: Supabase travel_requests insert (supplier_internal column)
+
+  const description = selectedItem
+    ? `eSIM Mongolia: ${selectedItem}`.slice(0, 120)
+    : `eSIM Mongolia захиалга ${orderId}`;
 
   return json(200, {
     ok: true,
-    requestId: request.requestId,
-    status: request.status,
-    message: "Захиалгын хүсэлт хүлээн авлаа. Админ удахгүй холбогдоно."
+    orderId,
+    amount: finalPriceMnt,
+    description
   });
 };
 

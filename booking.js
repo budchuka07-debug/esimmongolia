@@ -25,9 +25,6 @@
     transport: "Нийтийн тээвэр"
   };
 
-  let activeTab = "ai";
-  let lastMockResults = [];
-
   function $(id) { return document.getElementById(id); }
 
   function fmtMnt(n) {
@@ -35,7 +32,7 @@
   }
 
   const BOOKING_TITLES = {
-    full: "Бүтэн аяллын захиалга үүсгэх",
+    full: "Бүтэн аяллын захиалга",
     flight: "Нислэг захиалах",
     hotel: "Буудал захиалах",
     train: "Галт тэрэгний тасалбар захиалах",
@@ -45,19 +42,78 @@
     route: "Маршрут захиалах"
   };
 
+  let activeTab = "ai";
+  let lastMockResults = [];
+  let pendingBooking = null;
+  let bookingPayInterval = null;
+  let currentInvoiceId = null;
+  let currentOrderId = null;
+
+  function resetBookingModal() {
+    if (bookingPayInterval) {
+      clearInterval(bookingPayInterval);
+      bookingPayInterval = null;
+    }
+    currentInvoiceId = null;
+    currentOrderId = null;
+    pendingBooking = null;
+    const formStep = $("bookingStepForm");
+    const payStep = $("bookingStepPay");
+    const successStep = $("bookingStepSuccess");
+    if (formStep) formStep.style.display = "";
+    if (payStep) payStep.style.display = "none";
+    if (successStep) successStep.style.display = "none";
+    const payBox = $("bookingQpayBox");
+    if (payBox) payBox.innerHTML = "";
+    const form = $("inquiryForm");
+    if (form) form.reset();
+    const statusEl = $("inqStatus");
+    if (statusEl) statusEl.textContent = "";
+    const priceEl = $("inqPriceDisplay");
+    if (priceEl) priceEl.textContent = "";
+  }
+
+  function extractPayUrl(data) {
+    if (!data) return "";
+    if (Array.isArray(data.urls)) return data.urls.find((u) => u?.link)?.link || "";
+    if (typeof data.urls === "object") return data.urls.qPay || data.urls.qpay || data.urls.link || "";
+    return data.qpay_url || data.payment_url || data.link || "";
+  }
+  function extractQrImage(data) {
+    return data?.qr_image || data?.qrImage || data?.result?.qr_image || "";
+  }
+  function extractInvoiceId(data) {
+    return data?.invoice_id || data?.invoiceId || data?.result?.invoice_id || null;
+  }
+
   function openBookingForm(serviceType, preset, title) {
+    resetBookingModal();
     const modal = $("inquiryModal");
     const bd = $("inquiryModalBd");
     if (!modal || !bd) return;
     const type = serviceType === "full" ? "route" : (serviceType || "flight");
     const typeEl = $("inqServiceType");
     if (typeEl) typeEl.value = type;
-    const titleEl = $("inquiryModalTitle");
-    if (titleEl) {
-      titleEl.textContent = title || BOOKING_TITLES[type] || "Захиалга үүсгэх";
+
+    if (preset?.bookingItem) {
+      pendingBooking = { serviceType: type, ...preset.bookingItem };
+    } else if (preset?.final_price_mnt) {
+      pendingBooking = {
+        serviceType: type,
+        final_price_mnt: preset.final_price_mnt,
+        selected_item: preset.selectedItem || "",
+        supplier_internal: preset.supplier_internal || null
+      };
     }
-    const statusEl = $("inqStatus");
-    if (statusEl) statusEl.textContent = "";
+
+    const titleEl = $("inquiryModalTitle");
+    if (titleEl) titleEl.textContent = title || BOOKING_TITLES[type] || "Захиалах";
+
+    const priceEl = $("inqPriceDisplay");
+    if (priceEl && pendingBooking?.final_price_mnt) {
+      priceEl.textContent = fmtMnt(pendingBooking.final_price_mnt);
+    }
+
     const fieldMap = {
       name: "inqName",
       phone: "inqPhone",
@@ -66,16 +122,24 @@
       city: "inqCity",
       travelDate: "inqTravelDate",
       people: "inqPeople",
-      budget: "inqBudget",
       notes: "inqNotes",
       selectedItem: "inqSelectedItem"
     };
     if (preset) {
-      Object.keys(preset).forEach((k) => {
+      Object.keys(fieldMap).forEach((k) => {
         const el = $(fieldMap[k]);
         if (el && preset[k] != null) el.value = preset[k];
       });
     }
+    if (pendingBooking?.selected_item) {
+      const sel = $("inqSelectedItem");
+      if (sel) sel.value = pendingBooking.selected_item;
+    }
+    if (pendingBooking?.final_price_mnt) {
+      const bud = $("inqBudget");
+      if (bud) bud.value = String(pendingBooking.final_price_mnt);
+    }
+
     modal.style.display = "block";
     bd.style.display = "block";
   }
@@ -89,6 +153,107 @@
     const bd = $("inquiryModalBd");
     if (modal) modal.style.display = "none";
     if (bd) bd.style.display = "none";
+    resetBookingModal();
+  }
+
+  function showBookingPayStep(html) {
+    $("bookingStepForm").style.display = "none";
+    $("bookingStepPay").style.display = "block";
+    $("bookingStepSuccess").style.display = "none";
+    const box = $("bookingQpayBox");
+    if (box) box.innerHTML = html;
+  }
+
+  function showBookingSuccess(orderId) {
+    $("bookingStepForm").style.display = "none";
+    $("bookingStepPay").style.display = "none";
+    $("bookingStepSuccess").style.display = "block";
+    const box = $("bookingSuccessBox");
+    if (box) {
+      box.innerHTML = `
+        <div class="tp-booking-success">
+          <div class="tp-success-icon">✅</div>
+          <h4>Таны захиалга амжилттай бүртгэгдлээ.</h4>
+          <p class="tp-success-order">Захиалгын дугаар: <strong>${orderId}</strong></p>
+          <p class="tp-success-meta">Баталгаажуулалт: <strong>24 цагийн дотор</strong></p>
+          <p class="tp-success-meta">Ваучер / тасалбарыг <strong>email болон WhatsApp</strong>-аар илгээнэ.</p>
+          <button type="button" class="tp-btn primary" id="bookingDoneBtn">Хаах</button>
+        </div>`;
+      $("bookingDoneBtn")?.addEventListener("click", closeInquiryModal, { once: true });
+    }
+  }
+
+  async function checkBookingPayment() {
+    if (!currentInvoiceId) return false;
+    try {
+      const res = await fetch("/.netlify/functions/qpay-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_id: currentInvoiceId })
+      });
+      const data = await res.json();
+      return !!data.paid;
+    } catch {
+      return false;
+    }
+  }
+
+  function startBookingPaymentPoll() {
+    if (bookingPayInterval) clearInterval(bookingPayInterval);
+    bookingPayInterval = setInterval(async () => {
+      const paid = await checkBookingPayment();
+      if (paid) {
+        clearInterval(bookingPayInterval);
+        bookingPayInterval = null;
+        showBookingSuccess(currentOrderId);
+      }
+    }, 4000);
+  }
+
+  async function openQPayForBooking(orderId, amount, description) {
+    showBookingPayStep(`<p class="tp-lead">Төлбөр хүлээн авч байна…</p>`);
+    const res = await fetch("/.netlify/functions/qpay-create-invoice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, amount, description })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Төлбөр үүсгэхэд алдаа гарлаа");
+
+    currentInvoiceId = extractInvoiceId(data);
+    currentOrderId = orderId;
+    const payUrl = extractPayUrl(data);
+    const qrImage = extractQrImage(data);
+
+    const qrHtml = qrImage
+      ? `<img class="tp-qpay-qr" alt="QPay" src="${String(qrImage).startsWith("data:") ? qrImage : "data:image/png;base64," + qrImage}">`
+      : "";
+    const linkHtml = payUrl
+      ? `<a class="tp-btn primary" href="${payUrl}" target="_blank" rel="noopener" style="margin-top:12px">QPay-ээр төлөх</a>`
+      : "";
+
+    showBookingPayStep(`
+      <p class="tp-lead" style="margin:0 0 12px">Төлбөр: <strong class="tp-price-final">${fmtMnt(amount)}</strong></p>
+      <div class="tp-qpay-wrap">${qrHtml}${linkHtml}</div>
+      <p class="tp-lead" style="margin-top:12px;font-size:13px">QPay апп-аар QR уншуулна уу. Төлбөр амжилттай бол автоматаар баталгаажина.</p>
+      <button type="button" class="tp-btn" id="bookingCheckPayBtn" style="margin-top:10px">Төлсөн</button>
+    `);
+
+    $("bookingCheckPayBtn")?.addEventListener("click", async () => {
+      if (await checkBookingPayment()) showBookingSuccess(currentOrderId);
+      else {
+        const el = $("bookingQpayBox");
+        if (el) {
+          const note = document.createElement("p");
+          note.className = "tp-lead";
+          note.style.color = "#b45309";
+          note.textContent = "Төлбөр хараахан баталгаажаагүй байна. Хэдэн секунд хүлээгээд дахин оролдоно уу.";
+          el.appendChild(note);
+        }
+      }
+    });
+
+    startBookingPaymentPoll();
   }
 
   function setTab(tab) {
@@ -241,7 +406,7 @@
           <div class="tp-card-price-row">
             <div>
               <div class="tp-price-final">${fmtMnt(h.final_price_mnt)}</div>
-              <div class="tp-price-supplier">${h.original_price} ${h.currency} • ${h.nights} шөнө (+${h.markup_percent}%)</div>
+              ${h.nights ? `<div class="tp-price-note">${h.nights} шөнө</div>` : ""}
             </div>
             <button type="button" class="tp-btn-book" data-book-type="hotel" data-item-id="${h.id}">Захиалах</button>
           </div>
@@ -269,12 +434,10 @@
         </div>
         <div class="tp-train-meta">
           <span class="tp-badge">${t.seat_type}</span>
-          <span class="tp-badge muted">${t.supplier}</span>
         </div>
         <div class="tp-card-price-row">
           <div>
             <div class="tp-price-final">${fmtMnt(t.final_price_mnt)}</div>
-            <div class="tp-price-supplier">${t.original_price} ${t.currency} (+${t.markup_percent}%)</div>
           </div>
           <button type="button" class="tp-btn-book" data-book-type="train" data-item-id="${t.id}">Захиалах</button>
         </div>
@@ -307,7 +470,6 @@
         <div class="tp-card-price-row">
           <div>
             <div class="tp-price-final">${fmtMnt(f.final_price_mnt)}</div>
-            <div class="tp-price-supplier">${f.original_price} ${f.currency} (+${f.markup_percent}%)</div>
           </div>
           <button type="button" class="tp-btn-book" data-book-type="flight" data-item-id="${f.id}">Захиалах</button>
         </div>
@@ -322,7 +484,6 @@
         <div class="tp-card-price-row">
           <div>
             <div class="tp-price-final">${fmtMnt(a.final_price_mnt)}</div>
-            <div class="tp-price-supplier">${a.original_price} ${a.currency}</div>
           </div>
           <button type="button" class="tp-btn-book" data-book-type="attraction" data-item-id="${a.id}">Захиалах</button>
         </div>
@@ -353,8 +514,7 @@
 
     box.innerHTML = `
       <div class="tp-results-header">
-        <h3>🔍 ${label} — ${results.length} үр дүн</h3>
-        <p class="tp-lead">Жишээ өгөгдөл (supplier API удахгүй). «Захиалах» дарвал хүсэлт илгээнэ.</p>
+        <h3>🔍 ${label} — ${results.length} сонголт</h3>
       </div>
       <div class="${gridClass}">${cards}</div>
     `;
@@ -366,9 +526,18 @@
         const bookType = btn.dataset.bookType || type;
         openBookingForm(bookType, {
           selectedItem: itemLabel(item),
-          notes: `Үнэ: ${fmtMnt(item.final_price_mnt)} (${item.original_price} ${item.currency})`,
           city: item.city || item.to_city || "",
-          country: item.from_city ? "" : "Хятад"
+          country: item.from_city ? "" : "Хятад",
+          bookingItem: {
+            final_price_mnt: item.final_price_mnt,
+            selected_item: itemLabel(item),
+            supplier_internal: {
+              original_price: item.original_price,
+              currency: item.currency,
+              supplier: item.supplier,
+              markup_percent: item.markup_percent
+            }
+          }
         }, BOOKING_TITLES[bookType]);
       });
     });
@@ -389,14 +558,22 @@
     const form = $("inquiryForm");
     const statusEl = $("inqStatus");
     if (!form) return;
-    const payload = Object.fromEntries(new FormData(form));
-    payload.service_type = payload.service_type || "flight";
-    payload.status = "new";
-    if (payload.selected_item) {
-      payload.extra_notes = [payload.selected_item, payload.extra_notes].filter(Boolean).join("\n");
+
+    const amount = Number(pendingBooking?.final_price_mnt || $("inqBudget")?.value || 0);
+    if (!amount || amount <= 0) {
+      if (statusEl) statusEl.textContent = "Эхлээд хайлтаас сонголтоо хийж «Захиалах» дарна уу.";
+      return;
     }
 
-    if (statusEl) statusEl.textContent = "Илгээж байна…";
+    const payload = Object.fromEntries(new FormData(form));
+    payload.service_type = payload.service_type || "flight";
+    payload.final_price_mnt = amount;
+    payload.selected_item = payload.selected_item || pendingBooking?.selected_item || "";
+    payload.supplier_internal = pendingBooking?.supplier_internal || null;
+
+    if (statusEl) statusEl.textContent = "Бэлтгэж байна…";
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
 
     try {
       const res = await fetch("/.netlify/functions/travel-inquiry", {
@@ -406,12 +583,16 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Алдаа");
-      if (statusEl) {
-        statusEl.innerHTML = `✅ Захиалга хүлээн авлаа! Дугаар: <b>${data.requestId || "—"}</b><br><small>Төлөв: ${STATUS_LABELS.new}. Админ үнэ баталсны дараа танд мэдэгдэнэ. Төлбөр (QPay) зөвхөн үнэ батлагдсаны дараа.</small>`;
-      }
-      form.reset();
+
+      await openQPayForBooking(data.orderId, data.amount, data.description);
     } catch (err) {
+      const formStep = $("bookingStepForm");
+      const payStep = $("bookingStepPay");
+      if (formStep) formStep.style.display = "";
+      if (payStep) payStep.style.display = "none";
       if (statusEl) statusEl.textContent = "❌ " + (err.message || "Алдаа гарлаа");
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
   }
 

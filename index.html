@@ -365,7 +365,7 @@
 
 <section class="tp-section tp-faq">
 <h2>Түгээмэл асуулт</h2>
-<details><summary>Одоо шууд нислэг захиалах уу?</summary><div class="ans">MVP хувилбарт mock хайлт + захиалгын хүсэлт. Админ үнэ баталсны дараа QPay invoice илгээнэ.</div></details>
+<details><summary>Одоо шууд нислэг захиалах уу?</summary><div class="ans">Тийм. Хайлтаас сонголтоо хийгээд «Захиалах» дарна. Мэдээллээ бөглөсний дараа QPay-ээр шууд төлнө.</div></details>
 <details><summary>eSIM хэвээр ажиллах уу?</summary><div class="ans">Тийм. Доорх eSIM хэсэгт TGT багц, QPay төлбөр хэвээр байна.</div></details>
 <details><summary>AI чатад form бөглөх шаардлагатай юу?</summary><div class="ans">Үгүй. Чөлөөтэй асуугаарай. Захиалахыг хүсвэл л нэр, утас бүхий form гарна.</div></details>
 </section>
@@ -1748,14 +1748,19 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="tp-modal-bd" id="inquiryModalBd"></div>
 <div class="tp-modal" id="inquiryModal" style="position:fixed">
 <button type="button" class="tp-modal-close" id="inquiryModalClose" aria-label="Хаах">×</button>
-<h3 id="inquiryModalTitle">📋 Захиалга үүсгэх</h3>
-<p class="tp-lead" style="margin:-8px 0 14px;font-size:13px">Зөвхөн захиалах үед л бөглөнө. QPay төлбөр — админ үнэ баталсны дараа.</p>
+<h3 id="inquiryModalTitle">Захиалах</h3>
+
+<div id="bookingStepForm">
 <form id="inquiryForm">
 <input type="hidden" name="service_type" id="inqServiceType" value="flight">
 <input type="hidden" name="destination_country" id="inqCountry" value="">
 <input type="hidden" name="destination_city" id="inqCity" value="">
 <input type="hidden" name="people_count" id="inqPeople" value="2">
 <input type="hidden" name="budget_mnt" id="inqBudget" value="">
+<div class="tp-booking-price-row">
+  <span class="tp-booking-price-label">Төлөх дүн</span>
+  <span class="tp-price-final" id="inqPriceDisplay">—</span>
+</div>
 <div class="tp-form-grid">
 <div class="tp-field"><label>Нэр *</label><input name="customer_name" id="inqName" required></div>
 <div class="tp-field"><label>Утас / WhatsApp *</label><input name="customer_phone" id="inqPhone" required></div>
@@ -1763,12 +1768,21 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="tp-field"><label>Огноо</label><input name="travel_date" id="inqTravelDate" type="date"></div>
 </div>
 <div class="tp-field" style="margin-top:12px"><label>Сонгосон зүйл</label><input name="selected_item" id="inqSelectedItem" readonly placeholder="Хайлтаас сонгоно"></div>
-<div class="tp-field" style="margin-top:12px"><label>Нэмэлт тэмдэглэл</label><textarea name="extra_notes" id="inqNotes" rows="3" placeholder="Нэмэлт хүсэлт, асуулт…"></textarea></div>
+<div class="tp-field" style="margin-top:12px"><label>Нэмэлт тэмдэглэл</label><textarea name="extra_notes" id="inqNotes" rows="3" placeholder="Нэмэлт хүсэлт…"></textarea></div>
 <div class="tp-search-actions" style="margin-top:14px">
-<button type="submit" class="tp-btn primary">Захиалга илгээх</button>
+<button type="submit" class="tp-btn primary">Үргэлжлүүлэх</button>
 </div>
 <p id="inqStatus" class="tp-lead" style="margin-top:12px"></p>
 </form>
+</div>
+
+<div id="bookingStepPay" style="display:none">
+  <div id="bookingQpayBox"></div>
+</div>
+
+<div id="bookingStepSuccess" style="display:none">
+  <div id="bookingSuccessBox"></div>
+</div>
 </div>
 
 <div class="tp-sticky-mobile">
