@@ -8,3 +8,8 @@
   from = "/marshrut"
   to = "/marshrut.html"
   status = 200
+
+[[redirects]]
+  from = "/china"
+  to = "/china/index.html"
+  status = 200

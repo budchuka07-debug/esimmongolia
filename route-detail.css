@@ -112,6 +112,15 @@
   text-decoration: none;
 }
 .poi-meta a:hover { text-decoration: underline; }
+.poi-tip {
+  font-size: 13px;
+  color: #4b5563;
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 3px solid #b91c1c;
+}
 .budget-box {
   background: #fff;
   border: 1px solid #e5e7eb;
