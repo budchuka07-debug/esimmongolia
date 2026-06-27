@@ -115,7 +115,7 @@ plans.forEach(p=>{
 
 const usd=parseFloat(p.portalPrice||p.price||0)
 
-const mnt=calcPrice(usd)
+const mnt=p.sellPriceMnt||calcPrice(usd)
 
 html+=`
 
