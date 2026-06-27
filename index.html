@@ -1084,10 +1084,10 @@ async function openCountryPlans(c){
 
     if (!currentPlans.length) {
       const extra = String(c.code).toUpperCase() === "CN"
-        ? `<div style="margin-top:12px"><a class="btn primary" href="/china.html">🇨🇳 Хятад eSIM хуудас руу очих</a></div>`
+        ? `<div style="margin-top:12px"><a class="btn primary" href="/china.html">🇨🇳 Дэлгэрэнгүй Хятад eSIM хуудас</a></div>`
         : "";
-      out.innerHTML = `<div class="card"><b>Энэ улсад TGT dedicated багц олдсонгүй.</b>
-        <div class="sub" style="margin-top:8px">Олон улсын (Asia/Global) багцууд тусдаа хуудсууд дээр байна.</div>${extra}</div>`;
+      out.innerHTML = `<div class="card"><b>Энэ улсад TGT багц олдсонгүй.</b>
+        <div class="sub" style="margin-top:8px">Олон улсын багцууд тусдаа хуудсууд дээр байна.</div>${extra}</div>`;
       document.getElementById("planFilterSection").style.display = "none";
       return;
     }
@@ -1301,6 +1301,22 @@ function renderEsimQrBox(qrText){
 
 async function fulfillTgtOrder(){
   if(window._tgtOrderDone || (!currentPlan?.productCode && !currentPlan?.planCode)) return null;
+
+  if(currentPlan.manualFulfillment || String(currentPlan.source) === "china-supplier"){
+    window._tgtOrderDone = true;
+    if(qpayBox){
+      qpayBox.style.display = "block";
+      qpayBox.innerHTML = `
+        <div style="border:1px solid #d1fae5;background:#ecfdf5;border-radius:14px;padding:14px">
+          <b>✅ Төлбөр амжилттай</b>
+          <div class="sub" style="margin-top:8px">Хятад eSIM QR кодыг бид 5–10 минутын дотор имэйл/WhatsApp руу илгээнэ.</div>
+          <div style="margin-top:10px"><a class="btn primary" href="/china.html">🇨🇳 Хятад eSIM заавар харах</a></div>
+        </div>
+      `;
+    }
+    return { manual: true };
+  }
+
   const productCode = currentPlan.productCode || currentPlan.planCode;
   const email = document.getElementById("customerEmail")?.value.trim() || "";
   const channelOrderNo = window._orderId || `TGT-${Date.now()}`;

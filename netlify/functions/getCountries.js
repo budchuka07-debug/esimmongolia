@@ -5,7 +5,10 @@ const {
   fetchAllProducts,
   buildCountriesFromProducts,
   buildRestCountriesNameMap,
+  flagFromCode,
+  detectContinent,
 } = require("./tgt-lib");
+const { getChinaCountryEntry } = require("./china-plans");
 
 function jsonRes(statusCode, bodyObj) {
   return {
@@ -43,7 +46,17 @@ exports.handler = async (event) => {
       buildRestCountriesNameMap(),
     ]);
 
-    const countries = buildCountriesFromProducts(rawProducts, codeToName);
+    let countries = buildCountriesFromProducts(rawProducts, codeToName);
+
+    if (!countries.some((c) => c.code === "CN")) {
+      const china = getChinaCountryEntry();
+      countries.push({
+        ...china,
+        continent: detectContinent("CN"),
+        flag: flagFromCode("CN"),
+      });
+      countries.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    }
 
     return jsonRes(200, {
       countries,
