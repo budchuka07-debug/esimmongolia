@@ -30,7 +30,20 @@ window.TRAVEL_DATA = {
     maxMarkupPercent: 20,
     exchangeRateCny: 520,
     exchangeRateUsd: 3680,
-    serviceFeeMnt: 5000
+    serviceFeeMnt: 5000,
+    exchangeRates: {
+      CNY: 520,
+      THB: 110,
+      VND: 0.21,
+      JPY: 24,
+      KRW: 2.7,
+      SGD: 2800,
+      MYR: 780,
+      IDR: 0.33,
+      AED: 1000,
+      TRY: 110,
+      USD: 3680
+    }
   },
 
   chinaCities: [
@@ -139,7 +152,13 @@ window.TRAVEL_DATA = {
   /** Supplier price + markup → final MNT (admin can change markupPercent) */
   calcFinalPriceMnt(item) {
     const p = window.TRAVEL_DATA?.pricing || {};
-    const rate = Number(item.exchange_rate || p.exchangeRateCny || 520);
+    const currency = item.currency || "CNY";
+    const rate = Number(
+      item.exchange_rate ||
+      p.exchangeRates?.[currency] ||
+      p.exchangeRateCny ||
+      520
+    );
     const orig = Number(item.original_price || 0);
     const markupPct = item.markup_percent ?? p.defaultMarkupPercent ?? 15;
     const markup = Number(markupPct) / 100;

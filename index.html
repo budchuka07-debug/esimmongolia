@@ -273,7 +273,19 @@
 
 <div class="tp-panel" data-panel="hotel">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хот</label><input data-field="city" value="Шанхай" list="chinaCitiesList" placeholder="Шанхай, Beijing, 上海…"></div>
+<div class="tp-field"><label>Улс</label><select data-field="country" id="hotelCountrySelect">
+<option value="china" selected>🇨🇳 Хятад</option>
+<option value="thailand">🇹🇭 Тайланд</option>
+<option value="vietnam">🇻🇳 Вьетнам</option>
+<option value="japan">🇯🇵 Япон</option>
+<option value="korea">🇰🇷 Солонгос</option>
+<option value="singapore">🇸🇬 Сингапур</option>
+<option value="malaysia">🇲🇾 Малайз</option>
+<option value="indonesia">🇮🇩 Индонез</option>
+<option value="uae">🇦🇪 АНЭУ</option>
+<option value="turkey">🇹🇷 Турк</option>
+</select></div>
+<div class="tp-field"><label>Хот</label><input data-field="city" id="hotelCityInput" value="Шанхай" list="hotelCitiesList" placeholder="Шанхай, Bangkok, Tokyo…"></div>
 <div class="tp-field"><label>Ирэх</label><input data-field="checkin" type="date"></div>
 <div class="tp-field"><label>Хоног</label><input data-field="days" type="number" value="5" min="1"></div>
 </div>
@@ -1741,8 +1753,10 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <datalist id="chinaCitiesList"></datalist>
+<datalist id="hotelCitiesList"></datalist>
 
 <script src="/data/cities.js"></script>
+<script src="/data/hotels-catalog.js"></script>
 <script src="/data/travel-data.js"></script>
 <script src="/data/mock-search-results.js"></script>
 <script src="/booking.js"></script>
