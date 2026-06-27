@@ -227,11 +227,15 @@ function parseDataCapacity(p) {
 
   if (productType === "DAILY_PACK") {
     const hs = pick(p, ["highSpeed", "showGradeContent"]) || "";
-    if (name.includes("unlimited") || limited === "N") {
+    const gbFromName = name.match(/(\d+(?:\.\d+)?)\s*gb/i);
+    if (name.includes("unlimited") && !hs.match(/\d/) && !gbFromName) {
       return { capacity: "Өдөр бүр", capacityUnit: "Unlimited", dataLabel: "Өдөр бүр Unlimited" };
     }
-    if (hs) {
+    if (hs && /\d/.test(String(hs))) {
       return { capacity: String(hs), capacityUnit: "/өдөр", dataLabel: `${hs}/өдөр` };
+    }
+    if (gbFromName) {
+      return { capacity: gbFromName[1], capacityUnit: "GB/өдөр", dataLabel: `${gbFromName[1]}GB/өдөр` };
     }
   }
 
@@ -347,16 +351,34 @@ function normalizeProduct(p) {
   };
 }
 
+function isRegionalPackName(name) {
+  const n = String(name || "").toLowerCase();
+  return (
+    /asia\s*\d+/i.test(n) ||
+    /europe\s*\(\d+/i.test(n) ||
+    /north america/i.test(n) ||
+    /\d+\s*countries/i.test(n) ||
+    /global/i.test(n) ||
+    /multi[\s-]?country/i.test(n)
+  );
+}
+
 function productMatchesCountry(product, code) {
   const c = String(code || "").toUpperCase();
   const raw = product._raw || product;
   const codes = getProductCountryCodes(raw);
-  if (product.countryCode === c || codes.includes(c)) return true;
+  const name = String(product.planName || pick(raw, ["productName"]) || "");
 
-  const combined = `${product.planName || ""} ${product.countryName || ""}`.toLowerCase();
-  if (c === "CN" && combined.includes("china")) return true;
-  if (c === "US" && (combined.includes("usa") || combined.includes("united states"))) return true;
-  if (c === "GB" && (combined.includes("uk") || combined.includes("united kingdom"))) return true;
+  // Зөвхөн тухайн улсын dedicated багц (1 улс)
+  if (codes.length === 1) return codes[0] === c;
+
+  // Олон улсын багцыг China/Japan гэх мэт ганц улсын хуудсанд бүү харуул
+  if (codes.length > 1) return false;
+
+  const combined = name.toLowerCase();
+  if (c === "CN" && combined.includes("china") && !isRegionalPackName(name)) return true;
+  if (c === "US" && (combined.includes("usa") || combined.includes("united states")) && !isRegionalPackName(name)) return true;
+  if (c === "GB" && (combined.includes("uk") || combined.includes("united kingdom")) && !isRegionalPackName(name)) return true;
 
   return false;
 }
@@ -405,18 +427,19 @@ function buildCountriesFromProducts(products, codeToName) {
   const byCode = new Map();
 
   for (const raw of products) {
-    const p = normalizeProduct(raw);
     const codes = getProductCountryCodes(raw);
+    // Жагсаалтад зөвхөн 1 улсын dedicated багцтай улсууд
+    if (codes.length !== 1) continue;
 
-    for (const code of codes) {
-      const name = p.countryName || codeToName.get(code) || CODE_TO_NAME[code] || code;
-      const entry = byCode.get(code) || { code, name, fromPrice: null };
-      if (!entry.name || entry.name === code) entry.name = name;
-      if (p.sellPriceMnt != null && (entry.fromPrice == null || p.sellPriceMnt < entry.fromPrice)) {
-        entry.fromPrice = p.sellPriceMnt;
-      }
-      byCode.set(code, entry);
+    const p = normalizeProduct(raw);
+    const code = codes[0];
+    const name = p.countryName || codeToName.get(code) || CODE_TO_NAME[code] || code;
+    const entry = byCode.get(code) || { code, name, fromPrice: null };
+    if (!entry.name || entry.name === code) entry.name = name;
+    if (p.sellPriceMnt != null && (entry.fromPrice == null || p.sellPriceMnt < entry.fromPrice)) {
+      entry.fromPrice = p.sellPriceMnt;
     }
+    byCode.set(code, entry);
   }
 
   return [...byCode.values()]
