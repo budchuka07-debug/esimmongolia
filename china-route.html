@@ -3,597 +3,80 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Хятад — хот бүрийн дэлгэрэнгүй маршрут | eSIM Mongolia</title>
-  <meta name="description" content="Хөх хот, Бээжин, Тяньжинь, Шанхай, Гуанчжоу, Шэньжэнь, далайн эрэг — өндөр хурдны галт тэрэг, үзвэр, музей, зураг, Google Maps." />
+  <title>Хятад — хот бүрийн аяллын маршрут | eSIM Mongolia</title>
+  <meta name="description" content="Хөх хот, Бээжин, Тяньжинь, Шанхай, Гуанчжоу, Шэньжэнь, далайн эрэг — тус бүр тусдаа дэлгэрэнгүй маршрут." />
   <link rel="stylesheet" href="/common.css">
   <link rel="stylesheet" href="/route-detail.css">
+  <style>
+    .city-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin:20px 0;}
+    .city-card{border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff;text-decoration:none;color:inherit;display:block;transition:box-shadow .2s;}
+    .city-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.1);}
+    .city-card img{width:100%;height:140px;object-fit:cover;display:block;}
+    .city-card-body{padding:14px;}
+    .city-card-body h2{margin:0 0 6px;font-size:1.1rem;}
+    .city-card-body p{margin:0;font-size:13px;color:#6b7280;}
+  </style>
 </head>
 <body>
   <div class="wrap">
     <a href="/marshrut.html" class="btn">← Маршрут руу буцах</a>
-
     <header class="route-hero">
-      <h1>🇨🇳 Хятад — хот бүрийн бүрэн аяллын гарын авлага</h1>
-      <p class="lead">Хөх хотоос (Монголчууд их явдаг) → Бээжин → Тяньжинь → Шанхай → өмнөдийн хотууд → далайн эрэг. Галт тэрэг, нислэг, тасалбарын үнэ, зураг, байршил.</p>
+      <h1>🇨🇳 Хятад — хот сонгоорой</h1>
+      <p class="lead">Монголчууд их үздэг — <b>хот бүр тусдаа</b> дэлгэрэнгүй хуудастай. Зураг, үнэ, Google Maps, YouTube.</p>
       <div class="route-actions">
         <a class="btn" href="/flights.html">✈️ Нислэг</a>
-        <a class="btn" href="/hotels.html">🏨 Буудал</a>
-        <a class="btn" href="https://klook.tpx.lu/JqqP9Iaq" target="_blank" rel="noopener">🎫 Klook</a>
+        <a class="btn" href="/china-15-places.html">15 газар</a>
         <a class="btn primary" href="/china.html">📶 China eSIM (VPN-гүй)</a>
       </div>
-      <div class="route-note">💡 1 CNY ≈ 500₮. <b>12306.cn</b> апп / <b>Trip.com</b>-оор галт тэрэгийн тасалбар авна. Зургууд: Pexels (лого/усны тэмдэггүй), GitHub дээр host хийсэн.</div>
+      <div class="route-note">💡 Эхлэл: ихэнхдээ <b>Хөх хот</b> → галт тэрэгээр Бээжин рүү. 12306.cn / Trip.com.</div>
     </header>
 
-    <div class="video-grid">
-      <div class="video-section">
-        <h3>🎬 Хятадын өндөр хурдны галт тэрэг (高铁)</h3>
-        <div class="video-embed">
-          <iframe src="https://www.youtube.com/embed/L_fH8wu_h7o" title="China High Speed Rail" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
-        </div>
-      </div>
-      <div class="video-section">
-        <h3>🎬 Great Wall аялал</h3>
-        <div class="video-embed">
-          <iframe src="https://www.youtube.com/embed/4MN29iLq3gA" title="Great Wall China" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
-        </div>
-      </div>
-      <div class="video-section">
-        <h3>🎬 Shanghai аяллын тойм</h3>
-        <div class="video-embed">
-          <iframe src="https://www.youtube.com/embed/u6zS64Ep0D0" title="Shanghai Travel" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
-        </div>
-      </div>
+    <div class="video-section">
+      <h3>🎬 Хятадын өндөр хурдны галт тэрэг</h3>
+      <div class="video-embed"><iframe src="https://www.youtube.com/embed/L_fH8wu_h7o" title="China HSR" allowfullscreen loading="lazy"></iframe></div>
     </div>
 
-    <nav class="city-nav" aria-label="Хот сонгох">
-      <a href="#hohhot">🏠 Хөх хот</a>
-      <a href="#beijing">🏛 Бээжин</a>
-      <a href="#tianjin">⚓ Тяньжинь</a>
-      <a href="#shanghai">🌃 Шанхай</a>
-      <a href="#guangzhou">🗼 Гуанчжоу</a>
-      <a href="#shenzhen">💻 Шэньжэнь</a>
-      <a href="#coastal">🌊 Далайн эрэг</a>
-      <a href="#plan7">📅 7 хоног</a>
-    </nav>
-
-    <!-- HOHOT + TRANSPORT -->
-    <section class="city-section" id="hohhot">
-      <h2>🏠 Хөх хот (呼和浩特) — Эхлэх цэг</h2>
-      <p class="city-intro">Монгол улсаас Хятад руу ихэнх аялал <b>Хөх хот (Inner Mongolia)</b>-оор дамжин ордог. Эндээс Бээжин, Тяньжинь рүү <b>өндөр хурдны галт тэрэг (高铁)</b> хамгийн хямд, тав тухтай.</p>
-
-      <div class="poi-grid">
-        <article class="poi">
-          <img src="/images/routes/china/hohhot.jpg" alt="Hohhot city" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type museum">Музей</span>
-            <h3>Inner Mongolia Museum</h3>
-            <p class="poi-desc">Монгол түүх, соёл — Хөх хотод заавал очих газар.</p>
-            <table class="poi-price"><tr><td>Орж үзэх</td><td>Үнэгүй (захиалга)</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Inner+Mongolia+Museum+Hohhot" target="_blank" rel="noopener">📍 Google Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/hsr-train.jpg" alt="China high speed rail" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Тээвэр</span>
-            <h3>Хөх хот өртөө (Hohhot East / 呼和浩特东)</h3>
-            <p class="poi-desc">G/D цуврал галт тэрэг — паспортоор тасалбар авна. Өртөөнд eSIM + 12306 бэлэн байлга.</p>
-            <table class="poi-price">
-              <tr><td>Өртөө хоол</td><td>30–80 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Hohhot+East+Railway+Station" target="_blank" rel="noopener">📍 Google Maps</a>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <h3 style="margin:20px 0 10px;font-size:1rem;">🚄 Хөх хотоос бусад хот руу — өндөр хурдны галт тэрэг</h3>
-      <div class="transport-grid">
-        <div class="transport-card">
-          <h4>Хөх хот → Бээжин (北京)</h4>
-          <p>G цуврал • ~2 цаг 10–30 мин • Өдөрт олон үе</p>
-          <p class="price">2-р зэрэг: ~180–220 CNY (~90,000–110,000₮)</p>
-        </div>
-        <div class="transport-card">
-          <h4>Хөх хот → Тяньжинь (天津)</h4>
-          <p>Шууд эсвэл Бээжингээр дамжуулан • ~2.5–3.5 цаг</p>
-          <p class="price">~200–280 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Хөх хот → Шанхай (上海)</h4>
-          <p>Шууд G эсвэл Бээжинд суудал солих • ~8–10 цаг</p>
-          <p class="price">~500–700 CNY (нислэг ~600–900 CNY, 2.5 цаг)</p>
-        </div>
-        <div class="transport-card">
-          <h4>Хөх хот → Гуанчжоу / Шэньжэнь</h4>
-          <p><b>Нислэг зөвлөмж</b> — галт тэрэг 12+ цаг. HET → CAN/SZX ~3–4 цаг</p>
-          <p class="price">Нислэг: ~800–1,500 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Хөх хот → Циндао (далайн эрэг)</h4>
-          <p>G галт тэрэг эсвэл нислэг • Зуны аялалд алдартай</p>
-          <p class="price">Галт тэрэг: ~400–550 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Хөх хот → Шиамень (Xiamen)</h4>
-          <p>Нислэг (Hohhot Baita → XMN) • Гулангю арлын аялал</p>
-          <p class="price">~700–1,200 CNY</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- BEIJING -->
-    <section class="city-section" id="beijing">
-      <h2>🏛 Бээжин (北京) — 2–3 хоног</h2>
-      <p class="city-intro">Хөх хотоос ~2 цагийн галт тэрэг. Тяньжинь рүү 30 мин (Бээжин өртөөнөөс).</p>
-      <div class="transport-grid">
-        <div class="transport-card">
-          <h4>Хөх хот → Бээжин</h4>
-          <p>Beijing West / Beijing North ирнэ</p>
-          <p class="price">~2 цаг • 180–220 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Бээжин → Тяньжинь</h4>
-          <p>Beijing South → Tianjin • C2000/C2001</p>
-          <p class="price">~30 мин • 54–65 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Бээжин → Шанхай</h4>
-          <p>G1/G3 • 4.5–6 цаг</p>
-          <p class="price">2-р зэрэг: ~550–650 CNY</p>
-        </div>
-      </div>
-      <div class="poi-grid">
-        <article class="poi">
-          <img src="/images/routes/china/forbidden-city.jpg" alt="Forbidden City" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type temple">Дурсгалт газар</span>
-            <h3>Forbidden City (Зөвлөлийн хот)</h3>
-            <p class="poi-desc">Мин улсын ордон — 3–4 цаг зарцуулна. Урьдчилж онлайн тасалбар.</p>
-            <table class="poi-price">
-              <tr><td>4-р сар–10-р сар</td><td>60 CNY (~30,000₮)</td></tr>
-              <tr><td>Өвөл</td><td>40 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <span>🕐 08:30–17:00</span>
-              <a href="https://www.google.com/maps/search/?api=1&query=Forbidden+City+Beijing" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/great-wall.jpg" alt="Great Wall Mutianyu" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type nature">Байгалийн дурсгал</span>
-            <h3>Great Wall — Mutianyu (慕田峪)</h3>
-            <p class="poi-desc">Жуулчдад хамгийн тохиромжтой хэсэг — слайд, кабель кар. Klook bus tour.</p>
-            <table class="poi-price">
-              <tr><td>Хана (орж үзэх)</td><td>40 CNY</td></tr>
-              <tr><td>Кабель кар 2 чиг</td><td>140 CNY</td></tr>
-              <tr><td>Klook өдрийн аялал</td><td>200–350 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Mutianyu+Great+Wall" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/temple-of-heaven.jpg" alt="Temple of Heaven" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type temple">Хийд</span>
-            <h3>Temple of Heaven (天坛)</h3>
-            <p class="poi-desc">Өглөө эрт тай чи бүжиглэлт үзэх — парк алхахад сайхан.</p>
-            <table class="poi-price">
-              <tr><td>Холбоотой тасалбар</td><td>34 CNY (~17,000₮)</td></tr>
-              <tr><td>Зөвхөн парк</td><td>15 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <span>🕐 06:00–22:00</span>
-              <a href="https://www.google.com/maps/search/?api=1&query=Temple+of+Heaven+Beijing" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/national-museum.jpg" alt="National Museum of China" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type museum">Музей</span>
-            <h3>National Museum of China</h3>
-            <p class="poi-desc">Тяньанмэнь дэргэд — Хятадын түүхийн хамгийн том музей.</p>
-            <table class="poi-price"><tr><td>Орж үзэх</td><td>Үнэгүй (паспорт + захиалга)</td></tr></table>
-            <div class="poi-meta">
-              <span>🕐 09:00–17:00 (Да амарна)</span>
-              <a href="https://www.google.com/maps/search/?api=1&query=National+Museum+of+China" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/panda.jpg" alt="Beijing Zoo panda" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type zoo">Амьтны цэцэрлэг</span>
-            <h3>Beijing Zoo (Панда)</h3>
-            <p class="poi-desc">Панда хаан — хүүхдүүдэд маш таалагддаг.</p>
-            <table class="poi-price">
-              <tr><td>Орж үзэх</td><td>15 CNY (~7,500₮)</td></tr>
-              <tr><td>Панда хаан</td><td>+5 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Beijing+Zoo" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- TIANJIN -->
-    <section class="city-section" id="tianjin">
-      <h2>⚓ Тяньжинь (天津) — 1 хоног</h2>
-      <p class="city-intro">Бээжингээс <b>30 минутын</b> өндөр хурдны галт тэрэг — өдрийн аялал эсвэл 1 шөнө буудал.</p>
-      <div class="transport-grid">
-        <div class="transport-card">
-          <h4>Бээжин → Тяньжинь</h4>
-          <p>Beijing South → Tianjin / Binhai</p>
-          <p class="price">30–35 мин • 54–65 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Тяньжинь → Шанхай</h4>
-          <p>G галт тэрэг • ~5 цаг</p>
-          <p class="price">~500 CNY</p>
-        </div>
-      </div>
-      <div class="poi-grid">
-        <article class="poi">
-          <img src="/images/routes/china/tianjin-eye.jpg" alt="Tianjin Eye" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Үзлэг</span>
-            <h3>Tianjin Eye (天津之眼)</h3>
-            <p class="poi-desc">Голын дээгүүрх дугуй — шөнийн үзэгдэл сайхан.</p>
-            <table class="poi-price"><tr><td>Тасалбар</td><td>70 CNY (~35,000₮)</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Tianjin+Eye" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/tianjin-italian.jpg" alt="Italian Style Street Tianjin" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Дурсгалт газар</span>
-            <h3>Italian Style Street</h3>
-            <p class="poi-desc">Европ хэв маягийн гудамж — зураг, кафе, алхалт.</p>
-            <table class="poi-price"><tr><td>Алхалт</td><td>Үнэгүй</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Italian+Style+Street+Tianjin" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/tianjin-culture.jpg" alt="Ancient Culture Street" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type museum">Соёлын гудамж</span>
-            <h3>Ancient Culture Street (古文化街)</h3>
-            <p class="poi-desc">Уламжлалт гар урлал, хоол — Goubuli baozi.</p>
-            <table class="poi-price"><tr><td>Орж үзэх</td><td>Үнэгүй</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Ancient+Culture+Street+Tianjin" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- SHANGHAI -->
-    <section class="city-section" id="shanghai">
-      <h2>🌃 Шанхай (上海) — 2 хоног</h2>
-      <p class="city-intro">Бээжинээс 4.5–6 цагийн G галт тэрэг. Хятадын хамгийн орчин үеийн хот.</p>
-      <div class="transport-grid">
-        <div class="transport-card">
-          <h4>Бээжин → Шанхай</h4>
-          <p>Beijing South → Shanghai Hongqiao</p>
-          <p class="price">4.5–6 цаг • 550–650 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Шанхай → Гуанчжоу</h4>
-          <p>G галт тэрэг ~7 цаг эсвэл нислэг ~2.5 цаг</p>
-          <p class="price">Нислэг: ~600–900 CNY</p>
-        </div>
-      </div>
-      <div class="poi-grid">
-        <article class="poi">
-          <img src="/images/routes/china/shanghai-bund.jpg" alt="The Bund Shanghai" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Дурсгалт газар</span>
-            <h3>The Bund (外滩)</h3>
-            <p class="poi-desc">Хуучин колониал барилга + Pudong skyline — шөнийн гэрэл.</p>
-            <table class="poi-price"><tr><td>Алхалт</td><td>Үнэгүй</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=The+Bund+Shanghai" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/yu-garden.jpg" alt="Yu Garden" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type temple">Цэцэрлэг</span>
-            <h3>Yu Garden (豫园)</h3>
-            <p class="poi-desc">Мин улсын цэцэрлэг + хуучин зах — xiaolongbao хоол.</p>
-            <table class="poi-price"><tr><td>Орж үзэх</td><td>30–40 CNY (~15,000–20,000₮)</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Yu+Garden+Shanghai" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/disneyland.jpg" alt="Shanghai Disneyland" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Theme park</span>
-            <h3>Shanghai Disneyland</h3>
-            <p class="poi-desc">Бүтэн өдөр — Klook-оор урьдчилж авахад хямд.</p>
-            <table class="poi-price">
-              <tr><td>Энгийн өдөр</td><td>475–599 CNY (~240,000–300,000₮)</td></tr>
-              <tr><td>Peak season</td><td>719 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Shanghai+Disneyland" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/shanghai-museum.jpg" alt="Shanghai Museum" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type museum">Музей</span>
-            <h3>Shanghai Museum</h3>
-            <p class="poi-desc">Хятадын урлагийн цогцолбор — People's Square.</p>
-            <table class="poi-price"><tr><td>Орж үзэх</td><td>Үнэгүй (захиалга)</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Shanghai+Museum" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/zhujiajiao.jpg" alt="Zhujiajiao" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type nature">Усан хот</span>
-            <h3>Zhujiajiao Water Town (朱家角)</h3>
-            <p class="poi-desc">Шанхайгаас 1 цаг — хуучин усан гудамж, завиар аялал.</p>
-            <table class="poi-price">
-              <tr><td>Орж үзэх</td><td>Үнэгүй</td></tr>
-              <tr><td>Завиар + хийд</td><td>80–120 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Zhujiajiao+Ancient+Town" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- GUANGZHOU -->
-    <section class="city-section" id="guangzhou">
-      <h2>🗼 Гуанчжоу (广州) — 1–2 хоног</h2>
-      <p class="city-intro">Өмнөд Хятадын том хот — dim sum, Canton Tower, Шэньжэньтэй ойрхон (30 мин галт тэрэг).</p>
-      <div class="transport-grid">
-        <div class="transport-card">
-          <h4>Шанхай → Гуанчжоу</h4>
-          <p>Нислэг (зөвлөмж) 2.5 цаг</p>
-          <p class="price">~600–900 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Гуанчжоу → Шэньжэнь</h4>
-          <p>Guangzhou South → Shenzhen North</p>
-          <p class="price">~30 мин • 75 CNY</p>
-        </div>
-      </div>
-      <div class="poi-grid">
-        <article class="poi">
-          <img src="/images/routes/china/canton-tower.jpg" alt="Canton Tower" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Үзлэг</span>
-            <h3>Canton Tower (广州塔)</h3>
-            <p class="poi-desc">600 м цамхаг — шөнийн гэрэл, тросс аялал.</p>
-            <table class="poi-price">
-              <tr><td>150 м талбай</td><td>150 CNY (~75,000₮)</td></tr>
-              <tr><td>450 м + тросс</td><td>298 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Canton+Tower+Guangzhou" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/chen-clan.jpg" alt="Chen Clan Academy" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type museum">Музей</span>
-            <h3>Chen Clan Ancestral Hall</h3>
-            <p class="poi-desc">Урлагийн музей — гар урлал, модон чимэглэл.</p>
-            <table class="poi-price"><tr><td>Тасалбар</td><td>10 CNY (~5,000₮)</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Chen+Clan+Academy+Guangzhou" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/chimelong.jpg" alt="Chimelong Safari" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type zoo">Амьтны цэцэрлэг</span>
-            <h3>Chimelong Safari Park</h3>
-            <p class="poi-desc">Гуанчжоу орчмын том safari — бүтэн өдөр.</p>
-            <table class="poi-price"><tr><td>Насанд хүрэгч</td><td>~350 CNY (~175,000₮)</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Chimelong+Safari+Park" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- SHENZHEN -->
-    <section class="city-section" id="shenzhen">
-      <h2>💻 Шэньжэнь (深圳) — 1 хоног</h2>
-      <p class="city-intro">Технологийн хот — Гонконгтой шууд холбоотой (Lo Wu / Futian checkpoint).</p>
-      <div class="transport-grid">
-        <div class="transport-card">
-          <h4>Гуанчжоу → Шэньжэнь</h4>
-          <p>~30 мин галт тэрэг</p>
-          <p class="price">75 CNY</p>
-        </div>
-        <div class="transport-card">
-          <h4>Шэньжэнь → Гонконг</h4>
-          <p>MTR / хилийн шалгалт • Lo Wu, Futian</p>
-          <p class="price">~40–80 HKD</p>
-        </div>
-      </div>
-      <div class="poi-grid">
-        <article class="poi">
-          <img src="/images/routes/china/shenzhen.jpg" alt="Shenzhen skyline" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Дурсгалт газар</span>
-            <h3>Window of the World (世界之窗)</h3>
-            <p class="poi-desc">Дэлхийн гайхамшгийн хуурамч хувилбар — гэр бүлийн аялал.</p>
-            <table class="poi-price"><tr><td>Тасалбар</td><td>~220 CNY (~110,000₮)</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Window+of+the+World+Shenzhen" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/oct-harbour.jpg" alt="OCT Harbour" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type">Үзлэг</span>
-            <h3>OCT Harbour</h3>
-            <p class="poi-desc">Шөнийн гэрэл, ресторан, арлаар алхах.</p>
-            <table class="poi-price"><tr><td>Орж үзэх</td><td>Үнэгүй</td></tr></table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=OCT+Harbour+Shenzhen" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- COASTAL -->
-    <section class="city-section" id="coastal">
-      <h2>🌊 Далайн эрэгийн хотууд</h2>
-      <p class="city-intro">Зуны аялал, далайн агаар — Хөх хотоос нислэг эсвэл том хотуудаас дотоод нислэг.</p>
-      <div class="poi-grid">
-        <article class="poi">
-          <img src="/images/routes/china/qingdao.jpg" alt="Qingdao beach" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type nature">Далайн эрэг</span>
-            <h3>Циндао (青岛) Qingdao</h3>
-            <p class="poi-desc">Шар пиво, далайн эрэг, герман архитектур.</p>
-            <table class="poi-price">
-              <tr><td>Tsingtao Brewery tour</td><td>~60 CNY</td></tr>
-              <tr><td>Хөх хот → Циндао нислэг</td><td>~500–800 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Qingdao+Beach" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/gulangyu.jpg" alt="Gulangyu Xiamen" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type nature">Арлын аялал</span>
-            <h3>Шиамень (厦门) — Gulangyu Island</h3>
-            <p class="poi-desc">UNESCO арлын хот — завиар очно, пианино музей.</p>
-            <table class="poi-price">
-              <tr><td>Завиар 2 чиг</td><td>~50 CNY</td></tr>
-              <tr><td>Арлын тасалбар</td><td>100 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Gulangyu+Island+Xiamen" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-        <article class="poi">
-          <img src="/images/routes/china/sanya.jpg" alt="Sanya Hainan" loading="lazy">
-          <div class="poi-body">
-            <span class="poi-type nature">Тропик эрэг</span>
-            <h3>Санья (三亚) Hainan</h3>
-            <p class="poi-desc">Хятадын «Галиф орм» — өвөлжингийн дулаан эрэг.</p>
-            <table class="poi-price">
-              <tr><td>Yalong Bay</td><td>Үнэгүй (пүү)</td></tr>
-              <tr><td>Гуанчжоу → Санья нислэг</td><td>~400–700 CNY</td></tr>
-            </table>
-            <div class="poi-meta">
-              <a href="https://www.google.com/maps/search/?api=1&query=Sanya+Yalong+Bay" target="_blank" rel="noopener">📍 Maps</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- 7 DAY PLAN -->
-    <section class="city-section" id="plan7">
-      <h2>📅 7 хоногийн жишиг маршрут</h2>
-      <p class="city-intro">Хөх хотоос эхлэх эсвэл шууд Бээжинд буух — таны нислэгээс хамаарна.</p>
-      <section class="day-block">
-        <div class="day-header">
-          <span class="day-num">1</span>
-          <div><h2>Бээжин</h2><p class="day-sub">Tiananmen, Forbidden City</p></div>
-        </div>
-      </section>
-      <section class="day-block">
-        <div class="day-header">
-          <span class="day-num">2</span>
-          <div><h2>Бээжин</h2><p class="day-sub">Great Wall (Mutianyu)</p></div>
-        </div>
-      </section>
-      <section class="day-block">
-        <div class="day-header">
-          <span class="day-num">3</span>
-          <div><h2>Тяньжинь (өдрийн аялал)</h2><p class="day-sub">Галт тэрэг 30 мин • Tianjin Eye</p></div>
-        </div>
-      </section>
-      <section class="day-block">
-        <div class="day-header">
-          <span class="day-num">4</span>
-          <div><h2>Шанхай</h2><p class="day-sub">G галт тэрэг • The Bund, Yu Garden</p></div>
-        </div>
-      </section>
-      <section class="day-block">
-        <div class="day-header">
-          <span class="day-num">5</span>
-          <div><h2>Шанхай</h2><p class="day-sub">Disneyland эсвэл Zhujiajiao</p></div>
-        </div>
-      </section>
-      <section class="day-block">
-        <div class="day-header">
-          <span class="day-num">6</span>
-          <div><h2>Гуанчжоу + Шэньжэнь</h2><p class="day-sub">Нислэг • Canton Tower</p></div>
-        </div>
-      </section>
-      <section class="day-block">
-        <div class="day-header">
-          <span class="day-num">7</span>
-          <div><h2>Буцах</h2><p class="day-sub">Shenzhen/Guangzhou → Хөх хот эсвэл Монгол</p></div>
-        </div>
-      </section>
-    </section>
+    <div class="city-grid">
+      <a class="city-card" href="/hohhot-route.html">
+        <img src="/images/routes/china/hohhot.jpg" alt="Hohhot" loading="lazy">
+        <div class="city-card-body"><h2>🏠 Хөх хот</h2><p>Монголоос орох эхлэл • Галт тэрэгийн өртөө</p></div>
+      </a>
+      <a class="city-card" href="/beijing-route.html">
+        <img src="/images/routes/china/forbidden-city.jpg" alt="Beijing" loading="lazy">
+        <div class="city-card-body"><h2>🏛 Бээжин</h2><p>Forbidden City • Great Wall • Панда</p></div>
+      </a>
+      <a class="city-card" href="/tianjin-route.html">
+        <img src="/images/routes/china/tianjin-eye.jpg" alt="Tianjin" loading="lazy">
+        <div class="city-card-body"><h2>⚓ Тяньжинь</h2><p>Бээжингээс 30 мин • Tianjin Eye</p></div>
+      </a>
+      <a class="city-card" href="/shanghai-route.html">
+        <img src="/images/routes/china/shanghai-bund.jpg" alt="Shanghai" loading="lazy">
+        <div class="city-card-body"><h2>🌃 Шанхай</h2><p>The Bund • Disneyland • Yu Garden</p></div>
+      </a>
+      <a class="city-card" href="/guangzhou-route.html">
+        <img src="/images/routes/china/canton-tower.jpg" alt="Guangzhou" loading="lazy">
+        <div class="city-card-body"><h2>🗼 Гуанчжоу</h2><p>Canton Tower • Chimelong Safari</p></div>
+      </a>
+      <a class="city-card" href="/shenzhen-route.html">
+        <img src="/images/routes/china/shenzhen.jpg" alt="Shenzhen" loading="lazy">
+        <div class="city-card-body"><h2>💻 Шэньжэнь</h2><p>Гонконг руу ойрхон • Window of the World</p></div>
+      </a>
+      <a class="city-card" href="/china-coastal-route.html">
+        <img src="/images/routes/china/qingdao.jpg" alt="Coastal" loading="lazy">
+        <div class="city-card-body"><h2>🌊 Далайн эрэг</h2><p>Циндао • Шиамень • Санья</p></div>
+      </a>
+    </div>
 
     <div class="budget-box">
-      <h2>💰 Тээврийн ойролцоо зардал (1 хүн)</h2>
-      <table class="budget-table">
-        <thead><tr><th>Чиглэл</th><th>Тээвэр</th><th>CNY</th></tr></thead>
-        <tbody>
-          <tr><td>Хөх хот → Бээжин</td><td>Галт тэрэг</td><td>180–220</td></tr>
-          <tr><td>Бээжин → Тяньжинь</td><td>Галт тэрэг</td><td>54–65</td></tr>
-          <tr><td>Бээжин → Шанхай</td><td>Галт тэрэг</td><td>550–650</td></tr>
-          <tr><td>Шанхай → Гуанчжоу</td><td>Нислэг</td><td>600–900</td></tr>
-          <tr><td>Гуанчжоу → Шэньжэнь</td><td>Галт тэрэг</td><td>75</td></tr>
-        </tbody>
-      </table>
+      <h2>📅 7 хоногийн жишиг дараалал</h2>
+      <ol class="tips-list">
+        <li><b>1–2:</b> <a href="/beijing-route.html">Бээжин</a> (Great Wall)</li>
+        <li><b>3:</b> <a href="/tianjin-route.html">Тяньжинь</a> өдрийн аялал</li>
+        <li><b>4–5:</b> <a href="/shanghai-route.html">Шанхай</a></li>
+        <li><b>6:</b> <a href="/guangzhou-route.html">Гуанчжоу</a> + <a href="/shenzhen-route.html">Шэньжэнь</a></li>
+        <li><b>7:</b> Буцах (<a href="/hohhot-route.html">Хөх хот</a> эсвэл шууд нислэг)</li>
+      </ol>
     </div>
-
-    <h2>✅ Зөвлөмж</h2>
-    <ul class="tips-list">
-      <li><a href="/china.html">China eSIM</a> — VPN-гүй Facebook, Google, WhatsApp.</li>
-      <li>Галт тэрэгийн тасалбар: <b>12306.cn</b> (апп) эсвэл <b>Trip.com</b> (Англи).</li>
-      <li>Хилийн шалгалт: паспорт, зорчих хугацаа хангалттай байх.</li>
-      <li>Музей ихэнхдээ <b>Даваа гаригт хаалттай</b> — Forbidden City, National Museum урьдчилж захиал.</li>
-      <li>Хөх хотоос өмнөд рүү: урт зайд <b>нислэг</b>, ойрхон хотод <b>галт тэрэг</b> хэмнэлттэй.</li>
-    </ul>
   </div>
 </body>
 </html>
