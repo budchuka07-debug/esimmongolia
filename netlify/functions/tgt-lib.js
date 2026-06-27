@@ -1,26 +1,12 @@
 // Shared TGT API helpers for Netlify functions
 
+const { getCountryName, buildStaticNameMap } = require("./country-names");
+
 const USD_RATE = 3680;
 const MARKUP = 1.4;
 
 const RESTCOUNTRIES_ALL =
   "https://restcountries.com/v3.1/all?fields=cca2,name,altSpellings";
-
-const CODE_TO_NAME = {
-  CN: "China",
-  US: "United States",
-  GB: "United Kingdom",
-  UK: "United Kingdom",
-  KR: "South Korea",
-  JP: "Japan",
-  TH: "Thailand",
-  VN: "Vietnam",
-  SG: "Singapore",
-  HK: "Hong Kong",
-  TW: "Taiwan",
-  MY: "Malaysia",
-  MN: "Mongolia",
-};
 
 function pick(obj, keys) {
   for (const k of keys) {
@@ -368,26 +354,87 @@ function productMatchesCountry(product, code) {
   const raw = product._raw || product;
   const codes = getProductCountryCodes(raw);
   const name = String(product.planName || pick(raw, ["productName"]) || "");
-
-  // Зөвхөн тухайн улсын dedicated багц (1 улс)
-  if (codes.length === 1) return codes[0] === c;
-
-  // Олон улсын багцыг China/Japan гэх мэт ганц улсын хуудсанд бүү харуул
-  if (codes.length > 1) return false;
-
   const combined = name.toLowerCase();
   const op = String(raw.operatorDesc || "").toLowerCase();
 
+  // Хятад: зөвхөн dedicated China багц (олон улсын Asia pack биш)
   if (c === "CN") {
+    if (codes.length === 1 && codes[0] === "CN") return true;
+    if (codes.length > 1) return false;
     if (combined.includes("china") && !isRegionalPackName(name)) return true;
-    if (op.includes("china mobile") && !isRegionalPackName(name) && codes.includes("CN")) return true;
+    if (op.includes("china mobile") && !isRegionalPackName(name)) return true;
     return false;
   }
+
+  if (codes.length === 1) return codes[0] === c;
+  if (codes.length > 1 && codes.includes(c)) return true;
 
   if (c === "US" && (combined.includes("usa") || combined.includes("united states")) && !isRegionalPackName(name)) return true;
   if (c === "GB" && (combined.includes("uk") || combined.includes("united kingdom")) && !isRegionalPackName(name)) return true;
 
   return false;
+}
+
+function resolveCountryName(code, rawName, codeToName) {
+  const cc = String(code || "").toUpperCase();
+  const fromTgt = String(rawName || "").trim();
+  if (fromTgt && fromTgt.toUpperCase() !== cc && fromTgt.length > 2) return fromTgt;
+  return codeToName.get(cc) || getCountryName(cc);
+}
+
+async function buildRestCountriesNameMap() {
+  const codeToName = buildStaticNameMap();
+
+  try {
+    const res = await fetch(RESTCOUNTRIES_ALL, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const arr = await res.json().catch(() => []);
+      for (const item of Array.isArray(arr) ? arr : []) {
+        const cca2 = item?.cca2;
+        if (!cca2) continue;
+        if (item?.name?.common) codeToName.set(cca2, item.name.common);
+      }
+    }
+  } catch (_) {
+    // Static ISO_NAMES fallback is enough
+  }
+
+  return codeToName;
+}
+
+function buildCountriesFromProducts(products, codeToName) {
+  const byCode = new Map();
+
+  for (const raw of products) {
+    const codes = getProductCountryCodes(raw);
+    if (!codes.length) continue;
+
+    const p = normalizeProduct(raw);
+    const price = Number(p.sellPriceMnt) || 0;
+
+    for (const code of codes) {
+      const name = resolveCountryName(code, p.countryName, codeToName);
+      const entry = byCode.get(code) || { code, name, fromPrice: null };
+      entry.name = resolveCountryName(code, entry.name, codeToName);
+      if (price > 0 && (entry.fromPrice == null || price < entry.fromPrice)) {
+        entry.fromPrice = price;
+      }
+      byCode.set(code, entry);
+    }
+  }
+
+  return [...byCode.values()]
+    .map((c) => ({
+      code: c.code,
+      name: c.name,
+      continent: detectContinent(c.code),
+      flag: flagFromCode(c.code),
+      fromPrice: c.fromPrice,
+    }))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
 }
 
 function productMatchesGroup(product, group) {
@@ -414,50 +461,6 @@ function productMatchesGroup(product, group) {
     );
   }
   return false;
-}
-
-async function buildRestCountriesNameMap() {
-  const res = await fetch(RESTCOUNTRIES_ALL, { method: "GET" });
-  const arr = await res.json().catch(() => []);
-  const codeToName = new Map(Object.entries(CODE_TO_NAME));
-
-  for (const item of Array.isArray(arr) ? arr : []) {
-    const cca2 = item?.cca2;
-    if (!cca2) continue;
-    if (item?.name?.common) codeToName.set(cca2, item.name.common);
-  }
-
-  return codeToName;
-}
-
-function buildCountriesFromProducts(products, codeToName) {
-  const byCode = new Map();
-
-  for (const raw of products) {
-    const codes = getProductCountryCodes(raw);
-    // Жагсаалтад зөвхөн 1 улсын dedicated багцтай улсууд
-    if (codes.length !== 1) continue;
-
-    const p = normalizeProduct(raw);
-    const code = codes[0];
-    const name = p.countryName || codeToName.get(code) || CODE_TO_NAME[code] || code;
-    const entry = byCode.get(code) || { code, name, fromPrice: null };
-    if (!entry.name || entry.name === code) entry.name = name;
-    if (p.sellPriceMnt != null && (entry.fromPrice == null || p.sellPriceMnt < entry.fromPrice)) {
-      entry.fromPrice = p.sellPriceMnt;
-    }
-    byCode.set(code, entry);
-  }
-
-  return [...byCode.values()]
-    .map((c) => ({
-      code: c.code,
-      name: c.name,
-      continent: detectContinent(c.code),
-      flag: flagFromCode(c.code),
-      fromPrice: c.fromPrice,
-    }))
-    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
 }
 
 async function fetchOrderDetail(orderNo) {
