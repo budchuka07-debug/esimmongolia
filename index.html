@@ -937,11 +937,13 @@ async function loadCountries(){
     const data = await res.json();
     if(!res.ok) throw new Error(data?.error || "getCountries error");
     ALL_COUNTRIES = Array.isArray(data.countries) ? data.countries : [];
+    HAS_LOADED = true;
     renderCountries();
   }catch(err){
     console.error(err);
+    HAS_LOADED = true;
     if(countriesBox){
-      countriesBox.innerHTML = `<div class="card"><div class="name">Алдаа</div><div class="sub">Улсуудын жагсаалт татаж чадсангүй. /.netlify/functions/getCountries шалгана уу.</div></div>`;
+      countriesBox.innerHTML = `<div class="card"><div class="name">Алдаа</div><div class="sub">Улсуудын жагсаалт татаж чадсангүй. TGT env (TGT_BASE_URL, TGT_ACCOUNT_ID, TGT_SECRET) шалгана уу.</div></div>`;
     }
   }
 }
@@ -1054,6 +1056,7 @@ orderBtn?.addEventListener("click", async ()=>{
 Улс: ${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code}
 Багц: ${currentPlan.planName}
 PlanCode: ${currentPlan.planCode}
+ProductCode: ${currentPlan.productCode || currentPlan.planCode}
 Хугацаа: ${currentPlan.vaildity} ${currentPlan.validityType}
 Дата: ${(currentPlan.capacity || "")}${(currentPlan.capacityUnit || "")}
 TravelDate: ${travel}
@@ -1136,6 +1139,58 @@ function resetPayUI(){
   if(chatBtns) chatBtns.style.display = "none";
   window._invoiceId = null;
   window._orderMsg = null;
+  window._tgtOrderDone = false;
+}
+
+async function fulfillTgtOrder(){
+  if(window._tgtOrderDone || !currentPlan?.productCode && !currentPlan?.planCode) return;
+  const productCode = currentPlan.productCode || currentPlan.planCode;
+  const email = document.getElementById("customerEmail")?.value.trim() || "";
+  const channelOrderNo = window._orderId || `TGT-${Date.now()}`;
+
+  try{
+    const res = await fetch("/.netlify/functions/tgt-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productCode, email, channelOrderNo })
+    });
+    const data = await res.json();
+    window._tgtOrderDone = true;
+    window._tgtOrderResult = data;
+
+    const orderNo =
+      data?.orderResult?.data?.orderNo ||
+      data?.orderResult?.data?.order?.orderNo ||
+      data?.orderResult?.orderNo ||
+      "";
+
+    if(orderNo && qpayBox){
+      qpayBox.innerHTML += `
+        <div style="border:1px solid #d1fae5;background:#ecfdf5;border-radius:14px;padding:12px;margin-top:10px">
+          <b>✅ TGT захиалга үүслээ</b>
+          <div class="sub" style="margin-top:6px">OrderNo: ${orderNo}</div>
+          <div class="sub">eSIM мэдээлэл имэйл рүү илгээгдэнэ.</div>
+        </div>
+      `;
+    }
+  }catch(e){
+    console.error("TGT order error:", e);
+  }
+}
+
+async function onPaymentSuccess(){
+  if(chatBtns) chatBtns.style.display = "flex";
+  await fulfillTgtOrder();
+  if(qpayBox && !window._tgtOrderDone){
+    qpayBox.innerHTML = `
+      <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
+        <b style="color:green">✅ Төлбөр амжилттай</b>
+        <div class="sub" style="margin-top:8px">
+          WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
+        </div>
+      </div>
+    `;
+  }
 }
 
 async function checkPaymentOnce(){
@@ -1157,17 +1212,7 @@ async function checkPaymentOnce(){
     if(!res.ok) throw new Error(data?.error || "check error");
 
     if(data.paid){
-      if(chatBtns) chatBtns.style.display = "flex";
-      if(qpayBox){
-        qpayBox.innerHTML = `
-          <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-            <b>✅ Төлбөр амжилттай</b>
-            <div class="sub" style="margin-top:8px">
-              WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
-            </div>
-          </div>
-        `;
-      }
+      await onPaymentSuccess();
     }else{
       if(qpayBox){
         qpayBox.innerHTML = `
@@ -1204,18 +1249,7 @@ function startAutoCheck(){
       if(data.paid){
         clearInterval(paymentInterval);
         paymentInterval = null;
-
-        if(chatBtns) chatBtns.style.display = "flex";
-        if(qpayBox){
-          qpayBox.innerHTML = `
-            <div style="border:1px solid #e5e7eb;border-radius:14px;padding:12px">
-              <b style="color:green">✅ Төлбөр амжилттай</b>
-              <div class="sub" style="margin-top:8px">
-                WhatsApp эсвэл Facebook Page-р “Төллөө” гэж бичнэ үү.
-              </div>
-            </div>
-          `;
-        }
+        await onPaymentSuccess();
       }
 
     }catch(e){
@@ -1247,8 +1281,11 @@ qpayBtn?.addEventListener("click", async () => {
     qpayBox.innerHTML = "⏳ QPay нэхэмжлэл үүсгэж байна...";
   }
 
-  const orderId = "AIRHUB_" + Date.now();
-  const desc = `${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code} • ${currentPlan.planName} • PlanCode:${currentPlan.planCode}`;
+  const orderId = "TGT_" + Date.now();
+  window._orderId = orderId;
+  window._tgtOrderDone = false;
+  const productCode = currentPlan.productCode || currentPlan.planCode;
+  const desc = `${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code} • ${currentPlan.planName} • ProductCode:${productCode}`;
   const amount = Math.round(calculateMNT(currentPlan.price, currentCountry.name || currentCountry.code));
 
   try{
@@ -1265,7 +1302,7 @@ qpayBtn?.addEventListener("click", async () => {
         deliveryChannel: facebook ? "facebook" : (email ? "email" : ""),
         note: "",
         plan: desc,
-        planCode: currentPlan.planCode,
+        planCode: productCode,
         price: amount,
         page: window.location.pathname
       })
@@ -1299,7 +1336,7 @@ qpayBtn?.addEventListener("click", async () => {
 Order: ${orderId}
 Улс: ${currentCountry.flag || ""} ${currentCountry.name || currentCountry.code}
 Багц: ${currentPlan.planName}
-PlanCode: ${currentPlan.planCode}
+ProductCode: ${productCode}
 Дүн: ${fmt(amount)}
 Invoice: ${window._invoiceId || "-"}`;
 

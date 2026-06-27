@@ -1,7 +1,13 @@
-// netlify/functions/getPlans.js  (CommonJS)
+// netlify/functions/getPlans.js
 // GET /.netlify/functions/getPlans?code=CN
+// GET /.netlify/functions/getPlans?group=global|asia|china
 
-const BASE = "https://api.airhubapp.com";
+const {
+  fetchAllProducts,
+  normalizeProduct,
+  productMatchesCountry,
+  productMatchesGroup,
+} = require("./tgt-lib");
 
 function res(statusCode, obj) {
   return {
@@ -17,72 +23,52 @@ function res(statusCode, obj) {
   };
 }
 
-async function airhubLogin(USERNAME, PASSWORD) {
-  const r = await fetch(`${BASE}/api/Authentication/UserLogin`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userName: USERNAME, password: PASSWORD }),
-  });
-
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j?.token) return { ok: false, status: r.status, data: j };
-  return { ok: true, token: j.token, raw: j };
-}
-
 exports.handler = async (event) => {
-  // CORS preflight
   if (event.httpMethod === "OPTIONS") return res(200, { ok: true });
-
   if (event.httpMethod !== "GET") return res(405, { error: "Method Not Allowed" });
 
-  const USERNAME = process.env.AIRHUB_USERNAME;
-  const PASSWORD = process.env.AIRHUB_PASSWORD;
-  const PARTNER_CODE = process.env.AIRHUB_PARTNER_CODE;
-
-  if (!USERNAME || !PASSWORD || !PARTNER_CODE) {
-    return res(500, {
-      error: "Missing env vars",
-      need: ["AIRHUB_USERNAME", "AIRHUB_PASSWORD", "AIRHUB_PARTNER_CODE"],
-    });
-  }
-
   const code = String(event.queryStringParameters?.code || "").trim().toUpperCase();
-  if (!code) {
-    return res(400, { error: "Missing query: code", example: "/getPlans?code=CN" });
+  const group = String(event.queryStringParameters?.group || "").trim().toLowerCase();
+
+  if (!code && !group) {
+    return res(400, {
+      error: "Missing query",
+      examples: ["/getPlans?code=CN", "/getPlans?group=global"],
+    });
   }
 
   try {
-    // 1) login
-    const login = await airhubLogin(USERNAME, PASSWORD);
-    if (!login.ok) return res(401, { error: "Airhub login failed", details: login.data });
+    const rawProducts = await fetchAllProducts();
+    const normalized = rawProducts.map(normalizeProduct);
 
-    // 2) plans
-    const body = {
-      partnerCode: Number(PARTNER_CODE),
-      flag: 6,
-      countryCode: "",
-      multiplecountrycode: [code],
-    };
+    let filtered = normalized;
+    if (code) {
+      filtered = normalized.filter((p) => productMatchesCountry(p, code));
+    } else if (group) {
+      filtered = normalized.filter((p) => productMatchesGroup(p, group));
+    }
 
-    const planRes = await fetch(`${BASE}/api/ESIM/GetPlanInformation`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${login.token}` },
-      body: JSON.stringify(body),
-    });
+    filtered.sort((a, b) => Number(a.price) - Number(b.price));
 
-    const planJson = await planRes.json().catch(() => ({}));
-
-    // 🔥 хамгийн чухал: унасан үед Airhub юу гэж буцааж байгааг харуулна
-    if (!planRes.ok) {
-      return res(planRes.status, {
-        error: "GetPlanInformation failed",
-        sent: body,
-        details: planJson,
+    if (group) {
+      return res(200, {
+        source: "TGT",
+        group,
+        plans: filtered,
+        total: filtered.length,
       });
     }
 
-    return res(200, planJson);
+    return res(200, {
+      source: "TGT",
+      getInformation: filtered,
+      total: filtered.length,
+    });
   } catch (e) {
-    return res(500, { error: "Server error", message: String(e) });
+    return res(500, {
+      error: "Server error",
+      message: String(e.message || e),
+      details: e.tokenData || e.details || undefined,
+    });
   }
 };

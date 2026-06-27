@@ -1,86 +1,60 @@
+const { createTgtOrder } = require("./tgt-lib");
+
 exports.handler = async (event) => {
   try {
+    if (event.httpMethod === "OPTIONS") {
+      return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+        },
+        body: "",
+      };
+    }
+
     if (event.httpMethod !== "POST") {
       return {
         statusCode: 405,
-        body: JSON.stringify({ error: "Only POST allowed" })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "Only POST allowed" }),
       };
     }
 
     const body = JSON.parse(event.body || "{}");
     const productCode = body.productCode;
     const email = body.email || "";
+    const channelOrderNo = body.channelOrderNo || `ESIM-${Date.now()}`;
 
     if (!productCode) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "productCode is required" })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ error: "productCode is required" }),
       };
     }
 
-    const baseUrl = process.env.TGT_BASE_URL?.trim();
-    const accountId = process.env.TGT_ACCOUNT_ID?.trim();
-    const secret = process.env.TGT_SECRET?.trim();
-
-    const tokenRes = await fetch(`${baseUrl}/oauth/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=UTF-8",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({ accountId, secret })
-    });
-
-    const tokenData = await tokenRes.json();
-
-   const accessToken =
-  tokenData?.data?.accessToken ||
-  tokenData?.data?.token;
-
-    if (!accessToken) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          step: "token",
-          tokenData
-        })
-      };
-    }
-
-    const orderRes = await fetch(`${baseUrl}/eSIMApi/v2/order/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=UTF-8",
-        "Accept": "application/json",
-       "Authorization": `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({
-        productCode,
-        email,
-        channelOrderNo: `ESIM-${Date.now()}`,
-        idempotencyKey:
-          typeof crypto !== "undefined" && crypto.randomUUID
-            ? crypto.randomUUID()
-            : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-      })
-    });
-
-    const orderData = await orderRes.json();
+    const result = await createTgtOrder(productCode, email, channelOrderNo);
 
     return {
-      statusCode: 200,
+      statusCode: result.ok ? 200 : result.status || 500,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({
-        tokenCode: tokenData.code,
-        tokenMsg: tokenData.msg,
-        orderResult: orderData
-      })
+        source: "TGT",
+        tokenCode: result.tokenData?.code,
+        tokenMsg: result.tokenData?.msg,
+        orderResult: result.orderData,
+      }),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: err.message
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };

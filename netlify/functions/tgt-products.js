@@ -1,64 +1,32 @@
+const { fetchAllProducts, getTgtToken } = require("./tgt-lib");
+
 exports.handler = async () => {
   try {
-    const baseUrl = process.env.TGT_BASE_URL?.trim();
-    const accountId = process.env.TGT_ACCOUNT_ID?.trim();
-    const secret = process.env.TGT_SECRET?.trim();
-
-    const tokenRes = await fetch(`${baseUrl}/oauth/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=UTF-8",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({ accountId, secret })
-    });
-
-    const tokenData = await tokenRes.json();
-
-    const accessToken =
-      tokenData?.data?.accessToken ||
-      tokenData?.data?.token ||
-      tokenData?.accessToken ||
-      tokenData?.token;
-
-    if (!accessToken) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({
-          step: "token",
-          tokenData
-        })
-      };
-    }
-
-    const productRes = await fetch(`${baseUrl}/eSIMApi/v2/products/list`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=UTF-8",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({
-        pageNum: 1,
-        pageSize: 100,
-        lang: "en"
-      })
-    });
-
-    const products = await productRes.json();
+    const { tokenData } = await getTgtToken();
+    const rawProducts = await fetchAllProducts();
 
     return {
       statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
       body: JSON.stringify({
+        source: "TGT",
         tokenCode: tokenData.code,
         tokenMsg: tokenData.msg,
-        productResult: products
-      })
+        total: rawProducts.length,
+        productResult: { data: { list: rawProducts } },
+      }),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        error: err.message,
+        details: err.tokenData || err.details || undefined,
+      }),
     };
   }
 };
