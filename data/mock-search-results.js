@@ -37,4 +37,7 @@
     trains: mockTrains,
     flights: mockFlights
   };
+
+  window.fallbackFlights = mockFlights;
+  window.fallbackTransportRoutes = mockTransport;
 })();

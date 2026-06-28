@@ -310,6 +310,7 @@
     document.querySelectorAll(".tp-panel").forEach((p) => {
       p.classList.toggle("active", p.dataset.panel === tab);
     });
+    if (lastMockResults.length) showResultsContainer();
     if (tab === "esim-tab") {
       document.querySelector("#esim")?.scrollIntoView({ behavior: "smooth" });
     }
@@ -580,6 +581,107 @@
     return { ...item, ...calc(item) };
   }
 
+  const SEARCH_EMPTY_MSG =
+    "Одоогоор энэ чиглэлд мэдээлэл олдсонгүй. Та өөр огноо эсвэл өөр хот сонгоод дахин хайна уу.";
+
+  function searchEmptyHtml() {
+    return `
+      <div class="tp-search-empty">
+        <p class="tp-lead tp-warn">${SEARCH_EMPTY_MSG}</p>
+        <button type="button" class="tp-btn primary" data-action="consult-advisor">Манай аяллын зөвлөхөөс асуух</button>
+      </div>`;
+  }
+
+  function bindConsultAdvisor(btn) {
+    btn?.addEventListener("click", () => {
+      if (window.TravelAssistant?.openAiChat) {
+        window.TravelAssistant.openAiChat("Нислэг эсвэл тээврийн маршрутын талаар зөвлөгөө өгнө үү.");
+      } else {
+        window.TravelAssistant?.open?.("home");
+      }
+    });
+  }
+
+  function normalizeSearchParams(type, fd) {
+    const params = { ...fd };
+    const norm = window.TRAVEL_CITIES?.normalizeCity;
+    if (!norm) return params;
+    if (type === "flight" || type === "train") {
+      if (!params.from_city_id && params.from) params.from_city_id = norm(params.from) || "";
+      if (!params.city_id && params.city) params.city_id = norm(params.city) || "";
+    } else if (type === "hotel" || type === "attraction") {
+      if (!params.city_id && params.city) params.city_id = norm(params.city) || "";
+    }
+    return params;
+  }
+
+  function applyResultPricing(items) {
+    return (items || []).map((item) => {
+      if (item.final_price_mnt != null && item.final_price_mnt > 0) return item;
+      return priceItem(item);
+    });
+  }
+
+  function showResultsContainer() {
+    const container = $("resultsContainer");
+    if (container) container.style.display = "";
+  }
+
+  async function fetchFlightResults(searchParams) {
+    let payload = await apiSearch("flight", searchParams);
+    const apiEmpty = !payload.results?.length || payload.meta?.error;
+    if (apiEmpty) {
+      const fallback = window.fallbackFlights || window.MOCK_SEARCH?.flights;
+      if (fallback) {
+        const fb = fallback(searchParams.from, searchParams.city, searchParams);
+        if (fb?.results?.length) {
+          payload = {
+            results: applyResultPricing(fb.results),
+            meta: { ...(fb.meta || {}), source: "fallback" }
+          };
+        }
+      }
+    } else {
+      payload.results = applyResultPricing(payload.results);
+    }
+    return payload;
+  }
+
+  async function fetchTransportResults(searchParams) {
+    let payload = await apiSearch("train", searchParams);
+    const apiEmpty = !payload.results?.length || payload.meta?.error;
+    if (apiEmpty) {
+      const fallback = window.fallbackTransportRoutes || window.MOCK_SEARCH?.transport;
+      if (fallback) {
+        const fb = fallback(searchParams.from, searchParams.city);
+        if (fb?.results?.length) {
+          payload = {
+            results: (fb.results || []).map(enrichTransportItem),
+            meta: {
+              fromId: fb.fromId,
+              toId: fb.toId,
+              routeKey: fb.routeKey,
+              source: "fallback"
+            }
+          };
+        }
+      }
+    } else if (payload.results?.length) {
+      payload.results = payload.results.map(enrichTransportItem);
+    }
+    return payload;
+  }
+
+  function renderFlightResults(results, meta) {
+    showResultsContainer();
+    showMockResults("flight", results, meta);
+  }
+
+  function renderTransportResults(results, meta) {
+    showResultsContainer();
+    showMockResults("train", results, meta);
+  }
+
   function itemLabel(item) {
     if (item.type === "hotel") {
       const nm = item.name_en || item.name;
@@ -606,25 +708,60 @@
   }
 
   async function runSearch(type, formData) {
+    const searchParams = normalizeSearchParams(type, formData);
     const box = $("mockResults");
     if (box) {
+      showResultsContainer();
       box.style.display = "block";
       box.innerHTML = `<p class="tp-lead">🔍 Хайж байна...</p>`;
     }
     try {
-      let payload = await apiSearch(type, formData);
-      if (type === "hotel") {
-        payload.results = applyMntFilters(payload.results || [], collectHotelFilters());
+      if (type === "flight") {
+        console.log("Flight search clicked", searchParams);
+        const payload = await fetchFlightResults(searchParams);
+        console.log("Flight results", payload.results);
+        renderFlightResults(payload.results || [], payload.meta || {});
+        return;
       }
       if (type === "train") {
-        payload = {
-          ...payload,
-          results: (payload.results || []).map(enrichTransportItem)
-        };
+        console.log("Transport search clicked", searchParams);
+        const payload = await fetchTransportResults(searchParams);
+        console.log("Transport results", payload.results);
+        renderTransportResults(payload.results || [], payload.meta || {});
+        return;
+      }
+
+      let payload = await apiSearch(type, searchParams);
+      if (type === "hotel") {
+        payload.results = applyMntFilters(payload.results || [], collectHotelFilters());
       }
       showMockResults(type, payload.results || [], payload.meta || {});
     } catch (err) {
       console.error("[TravelBooking]", err);
+      if (type === "flight") {
+        const fallback = window.fallbackFlights || window.MOCK_SEARCH?.flights;
+        const fb = fallback?.(searchParams.from, searchParams.city, searchParams);
+        if (fb?.results?.length) {
+          renderFlightResults(applyResultPricing(fb.results), { ...(fb.meta || {}), source: "fallback" });
+          return;
+        }
+        renderFlightResults([], { error: "api_error" });
+        return;
+      }
+      if (type === "train") {
+        const fallback = window.fallbackTransportRoutes || window.MOCK_SEARCH?.transport;
+        const fb = fallback?.(searchParams.from, searchParams.city);
+        if (fb?.results?.length) {
+          renderTransportResults((fb.results || []).map(enrichTransportItem), {
+            fromId: fb.fromId,
+            toId: fb.toId,
+            source: "fallback"
+          });
+          return;
+        }
+        renderTransportResults([], { error: "api_error" });
+        return;
+      }
       showMockResults(type, [], { error: "api_error" });
     }
   }
@@ -1113,17 +1250,23 @@
         sub = `<p class="tp-lead">${cityLabel(meta.fromId)} → ${cityLabel(meta.toId)} · зэрэглэл сонгоод захална уу</p>`;
       }
       if (!results.length) {
-        sub += `<p class="tp-lead tp-warn">Энэ чиглэлд одоогоор бүртгэл байхгүй. Өөр хот эсвэл чиглэл сонгоно уу.</p>`;
+        sub += searchEmptyHtml();
       }
     }
+    if (type === "flight" && !results.length) {
+      sub += searchEmptyHtml();
+    }
 
+    const emptyGrid = (type === "flight" || type === "train") && !results.length ? "" : null;
     box.innerHTML = `
       <div class="tp-results-header">
         <h3>🔍 ${label} — ${results.length} сонголт</h3>
         ${sub}
       </div>
-      <div class="${gridClass}">${cards || (type === "train" ? "" : "<p class='tp-lead'>Үр дүн олдсонгүй.</p>")}${type === "train" && !cards ? "<p class='tp-lead'>Үр дүн олдсонгүй.</p>" : ""}</div>
+      <div class="${gridClass}">${cards || emptyGrid || (type === "train" ? "" : "<p class='tp-lead'>Үр дүн олдсонгүй.</p>")}</div>
     `;
+
+    bindConsultAdvisor(box.querySelector("[data-action=consult-advisor]"));
 
     (container || box).scrollIntoView({ behavior: "smooth", block: "nearest" });
 
@@ -1400,6 +1543,8 @@
     closeHotelDetail,
     openHotelDetail,
     setTab,
+    renderFlightResults,
+    renderTransportResults,
     STATUS_LABELS,
     SERVICE_TYPES,
     BOOKING_TITLES

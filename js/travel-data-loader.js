@@ -41,10 +41,21 @@
     return String(s || "").trim().toLowerCase().replace(/[''`]/g, "").replace(/\s+/g, " ");
   }
 
+  const FALLBACK_ALIASES = {
+    "улаанбаатар": "ulanbaatar", ulanbaatar: "ulanbaatar", ub: "ulanbaatar",
+    "шанхай": "shanghai", shanghai: "shanghai",
+    "бээжин": "beijing", beijing: "beijing", "北京": "beijing",
+    "эрээн": "erenhot", erenhot: "erenhot", erlian: "erenhot",
+    "хөх хот": "hohhot", hohhot: "hohhot",
+    "гуанжоу": "guangzhou", guangzhou: "guangzhou",
+    "бангкок": "bangkok", bangkok: "bangkok"
+  };
+
   function normalizeCity(input) {
     const key = normalizeKey(input);
     if (!key) return null;
     if (aliasIndex[key]) return aliasIndex[key];
+    if (FALLBACK_ALIASES[key]) return FALLBACK_ALIASES[key];
     const partial = Object.entries(aliasIndex).find(([alias]) =>
       key.length >= 3 && (key.includes(alias) || alias.includes(key))
     );
@@ -159,6 +170,17 @@
     },
     getCity(id) {
       return cityById[id];
+    },
+    resolve(input, opts) {
+      const text = String(input || "").trim();
+      if (!text) return null;
+      const direct = normalizeCity(text);
+      if (direct) return direct;
+      const hits = root.TravelCatalog.searchLocations(text, { ...(opts || {}), limit: 1 });
+      const hit = hits[0];
+      if (hit?.city_id) return hit.city_id;
+      if (hit?.type === "country" && hit.country_id) return hit.country_id;
+      return null;
     }
   };
 
