@@ -508,7 +508,26 @@
 }
 .tp-hotel-nearby { margin: 12px 0; font-size: 14px; }
 .tp-room-amenities { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-.tp-modal-wide { max-width: 800px; }
+.tp-form-grid-3 {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .tp-form-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+  .tp-form-grid-3 { grid-template-columns: repeat(3, 1fr); }
+}
+.tp-hotel-search-trip {
+  padding: 4px 0 8px;
+  border-bottom: 1px dashed #e2e8f0;
+  margin-bottom: 4px;
+}
+.tp-filter-tag {
+  font-size: 13px;
+  color: #0369a1;
+}
 .tp-hotel-gallery-item figcaption {
   font-size: 11px;
   padding: 4px 6px;
@@ -767,3 +786,150 @@
 }
 .tp-faq summary { cursor: pointer; font-weight: 700; font-size: 14px; }
 .tp-faq .ans { margin-top: 8px; font-size: 14px; color: var(--tp-muted); line-height: 1.55; }
+
+/* Hotel results — Trip.com-style sidebar + map */
+.tp-results-container.tp-hotel-layout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+@media (min-width: 960px) {
+  .tp-results-container.tp-hotel-layout {
+    grid-template-columns: 260px 1fr;
+  }
+}
+.tp-hotel-filters {
+  display: none;
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 14px;
+  padding: 0;
+  position: relative;
+  z-index: 1101;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+}
+.tp-hotel-filters.tp-hotel-filters-visible {
+  display: block;
+}
+@media (max-width: 959px) {
+  .tp-hotel-filters.tp-hotel-filters-visible {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(320px, 88vw);
+    max-height: none;
+    border-radius: 0 14px 14px 0;
+    transform: translateX(-110%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,.12);
+  }
+  .tp-hotel-filters.tp-hotel-filters-visible.open {
+    transform: translateX(0);
+  }
+}
+.tp-hotel-filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--tp-border);
+  position: sticky;
+  top: 0;
+  background: var(--tp-white);
+  z-index: 1;
+}
+.tp-hotel-filters-head h4 { margin: 0; font-size: 1rem; }
+.tp-hotel-filters-close {
+  display: none;
+  border: none;
+  background: #f1f5f9;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+@media (max-width: 959px) {
+  .tp-hotel-filters-close { display: block; }
+}
+.tp-hotel-filters-body {
+  padding: 14px 16px 18px;
+  display: grid;
+  gap: 12px;
+}
+.tp-filter-checks {
+  display: grid;
+  gap: 8px;
+}
+.tp-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.tp-check input { margin-top: 3px; flex-shrink: 0; }
+.tp-btn-block { width: 100%; margin-top: 4px; }
+.tp-btn-filter-mob { display: inline-flex; }
+@media (min-width: 960px) {
+  .tp-btn-filter-mob { display: none; }
+}
+.tp-hotel-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--tp-border);
+  border-radius: 12px;
+}
+.tp-hotel-sort {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--tp-border);
+  font-size: 14px;
+}
+.tp-filters-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.45);
+  z-index: 1100;
+}
+.tp-hotel-map-placeholder {
+  margin-bottom: 14px;
+  border: 1px solid var(--tp-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+  min-height: 200px;
+}
+.tp-map-mock-inner {
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+.tp-map-mock-inner p { margin: 4px 0; font-weight: 700; }
+.tp-map-mock-grid {
+  position: relative;
+  height: 140px;
+  margin-top: 12px;
+  background: rgba(255,255,255,.5);
+  border-radius: 10px;
+  border: 1px dashed #94a3b8;
+}
+.tp-map-pin {
+  position: absolute;
+  font-size: 18px;
+  transform: translate(-50%, -50%);
+  cursor: default;
+}
+.tp-results-main { min-width: 0; }

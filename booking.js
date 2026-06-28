@@ -349,7 +349,7 @@
     });
   }
 
-  const HOTEL_IMG_FALLBACK = "/images/china/guide/hero.jpg";
+  const HOTEL_IMG_FALLBACK = "/images/hotels/exterior-01.jpg";
   const HOTEL_IMAGE_LABELS = {
     exterior: "Гадна тал",
     lobby: "Лобби",
@@ -380,19 +380,27 @@
   }
 
   function hotelCover(h) {
+    if (h.images && h.cover_key && h.images[h.cover_key]) return h.images[h.cover_key];
     if (h.images?.exterior) return h.images.exterior;
-    if (Array.isArray(h.images_list) && h.images_list.length) return h.images_list[0];
-    if (h.images && typeof h.images === "object" && !Array.isArray(h.images)) {
-      const first = Object.values(h.images).find(Boolean);
-      if (first) return first;
+    if (Array.isArray(h.images_list) && h.images_list.length) {
+      const idx = hashHotelIdx(h.id) % h.images_list.length;
+      return h.images_list[idx];
     }
-    if (Array.isArray(h.images) && h.images.length) return h.images[0];
+    if (h.images && typeof h.images === "object" && !Array.isArray(h.images)) {
+      const vals = Object.values(h.images).filter(Boolean);
+      if (vals.length) return vals[hashHotelIdx(h.id) % vals.length];
+    }
+    if (Array.isArray(h.images) && h.images.length) return h.images[hashHotelIdx(h.id) % h.images.length];
     if (h.image) return h.image;
     return window.HOTELS_CATALOG?.FALLBACK_IMG || window.MOCK_SEARCH?.FALLBACK_IMG || HOTEL_IMG_FALLBACK;
   }
 
+  function hashHotelIdx(id) {
+    return String(id || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  }
+
   function hotelImgFallback() {
-    return window.HOTELS_CATALOG?.FALLBACK_IMG || window.HOTELS_CATALOG?.HOTEL_STOCK?.exterior?.[0] || HOTEL_IMG_FALLBACK;
+    return "/images/hotels/exterior-01.jpg";
   }
 
   function hotelImgTag(h, className) {
@@ -400,7 +408,7 @@
     const name = h.name_en || h.name || "Hotel";
     const alt = `${name} — ${cityLabel(h.city_id)}`;
     const fb = hotelImgFallback();
-    return `<img class="${className}" src="${src}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fb}'">`;
+    return `<img class="${className}" src="${src}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">`;
   }
 
   function hotelGalleryHtml(hotel, fb) {
@@ -408,12 +416,12 @@
     if (hotel.images && typeof hotel.images === "object" && !Array.isArray(hotel.images)) {
       return Object.entries(HOTEL_IMAGE_LABELS).map(([key, label]) => {
         const src = hotel.images[key] || fallback;
-        return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
+        return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
       }).join("");
     }
     return hotelImagesList(hotel).map((src, i) => {
       const label = Object.values(HOTEL_IMAGE_LABELS)[i] || "Зураг";
-      return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
+      return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
     }).join("");
   }
 
@@ -449,6 +457,8 @@
       const countryId = window.TRAVEL_CITIES?.normalizeCountry(formData.country) ||
         (cityId ? window.TRAVEL_CITIES?.getCity(cityId)?.country_id : "china");
       const nights = formData.days || 5;
+      const sideFilters = collectHotelFilters();
+      const filters = buildHotelSearchFilters(formData, sideFilters);
 
       if (!cityId) {
         return { results: [], meta: { cityInput, error: "city_not_found" } };
@@ -458,8 +468,11 @@
         return { results: [], meta: { cityId, countryId, error: "country_mismatch" } };
       }
 
-      const results = (window.MOCK_SEARCH?.hotels(cityInput, nights) || []).map(priceItem);
-      return { results, meta: { cityId, cityInput, countryId: city?.country_id, nights } };
+      let results = (window.MOCK_SEARCH?.hotels(cityInput, nights, filters) || []).map(priceItem);
+      results = applyMntFilters(results, sideFilters);
+      results = sortHotelResults(results, filters.sort);
+
+      return { results, meta: { cityId, cityInput, countryId: city?.country_id, nights, filters, formData } };
     }
     if (type === "train") {
       const route = mock.trains(formData.from || "Хөх хот", formData.city || "Бээжин");
@@ -502,7 +515,7 @@
 
     const rooms = (hotel.rooms || []).map((r) => `
       <div class="tp-hotel-room">
-        ${r.image ? `<img src="${r.image}" alt="${r.name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fb}'">` : ""}
+        ${r.image ? `<img src="${r.image}" alt="${r.name}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">` : ""}
         <div>
           <strong>${r.name}</strong>
           ${r.beds ? `<span class="tp-muted"> • ${r.beds} ор</span>` : ""}
@@ -518,13 +531,14 @@
       <div class="tp-hotel-detail-main">
         <div class="tp-hotel-stars">${stars(hotel.stars || 0)}</div>
         <h3>${hotel.name_en}</h3>
-        <p class="tp-hotel-detail-loc">📍 ${countryLabel(hotel.country_id)} • ${cityLabel(hotel.city_id)} • ${hotel.district || ""}</p>
+        <p class="tp-hotel-detail-loc">📍 ${countryLabel(hotel.country_id)} • ${cityLabel(hotel.city_id)} • ${hotel.area_name || hotel.district || ""}</p>
         <p class="tp-hotel-detail-desc">${hotel.description_mn || ""}</p>
-        <div class="tp-hotel-badges">${policy}${amenities}</div>
+        <div class="tp-hotel-badges">${policy}${amenities}${hotel.family_friendly ? '<span class="tp-badge">👨‍👩‍👧 Гэр бүлд тохиромжтой</span>' : ""}</div>
         <ul class="tp-hotel-detail-facts">
           <li><strong>Хаяг:</strong> ${hotel.address || "—"}</li>
-          <li><strong>Метро / тээвэр:</strong> ${hotel.metro_distance || "—"}</li>
-          <li><strong>Ойролцоох:</strong> ${hotel.attraction_distance || "—"}</li>
+          <li><strong>Метро:</strong> ${hotel.nearby_metro ? `${hotel.nearby_metro} (${hotel.distance_to_metro_m} м)` : "—"}</li>
+          <li><strong>Нисэх буудал:</strong> ${hotel.distance_to_airport_km} км</li>
+          <li><strong>Төвөөс:</strong> ${hotel.distance_to_center_km} км</li>
         </ul>
         ${nearby ? `<div class="tp-hotel-nearby"><strong>Үзэх газар:</strong><div class="tp-hotel-badges">${nearby}</div></div>` : ""}
         <a class="tp-btn" href="${mapUrl}" target="_blank" rel="noopener" style="margin:12px 0;display:inline-block">📍 Газрын зураг</a>
@@ -562,19 +576,31 @@
     if (bd) bd.style.display = "none";
   }
 
+  function formatHotelDist(h) {
+    const parts = [];
+    if (h.nearby_metro && h.distance_to_metro_m < 9000) {
+      parts.push(`🚇 ${h.nearby_metro} ${h.distance_to_metro_m}м`);
+    }
+    const lm = (h.nearby_landmarks || [])[0];
+    if (lm && h.distance_to_attraction_km) {
+      parts.push(`📍 ${lm} ${h.distance_to_attraction_km}км`);
+    }
+    return parts.join(" · ");
+  }
+
   function renderHotelCard(h) {
     const badges = (h.amenities || h.badges || []).slice(0, 3).map((b) => `<span class="tp-badge">${b}</span>`).join("");
-    const dist = [h.metro_distance, h.attraction_distance].filter(Boolean).join(" • ");
+    const dist = formatHotelDist(h);
+    const areaLine = [h.area_name || h.district].filter(Boolean).join(" · ");
     return `
-      <article class="tp-hotel-card" data-item-id="${h.id}">
+      <article class="tp-hotel-card" data-item-id="${h.id}" data-lat="${h.latitude || 0}" data-lng="${h.longitude || 0}">
         ${hotelImgTag(h, "tp-hotel-img")}
         <div class="tp-hotel-body">
           <div class="tp-hotel-stars">${stars(h.stars)}</div>
           <h4 class="tp-hotel-name">${h.name_en}</h4>
-          <div class="tp-hotel-area">${countryLabel(h.country_id)} • ${cityLabel(h.city_id)} • ${h.district || ""}</div>
-          <p class="tp-hotel-desc">${h.description_mn || ""}</p>
-          ${dist ? `<div class="tp-hotel-dist">📍 ${dist}</div>` : ""}
-          <div class="tp-hotel-badges">${badges}${h.breakfast ? '<span class="tp-badge">☕ Өглөөний цай</span>' : ""}${h.free_cancellation ? '<span class="tp-badge">✓ Цуцлах</span>' : ""}</div>
+          <div class="tp-hotel-area">${countryLabel(h.country_id)} • ${cityLabel(h.city_id)} • ${areaLine}</div>
+          ${dist ? `<div class="tp-hotel-dist">${dist}</div>` : ""}
+          <div class="tp-hotel-badges">${badges}${h.breakfast ? '<span class="tp-badge">☕ Өглөөний цай</span>' : ""}${h.free_cancellation ? '<span class="tp-badge">✓ Цуцлах</span>' : ""}${h.family_friendly ? '<span class="tp-badge">👨‍👩‍👧 Гэр бүл</span>' : ""}</div>
           <div class="tp-card-price-row">
             <div>
               <div class="tp-price-final">${fmtMnt(h.final_price_mnt)}</div>
@@ -665,19 +691,54 @@
       </article>`;
   }
 
+  function renderMapPins(results) {
+    const box = $("hotelMapPins");
+    if (!box) return;
+    const pins = results.slice(0, 12).map((h, i) => {
+      const left = 10 + (i % 4) * 22;
+      const top = 10 + Math.floor(i / 4) * 28;
+      return `<span class="tp-map-pin" style="left:${left}%;top:${top}%" title="${h.name_en}">📍</span>`;
+    }).join("");
+    box.innerHTML = pins || "<span class='tp-muted'>Буудал олдсонгүй</span>";
+  }
+
+  function setHotelResultsLayout(isHotel) {
+    const container = $("resultsContainer");
+    const sidebar = $("hotelFiltersSidebar");
+    const toolbar = $("hotelToolbar");
+    if (container) {
+      container.style.display = "";
+      container.classList.toggle("tp-hotel-layout", isHotel);
+    }
+    if (sidebar) sidebar.classList.toggle("tp-hotel-filters-visible", isHotel);
+    if (toolbar) toolbar.style.display = isHotel ? "" : "none";
+    if (!isHotel) {
+      const map = $("hotelMapPlaceholder");
+      if (map) map.style.display = "none";
+      sidebar?.classList.remove("open");
+      const overlay = $("hotelFiltersOverlay");
+      if (overlay) overlay.style.display = "none";
+    }
+  }
+
   function showMockResults(type, results, meta) {
     lastMockResults = results;
     lastSearchMeta = meta || {};
     const box = $("mockResults");
+    const container = $("resultsContainer");
     if (!box) return;
     const label = SERVICE_TYPES[type] || type;
+    const isHotel = type === "hotel";
+
+    setHotelResultsLayout(isHotel);
     box.style.display = "block";
 
     let gridClass = "tp-results-grid";
     let cards = "";
-    if (type === "hotel") {
+    if (isHotel) {
       gridClass = "tp-hotel-grid";
       cards = results.map(renderHotelCard).join("");
+      renderMapPins(results);
     } else if (type === "train") {
       gridClass = "tp-train-grid";
       cards = results.map(renderTrainCard).join("");
@@ -689,18 +750,23 @@
     }
 
     let sub = "";
-    if (type === "hotel" && meta?.cityId) {
+    if (isHotel && meta?.cityId && !meta?.error) {
       const c = window.TRAVEL_CITIES?.getCity(meta.cityId);
-      sub = `<p class="tp-lead">${countryLabel(c?.country_id)} — ${window.TRAVEL_CITIES?.getCityLabel(meta.cityId) || meta.cityInput}</p>`;
+      const f = meta.filters || {};
+      const parts = [countryLabel(c?.country_id), window.TRAVEL_CITIES?.getCityLabel(meta.cityId)];
+      if (f.area) parts.push(f.area);
+      else if (f.district) parts.push(f.district);
+      sub = `<p class="tp-lead">${parts.filter(Boolean).join(" → ")} · <strong>${results.length}</strong> буудал</p>`;
+      if (f.keyword) sub += `<p class="tp-lead tp-filter-tag">🔎 «${f.keyword}»</p>`;
     }
-    if (type === "hotel" && meta?.error === "city_not_found") {
+    if (isHotel && meta?.error === "city_not_found") {
       sub = `<p class="tp-lead tp-warn">Хот олдсонгүй. Монгол, Англи эсвэл орон нутгийн нэрээр бичнэ үү.</p>`;
     }
-    if (type === "hotel" && meta?.error === "country_mismatch") {
+    if (isHotel && meta?.error === "country_mismatch") {
       sub = `<p class="tp-lead tp-warn">Сонгосон улс, хот тохирохгүй байна. Улсаа зөв сонгоно уу.</p>`;
     }
-    if (type === "hotel" && !results.length && !meta?.error) {
-      sub += `<p class="tp-lead tp-warn">Энэ хотод одоогоор буудал олдсонгүй.</p>`;
+    if (isHotel && !results.length && !meta?.error) {
+      sub += `<p class="tp-lead tp-warn">Энэ байршилд буудал олдсонгүй. Өөр бүс эсвэл шүүлтүүрээ өөрчилнө үү.</p>`;
     }
     if (type === "train") {
       if (meta?.fromId && meta?.toId) {
@@ -718,6 +784,8 @@
       </div>
       <div class="${gridClass}">${cards || "<p class='tp-lead'>Үр дүн олдсонгүй.</p>"}</div>
     `;
+
+    (container || box).scrollIntoView({ behavior: "smooth", block: "nearest" });
 
     box.querySelectorAll("[data-detail-type]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -744,7 +812,7 @@
       });
     });
 
-    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (!isHotel) box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function collectForm(panel) {
@@ -753,6 +821,52 @@
       fd[el.dataset.field] = el.value;
     });
     return fd;
+  }
+
+  function collectHotelFilters() {
+    const sidebar = $("hotelFiltersSidebar");
+    const fd = {};
+    sidebar?.querySelectorAll("[data-filter]").forEach((el) => {
+      const key = el.dataset.filter;
+      if (el.type === "checkbox") fd[key] = el.checked ? "1" : "";
+      else fd[key] = el.value;
+    });
+    const sortEl = $("hotelSortSelect");
+    if (sortEl?.value) fd.sort = sortEl.value;
+    return fd;
+  }
+
+  function buildHotelSearchFilters(formData, extra) {
+    const f = { ...(extra || {}) };
+    f.area = formData.area || f.area || "";
+    f.district = f.district || formData.district || "";
+    f.keyword = f.keyword || formData.keyword || "";
+    f.minStars = f.minStars || formData.minStars || "";
+    f.sort = f.sort || formData.sort || "recommended";
+    ["nearMetro", "nearAirport", "nearAttraction", "breakfast", "freeCancellation", "familyFriendly"].forEach((k) => {
+      if (f[k] === "1") f[k] = true;
+    });
+    if (f.nearLandmark) { /* keep */ }
+    return f;
+  }
+
+  function applyMntFilters(results, filters) {
+    let list = results.slice();
+    const min = Number(filters.priceMinMnt || 0);
+    const max = Number(filters.priceMaxMnt || 0);
+    if (min > 0) list = list.filter((h) => h.final_price_mnt >= min);
+    if (max > 0) list = list.filter((h) => h.final_price_mnt <= max);
+    return list;
+  }
+
+  function sortHotelResults(results, sort) {
+    const list = results.slice();
+    if (sort === "price_asc") list.sort((a, b) => a.final_price_mnt - b.final_price_mnt);
+    else if (sort === "price_desc") list.sort((a, b) => b.final_price_mnt - a.final_price_mnt);
+    else if (sort === "stars_desc") list.sort((a, b) => b.stars - a.stars);
+    else if (sort === "metro_asc") list.sort((a, b) => a.distance_to_metro_m - b.distance_to_metro_m);
+    else if (sort === "attraction_asc") list.sort((a, b) => a.distance_to_attraction_km - b.distance_to_attraction_km);
+    return list;
   }
 
   async function submitInquiry(e) {
@@ -823,6 +937,75 @@
     $("hotelDetailModalClose")?.addEventListener("click", closeHotelDetail);
   }
 
+  function runHotelSearch() {
+    const panel = document.querySelector('.tp-panel[data-panel="hotel"]');
+    const fd = collectForm(panel);
+    const { results, meta } = mockSearch("hotel", fd);
+    showMockResults("hotel", results, meta);
+  }
+
+  function initHotelFiltersUI() {
+    const sidebar = $("hotelFiltersSidebar");
+    const overlay = $("hotelFiltersOverlay");
+
+    function openDrawer() {
+      sidebar?.classList.add("open");
+      if (overlay) overlay.style.display = "";
+    }
+    function closeDrawer() {
+      sidebar?.classList.remove("open");
+      if (overlay) overlay.style.display = "none";
+    }
+
+    $("hotelFilterOpen")?.addEventListener("click", openDrawer);
+    $("hotelFiltersClose")?.addEventListener("click", closeDrawer);
+    overlay?.addEventListener("click", closeDrawer);
+
+    $("hotelApplyFilters")?.addEventListener("click", () => {
+      runHotelSearch();
+      closeDrawer();
+    });
+
+    $("hotelClearFilters")?.addEventListener("click", () => {
+      sidebar?.querySelectorAll("[data-filter]").forEach((el) => {
+        if (el.type === "checkbox") el.checked = false;
+        else el.value = "";
+      });
+      runHotelSearch();
+    });
+
+    $("hotelSortSelect")?.addEventListener("change", () => {
+      if (lastSearchMeta?.cityId) runHotelSearch();
+    });
+
+    $("hotelMapToggle")?.addEventListener("click", () => {
+      const map = $("hotelMapPlaceholder");
+      if (!map) return;
+      const show = map.style.display === "none";
+      map.style.display = show ? "" : "none";
+      map.setAttribute("aria-hidden", show ? "false" : "true");
+    });
+  }
+
+  function updateHotelAreaList(cityInput) {
+    const areaList = $("hotelAreaList");
+    const distList = $("hotelDistrictList");
+    const cityId = window.TRAVEL_CITIES?.normalizeCity(cityInput);
+    if (!cityId) {
+      if (areaList) areaList.innerHTML = "";
+      if (distList) distList.innerHTML = "";
+      return;
+    }
+    const areas = window.HOTELS_CATALOG?.getAreas(cityId) || window.HOTEL_AREAS?.getAreaNames(cityId) || [];
+    const districts = window.HOTELS_CATALOG?.getDistricts(cityId) || [];
+    if (areaList) areaList.innerHTML = areas.map((a) => `<option value="${a}"></option>`).join("");
+    if (distList) distList.innerHTML = districts.map((d) => `<option value="${d}"></option>`).join("");
+  }
+
+  function updateHotelDistrictList(cityInput) {
+    updateHotelAreaList(cityInput);
+  }
+
   function updateHotelCityList(countryId) {
     const list = $("hotelCitiesList");
     if (!list) return;
@@ -830,15 +1013,22 @@
     list.innerHTML = opts.map((o) => `<option value="${o.label.split(" — ")[0]}"></option>`).join("");
     const cities = window.TRAVEL_CITIES?.getCitiesByCountry(countryId) || [];
     const input = $("hotelCityInput");
-    if (input && cities[0]) input.value = cities[0].name_mn;
+    if (input && cities[0]) {
+      input.value = cities[0].name_mn;
+      updateHotelDistrictList(input.value);
+    }
   }
 
   function initCountryCitySelects() {
     const countrySel = $("hotelCountrySelect");
+    const cityInput = $("hotelCityInput");
     if (countrySel) {
       countrySel.addEventListener("change", () => updateHotelCityList(countrySel.value));
       updateHotelCityList(countrySel.value);
     }
+    cityInput?.addEventListener("change", () => updateHotelDistrictList(cityInput.value));
+    cityInput?.addEventListener("blur", () => updateHotelDistrictList(cityInput.value));
+    if (cityInput?.value) updateHotelDistrictList(cityInput.value);
     const list = $("chinaCitiesList");
     const chinaOpts = window.TRAVEL_CITIES?.allCityOptions("china") || [];
     if (list) list.innerHTML = chinaOpts.map((o) => `<option value="${o.label.split(" — ")[0]}"></option>`).join("");
@@ -874,6 +1064,7 @@
     initInquiryModal();
     initHotelDetailModal();
     initCityDatalists();
+    initHotelFiltersUI();
     setTab("ai");
 
     if (location.hash === "#esim") {

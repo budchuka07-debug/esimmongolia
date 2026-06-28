@@ -272,7 +272,8 @@
 </div>
 
 <div class="tp-panel" data-panel="hotel">
-<div class="tp-form-grid">
+<div class="tp-hotel-search-trip">
+<div class="tp-form-grid tp-form-grid-3">
 <div class="tp-field"><label>Улс</label><select data-field="country" id="hotelCountrySelect">
 <option value="china" selected>🇨🇳 Хятад</option>
 <option value="thailand">🇹🇭 Тайланд</option>
@@ -286,12 +287,18 @@
 <option value="turkey">🇹🇷 Турк</option>
 </select></div>
 <div class="tp-field"><label>Хот</label><input data-field="city" id="hotelCityInput" value="Шанхай" list="hotelCitiesList" placeholder="Шанхай, Bangkok, Tokyo…"></div>
+<div class="tp-field"><label>Байршил / бүс</label><input data-field="area" id="hotelAreaInput" list="hotelAreaList" placeholder="Disneyland, Wangfujing, Sukhumvit…"></div>
+</div>
+<div class="tp-form-grid tp-form-grid-3" style="margin-top:10px">
 <div class="tp-field"><label>Ирэх</label><input data-field="checkin" type="date"></div>
 <div class="tp-field"><label>Хоног</label><input data-field="days" type="number" value="5" min="1"></div>
+<div class="tp-field"><label>Зочид</label><input data-field="guests" type="number" value="2" min="1"></div>
 </div>
+</div>
+<datalist id="hotelAreaList"></datalist>
+<datalist id="hotelDistrictList"></datalist>
 <div class="tp-search-actions">
-<button type="button" class="tp-btn primary" data-search-run="hotel">Буудал хайх</button>
-<a class="tp-btn" href="/hotels.html">hotels.html</a>
+<button type="button" class="tp-btn primary" data-search-run="hotel">🔍 Буудал хайх</button>
 </div>
 </div>
 
@@ -336,7 +343,61 @@
 </div>
 </div>
 
-<div id="mockResults" style="display:none;margin-top:16px"></div>
+<div id="resultsContainer" class="tp-results-container" style="display:none;margin-top:16px">
+<aside class="tp-hotel-filters" id="hotelFiltersSidebar" aria-label="Шүүлтүүр">
+<div class="tp-hotel-filters-head">
+<h4>Шүүлтүүр</h4>
+<button type="button" class="tp-hotel-filters-close" id="hotelFiltersClose" aria-label="Хаах">×</button>
+</div>
+<div class="tp-hotel-filters-body">
+<div class="tp-field"><label>Дүүрэг / бүс</label><input data-filter="district" list="hotelDistrictList" placeholder="Wangfujing, Pudong…"></div>
+<div class="tp-field"><label>Ойролцоох газар</label><input data-filter="nearLandmark" placeholder="The Bund, Grand Palace…"></div>
+<div class="tp-field"><label>Хайх үг</label><input data-filter="keyword" placeholder="Буудлын нэр…"></div>
+<div class="tp-field"><label>Үнэ (₮) — доод</label><input data-filter="priceMinMnt" type="number" min="0" step="10000" placeholder="500000"></div>
+<div class="tp-field"><label>Үнэ (₮) — дээд</label><input data-filter="priceMaxMnt" type="number" min="0" step="10000" placeholder="5000000"></div>
+<div class="tp-field"><label>Одны зэрэглэл</label><select data-filter="minStars">
+<option value="">Бүгд</option>
+<option value="3">3+ од</option>
+<option value="4">4+ од</option>
+<option value="5">5 од</option>
+</select></div>
+<div class="tp-filter-checks">
+<label class="tp-check"><input type="checkbox" data-filter="nearMetro" value="1"> Метроны буудалд ойр (≤800м)</label>
+<label class="tp-check"><input type="checkbox" data-filter="nearAirport" value="1"> Нисэх буудалд ойр (≤15км)</label>
+<label class="tp-check"><input type="checkbox" data-filter="nearAttraction" value="1"> Үзвэрт ойр (≤2км)</label>
+<label class="tp-check"><input type="checkbox" data-filter="breakfast" value="1"> Өглөөний цай</label>
+<label class="tp-check"><input type="checkbox" data-filter="freeCancellation" value="1"> Үнэгүй цуцлах</label>
+<label class="tp-check"><input type="checkbox" data-filter="familyFriendly" value="1"> Гэр бүлд тохиромжтой</label>
+</div>
+<button type="button" class="tp-btn primary tp-btn-block" id="hotelApplyFilters">Шүүлтүүр хэрэглэх</button>
+<button type="button" class="tp-btn tp-btn-block" id="hotelClearFilters">Цэвэрлэх</button>
+</div>
+</aside>
+<div class="tp-results-main" id="resultsMain">
+<div class="tp-hotel-toolbar" id="hotelToolbar" style="display:none">
+<button type="button" class="tp-btn tp-btn-filter-mob" id="hotelFilterOpen">☰ Шүүлтүүр</button>
+<select class="tp-hotel-sort" id="hotelSortSelect" data-filter="sort">
+<option value="recommended">Санал болгох</option>
+<option value="price_asc">Үнэ — багаас их</option>
+<option value="price_desc">Үнэ — ихээс бага</option>
+<option value="stars_desc">Од — өндөр</option>
+<option value="metro_asc">Метро ойр</option>
+<option value="attraction_asc">Үзвэрт ойр</option>
+</select>
+<button type="button" class="tp-btn" id="hotelMapToggle">🗺 Газраар харах</button>
+</div>
+<div class="tp-hotel-map-placeholder" id="hotelMapPlaceholder" style="display:none" aria-hidden="true">
+<div class="tp-map-mock-inner">
+<span class="tp-map-mock-pin">📍</span>
+<p>Газрын зураг (mock)</p>
+<p class="tp-muted">Дараа Google Maps / Mapbox холбогдоно</p>
+<div class="tp-map-mock-grid" id="hotelMapPins"></div>
+</div>
+</div>
+<div id="mockResults"></div>
+</div>
+</div>
+<div class="tp-filters-overlay" id="hotelFiltersOverlay" style="display:none"></div>
 
 <section class="tp-section">
 <h2>🌏 Алдартай чиглэл</h2>
@@ -1756,10 +1817,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <datalist id="hotelCitiesList"></datalist>
 
 <script src="/data/cities.js"></script>
-<script src="/data/hotels-catalog.js?v=2"></script>
+<script src="/data/hotel-areas.js?v=4"></script>
+<script src="/data/hotels-catalog.js?v=4"></script>
 <script src="/data/travel-data.js"></script>
 <script src="/data/mock-search-results.js"></script>
-<script src="/booking.js?v=2"></script>
+<script src="/booking.js?v=4"></script>
 <script src="/ai-agent.js"></script>
 
 <div class="tp-modal-bd" id="inquiryModalBd"></div>

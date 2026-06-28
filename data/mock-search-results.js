@@ -2,12 +2,12 @@
  * Mock search — trains, flights; hotels via HOTELS_CATALOG
  */
 (function () {
-  const FALLBACK_IMG = window.HOTELS_CATALOG?.FALLBACK_IMG || "/images/china/guide/hero.jpg";
+  const FALLBACK_IMG = window.HOTELS_CATALOG?.FALLBACK_IMG || "/images/hotels/exterior-01.jpg";
 
-  function mockHotels(cityInput, nights) {
+  function mockHotels(cityInput, nights, filters) {
     const cityId = window.TRAVEL_CITIES?.normalizeCity(cityInput);
     if (!cityId || !window.HOTELS_CATALOG) return [];
-    return window.HOTELS_CATALOG.search(cityId, nights);
+    return window.HOTELS_CATALOG.search(cityId, nights, filters || {});
   }
 
   const TRAIN_ROUTES = {
