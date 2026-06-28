@@ -1,27 +1,17 @@
 /**
- * Order persistence — Supabase (prod) or JSON file (local / fallback)
+ * Order persistence — Supabase esm_* tables (prod) or JSON file (local / fallback)
+ * Never use BookingMongolia table names (travel_requests, etc.).
  */
 const fs = require("fs");
 const path = require("path");
 
+const BOOKINGS_TABLE = "esm_bookings";
+const PAYMENTS_TABLE = "esm_payments";
+
 const SEED_FILE = path.join(__dirname, "../../../data/admin-orders.json");
 const TMP_FILE = "/tmp/esim-admin-orders.json";
 
-let supabaseClient = null;
-
-function getSupabase() {
-  if (supabaseClient) return supabaseClient;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  try {
-    const { createClient } = require("@supabase/supabase-js");
-    supabaseClient = createClient(url, key);
-    return supabaseClient;
-  } catch {
-    return null;
-  }
-}
+const { getSupabase } = require("./supabase-client");
 
 function loadJsonStore() {
   const paths = [TMP_FILE, SEED_FILE];
@@ -51,7 +41,7 @@ function rowToOrder(row) {
   const supplier = row.supplier_internal || {};
   return {
     id: row.id,
-    orderId: row.request_number,
+    orderId: row.booking_number,
     status: row.status,
     service_type: row.service_type,
     customer_name: row.customer_name,
@@ -85,7 +75,7 @@ function rowToOrder(row) {
 
 function orderToRow(order) {
   return {
-    request_number: order.orderId,
+    booking_number: order.orderId,
     status: order.status || "new",
     service_type: order.service_type || "hotel",
     customer_name: order.customer_name,
@@ -121,7 +111,7 @@ async function createOrder(order) {
   const row = { ...orderToRow(order), created_at: order.created_at || new Date().toISOString() };
 
   if (sb) {
-    const { data, error } = await sb.from("travel_requests").insert(row).select().single();
+    const { data, error } = await sb.from(BOOKINGS_TABLE).insert(row).select().single();
     if (error) throw new Error(error.message);
     return rowToOrder(data);
   }
@@ -141,7 +131,7 @@ async function createOrder(order) {
 async function listOrders(filters) {
   const sb = getSupabase();
   if (sb) {
-    let q = sb.from("travel_requests").select("*").order("created_at", { ascending: false }).limit(100);
+    let q = sb.from(BOOKINGS_TABLE).select("*").order("created_at", { ascending: false }).limit(100);
     if (filters?.status) q = q.eq("status", filters.status);
     if (filters?.service_type) q = q.eq("service_type", filters.service_type);
     const { data, error } = await q;
@@ -159,9 +149,9 @@ async function listOrders(filters) {
 async function getOrder(orderId) {
   const sb = getSupabase();
   if (sb) {
-    const { data, error } = await sb.from("travel_requests")
+    const { data, error } = await sb.from(BOOKINGS_TABLE)
       .select("*")
-      .eq("request_number", orderId)
+      .eq("booking_number", orderId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     return rowToOrder(data);
@@ -178,9 +168,9 @@ async function updateOrder(orderId, patch) {
   const sb = getSupabase();
 
   if (sb) {
-    const { data, error } = await sb.from("travel_requests")
+    const { data, error } = await sb.from(BOOKINGS_TABLE)
       .update(orderToRow(merged))
-      .eq("request_number", orderId)
+      .eq("booking_number", orderId)
       .select()
       .single();
     if (error) throw new Error(error.message);
@@ -196,6 +186,8 @@ async function updateOrder(orderId, patch) {
 }
 
 module.exports = {
+  BOOKINGS_TABLE,
+  PAYMENTS_TABLE,
   createOrder,
   listOrders,
   getOrder,

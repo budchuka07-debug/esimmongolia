@@ -14,6 +14,7 @@
         <div class="adm-field"><label>Currency</label><input name="currency" value="${AdminCore.esc(c.currency)}"></div>
         <div class="adm-field"><label>Language</label><input name="language" value="${AdminCore.esc(c.language)}"></div>
         <div class="adm-field"><label>Timezone</label><input name="timezone" value="${AdminCore.esc(c.timezone)}"></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", c.cover_image_url || "", "Cover image", "esimmongolia/countries")}
         <div class="adm-field full"><label>Visa summary (MN)</label><textarea name="visa_summary_mn">${AdminCore.esc(c.visa_summary_mn)}</textarea></div>
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${c.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${c.active === false ? "selected" : ""}>Үгүй</option></select></div>
       </div>`;
@@ -30,6 +31,7 @@
       currency: g("currency"),
       language: g("language"),
       timezone: g("timezone"),
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
       visa_summary_mn: g("visa_summary_mn"),
       active: g("active") === "true"
     };

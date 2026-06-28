@@ -369,6 +369,68 @@ a { color: var(--adm-primary); }
 .adm-list-item small { color: var(--adm-muted); font-size: 11px; }
 .adm-menu-toggle { display: none; }
 
+/* Cloudinary image upload */
+.adm-img-field.full, .adm-img-gallery-field { grid-column: 1 / -1; }
+.adm-img-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.adm-img-preview {
+  width: 160px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--adm-border);
+  background: #f8fafc;
+}
+.adm-img-preview.adm-img-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--adm-muted);
+}
+.adm-img-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.adm-upload-btn { cursor: pointer; }
+.adm-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+.adm-gallery-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--adm-border);
+}
+.adm-gallery-item img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+}
+.adm-gallery-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,.65);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+
 @media (max-width: 900px) {
   .adm-sidebar { transform: translateX(-100%); }
   .adm-sidebar.open { transform: translateX(0); }

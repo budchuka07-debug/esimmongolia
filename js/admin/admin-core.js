@@ -155,6 +155,7 @@
       if (onSave?.(backdrop) !== false) close();
     });
     document.body.appendChild(backdrop);
+    window.AdminCloudinary?.bindModal?.(backdrop);
     return backdrop;
   }
 

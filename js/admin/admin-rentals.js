@@ -24,7 +24,8 @@
         <div class="adm-field full"><label>Internet (MN)</label><input name="internet_info_mn" value="${AdminCore.esc(row.internet_info_mn)}"></div>
         <div class="adm-field"><label>Distance to beach</label><input name="distance_to_beach" value="${AdminCore.esc(row.distance_to_beach)}"></div>
         <div class="adm-field"><label>Distance to center</label><input name="distance_to_center" value="${AdminCore.esc(row.distance_to_center)}"></div>
-        <div class="adm-field"><label>Images (comma)</label><input name="images" value="${AdminCore.esc((row.images || []).join(", "))}"></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", row.cover_image_url || "", "Cover image", "esimmongolia/rentals")}
+        ${AdminCloudinary.fieldGallery("gallery_image_urls", row.gallery_image_urls || row.images || [], "Gallery", "esimmongolia/rentals")}
         <div class="adm-field"><label>Amenities</label><input name="amenities" value="${AdminCore.esc((row.amenities || []).join(", "))}"></div>
         <div class="adm-field"><label>Suitable for</label><input name="suitable_for" value="${AdminCore.esc((row.suitable_for || []).join(", "))}"></div>
         <div class="adm-field full"><label>Description (MN)</label><textarea name="description_mn">${AdminCore.esc(row.description_mn)}</textarea></div>
@@ -58,7 +59,8 @@
       internet_info_mn: g("internet_info_mn"),
       distance_to_beach: g("distance_to_beach"),
       distance_to_center: g("distance_to_center"),
-      images: AdminCore.parseCsvList(g("images")),
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
+      gallery_image_urls: AdminCloudinary.readGallery(backdrop, "gallery_image_urls"),
       amenities: AdminCore.parseCsvList(g("amenities")),
       description_mn: g("description_mn"),
       min_stay_months: parseInt(g("min_stay_months"), 10) || 1,

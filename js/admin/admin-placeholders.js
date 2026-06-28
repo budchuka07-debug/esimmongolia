@@ -22,7 +22,6 @@
   }
 
   placeholder("buses", "Buses", "Автобусны маршрут, үнэ, supplier reference удирдах.");
-  placeholder("attractions", "Attractions", "Үзвэр үйлчилгээ, тасалбар, зураг удирдах.");
   placeholder("esim", "eSIM", "eSIM төлөвлөгөө — одоогийн Netlify functions (getPlans, china-plans) хэвээр.");
   placeholder("guides", "Travel Guides", "Аяллын гарын авлага, маршрут, зураг.");
   placeholder("users", "Users", "Хэрэглэгч, эрх, admin бүртгэл.");

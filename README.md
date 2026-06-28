@@ -34,3 +34,13 @@ Netlify → Site settings → Environment variables:
 - /.netlify/functions/qpay-create-invoice
 - /.netlify/functions/qpay-check
 - /.netlify/functions/qpay-callback
+
+## 5) Supabase (project: esimmongolia)
+Тусдаа Supabase project — BookingMongolia-оос салсан.
+
+Netlify env:
+- `SUPABASE_URL` — esimmongolia project URL
+- `SUPABASE_SERVICE_ROLE_KEY` — service role key
+
+Schema: `supabase/schema.sql` → Supabase SQL Editor → Run.  
+Дэлгэрэнгүй: `supabase/README.md`

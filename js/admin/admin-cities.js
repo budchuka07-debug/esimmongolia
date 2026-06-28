@@ -20,7 +20,7 @@
         <div class="adm-field"><label>Railway stations</label><input name="railway_stations" value="${AdminCore.esc((c.railway_stations || []).join(", "))}"></div>
         <div class="adm-field"><label>Lat</label><input name="lat" type="number" step="any" value="${AdminCore.esc(c.lat)}"></div>
         <div class="adm-field"><label>Lng</label><input name="lng" type="number" step="any" value="${AdminCore.esc(c.lng)}"></div>
-        <div class="adm-field"><label>Hero image URL</label><input name="hero_image" value="${AdminCore.esc(c.hero_image)}"></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", c.cover_image_url || c.hero_image || "", "Cover image", "esimmongolia/cities")}
         <div class="adm-field"><label>Popular</label><select name="popular"><option value="true" ${c.popular ? "selected" : ""}>Тийм</option><option value="false" ${!c.popular ? "selected" : ""}>Үгүй</option></select></div>
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${c.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${c.active === false ? "selected" : ""}>Үгүй</option></select></div>
       </div>`;
@@ -39,7 +39,7 @@
       railway_stations: AdminCore.parseCsvList(g("railway_stations")),
       lat: parseFloat(g("lat")) || null,
       lng: parseFloat(g("lng")) || null,
-      hero_image: g("hero_image"),
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
       popular: g("popular") === "true",
       active: g("active") === "true"
     };

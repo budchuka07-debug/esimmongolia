@@ -18,7 +18,8 @@
         <div class="adm-field"><label>Breakfast</label><select name="breakfast_included"><option value="true" ${r.breakfast_included ? "selected" : ""}>Тийм</option><option value="false" ${!r.breakfast_included ? "selected" : ""}>Үгүй</option></select></div>
         <div class="adm-field"><label>Free cancel</label><select name="free_cancel"><option value="true" ${r.free_cancel ? "selected" : ""}>Тийм</option><option value="false" ${!r.free_cancel ? "selected" : ""}>Үгүй</option></select></div>
         <div class="adm-field"><label>Final price (MNT)</label><input name="final_price_mnt" type="number" value="${AdminCore.esc(r.final_price_mnt)}"></div>
-        <div class="adm-field"><label>Images (comma)</label><input name="images" value="${AdminCore.esc((r.images || []).join(", "))}"></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", r.cover_image_url || "", "Cover image", "esimmongolia/rooms")}
+        ${AdminCloudinary.fieldGallery("room_image_urls", r.room_image_urls || r.images || [], "Room images", "esimmongolia/rooms")}
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${r.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${r.active === false ? "selected" : ""}>Үгүй</option></select></div>
       </div>`;
   }
@@ -34,7 +35,8 @@
       breakfast_included: g("breakfast_included") === "true",
       free_cancel: g("free_cancel") === "true",
       final_price_mnt: parseInt(g("final_price_mnt"), 10) || 0,
-      images: AdminCore.parseCsvList(g("images")),
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
+      room_image_urls: AdminCloudinary.readGallery(backdrop, "room_image_urls"),
       active: g("active") === "true"
     };
   }

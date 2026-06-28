@@ -1,6 +1,6 @@
 /**
- * Admin CMS data store — localStorage now, Supabase-ready schema later.
- * Customer-facing APIs must never expose supplier_reference or markup fields.
+ * Admin CMS data store — localStorage now, Supabase esm_* tables later.
+ * Never use BookingMongolia table names. Customer APIs must not expose supplier/markup.
  */
 (function (root) {
   const STORAGE_KEY = "esim_mn_admin_cms_v1";
@@ -56,7 +56,7 @@
       { name_mn: "Иву", name_en: "Yiwu", name_local: "义乌", aliases: ["Yiwu", "YIW"], province: "Zhejiang", airport_codes: ["YIW"], railway_stations: ["义乌站"], lat: 29.3068, lng: 120.0751, popular: false },
       { name_mn: "Далиан", name_en: "Dalian", name_local: "大连", aliases: ["Dalian", "DLC"], province: "Liaoning", airport_codes: ["DLC"], railway_stations: ["大连站"], lat: 38.914, lng: 121.6147, popular: false },
       { name_mn: "Чанша", name_en: "Changsha", name_local: "长沙", aliases: ["Changsha", "CSX"], province: "Hunan", airport_codes: ["CSX"], railway_stations: ["长沙南站"], lat: 28.2282, lng: 112.9388, popular: false }
-    ].map((c) => ({ id: uid("city"), country_id: cn, hero_image: "", active: true, ...c }));
+    ].map((c) => ({ id: uid("city"), country_id: cn, cover_image_url: "", active: true, ...c }));
 
     const thailand = [
       { name_mn: "Бангкок", name_en: "Bangkok", name_local: "กรุงเทพ", aliases: ["Bangkok", "BKK"], province: "Bangkok", airport_codes: ["BKK", "DMK"], railway_stations: ["Hua Lamphong"], lat: 13.7563, lng: 100.5018, popular: true },
@@ -64,7 +64,7 @@
       { name_mn: "Пхукет", name_en: "Phuket", name_local: "ภูเก็ต", aliases: ["Phuket", "HKT"], province: "Phuket", airport_codes: ["HKT"], railway_stations: [], lat: 7.8804, lng: 98.3923, popular: true },
       { name_mn: "Чианг Май", name_en: "Chiang Mai", name_local: "เชียงใหม่", aliases: ["Chiang Mai", "CNX"], province: "Chiang Mai", airport_codes: ["CNX"], railway_stations: ["Chiang Mai"], lat: 18.7883, lng: 98.9853, popular: true },
       { name_mn: "Краби", name_en: "Krabi", name_local: "กระบี่", aliases: ["Krabi", "KBV"], province: "Krabi", airport_codes: ["KBV"], railway_stations: [], lat: 8.0863, lng: 98.9063, popular: false }
-    ].map((c) => ({ id: uid("city"), country_id: th, hero_image: "", active: true, ...c }));
+    ].map((c) => ({ id: uid("city"), country_id: th, cover_image_url: "", active: true, ...c }));
 
     const vietnam = [
       { name_mn: "Дананг", name_en: "Da Nang", name_local: "Đà Nẵng", aliases: ["Da Nang", "Danang", "DAD"], province: "Da Nang", airport_codes: ["DAD"], railway_stations: ["Da Nang"], lat: 16.0544, lng: 108.2022, popular: true },
@@ -72,7 +72,7 @@
       { name_mn: "Хошимин", name_en: "Ho Chi Minh City", name_local: "TP. Hồ Chí Minh", aliases: ["Ho Chi Minh", "Saigon", "SGN", "HCMC"], province: "Ho Chi Minh", airport_codes: ["SGN"], railway_stations: ["Saigon"], lat: 10.8231, lng: 106.6297, popular: true },
       { name_mn: "Ханой", name_en: "Hanoi", name_local: "Hà Nội", aliases: ["Hanoi", "HAN"], province: "Hanoi", airport_codes: ["HAN"], railway_stations: ["Hanoi"], lat: 21.0285, lng: 105.8542, popular: true },
       { name_mn: "Нячанг", name_en: "Nha Trang", name_local: "Nha Trang", aliases: ["Nha Trang", "CXR"], province: "Khanh Hoa", airport_codes: ["CXR"], railway_stations: ["Nha Trang"], lat: 12.2388, lng: 109.1967, popular: true }
-    ].map((c) => ({ id: uid("city"), country_id: vn, hero_image: "", active: true, ...c }));
+    ].map((c) => ({ id: uid("city"), country_id: vn, cover_image_url: "", active: true, ...c }));
 
     return [...china, ...thailand, ...vietnam];
   }
@@ -98,9 +98,9 @@
         latitude: 39.9142,
         longitude: 116.4174,
         description_mn: "Төв байрлал, метрон ойрхон 5 одтой буудал.",
-        cover_image: "/images/hotels/exterior-03.jpg",
-        images: ["/images/hotels/lobby-03.jpg", "/images/hotels/restaurant-01.jpg"],
-        room_images: ["/images/hotels/deluxe_room-01.jpg"],
+        cover_image_url: "/images/hotels/exterior-03.jpg",
+        gallery_image_urls: ["/images/hotels/lobby-03.jpg", "/images/hotels/restaurant-01.jpg"],
+        room_image_urls: ["/images/hotels/deluxe_room-01.jpg"],
         amenities: ["wifi", "breakfast", "gym", "metro_nearby"],
         nearby_metro: "Wangfujing Station",
         nearby_landmarks: ["Forbidden City", "Tiananmen"],
@@ -130,9 +130,9 @@
         latitude: 31.2397,
         longitude: 121.4912,
         description_mn: "Bund алсыг харах 4 одтой буудал.",
-        cover_image: "/images/hotels/exterior-05.jpg",
-        images: ["/images/hotels/lobby-05.jpg"],
-        room_images: ["/images/hotels/standard_room-01.jpg"],
+        cover_image_url: "/images/hotels/exterior-05.jpg",
+        gallery_image_urls: ["/images/hotels/lobby-05.jpg"],
+        room_image_urls: ["/images/hotels/standard_room-01.jpg"],
         amenities: ["wifi", "river_view"],
         nearby_metro: "East Nanjing Road",
         nearby_landmarks: ["The Bund", "Yu Garden"],
@@ -162,9 +162,9 @@
         latitude: 40.8183,
         longitude: 111.6601,
         description_mn: "Хөх хотын төвд байрлах 4 одтой буудал.",
-        cover_image: "/images/hotels/exterior-06.jpg",
-        images: ["/images/hotels/lobby-04.jpg"],
-        room_images: ["/images/hotels/standard_room-05.jpg"],
+        cover_image_url: "/images/hotels/exterior-06.jpg",
+        gallery_image_urls: ["/images/hotels/lobby-04.jpg"],
+        room_image_urls: ["/images/hotels/standard_room-05.jpg"],
         amenities: ["wifi", "parking"],
         nearby_metro: "",
         nearby_landmarks: ["Dazhao Temple"],
@@ -197,7 +197,7 @@
         breakfast_included: true,
         free_cancel: true,
         final_price_mnt: h.final_price_mnt,
-        images: h.room_images || [],
+        room_image_urls: h.room_image_urls || [],
         active: true
       });
       rooms.push({
@@ -210,7 +210,7 @@
         breakfast_included: true,
         free_cancel: false,
         final_price_mnt: Math.round(h.final_price_mnt * 1.2),
-        images: h.room_images || [],
+        room_image_urls: h.room_image_urls || [],
         active: true
       });
     });
@@ -407,7 +407,8 @@
         internet_info_mn: "Fiber 100Mbps орсон",
         distance_to_beach: "300m",
         distance_to_center: "4km",
-        images: ["/images/routes/vietnam/hoian.jpg"],
+        cover_image_url: "/images/routes/vietnam/hoian.jpg",
+        gallery_image_urls: ["/images/routes/vietnam/hoian.jpg"],
         amenities: ["wifi", "pool", "gym", "parking"],
         description_mn: "Далайн эрэг ойрхон 2 өрөөт орон сууц.",
         min_stay_months: 1,
@@ -416,6 +417,43 @@
         active: true
       }
     ];
+  }
+
+  function seedAttractions(cities) {
+    const beijing = cities.find((c) => c.name_en === "Beijing");
+    const shanghai = cities.find((c) => c.name_en === "Shanghai");
+    const out = [];
+    if (beijing) {
+      out.push({
+        id: uid("att"),
+        city_id: beijing.id,
+        name_mn: "Хоригдсон хот",
+        name_en: "Forbidden City",
+        description_mn: "Мин Юань улсын ордон, Бээжиний гол үзвэр.",
+        original_price: 60,
+        currency: "CNY",
+        final_price_mnt: 42000,
+        cover_image_url: "",
+        gallery_image_urls: [],
+        active: true
+      });
+    }
+    if (shanghai) {
+      out.push({
+        id: uid("att"),
+        city_id: shanghai.id,
+        name_mn: "Shanghai Tower",
+        name_en: "Shanghai Tower Observatory",
+        description_mn: "Хотын өндөр цэгээс харах далайц.",
+        original_price: 180,
+        currency: "CNY",
+        final_price_mnt: 125000,
+        cover_image_url: "",
+        gallery_image_urls: [],
+        active: true
+      });
+    }
+    return out;
   }
 
   function buildSeed() {
@@ -433,7 +471,7 @@
       flights: flightSeed.flights,
       trains: seedTrains(cities),
       buses: [],
-      attractions: [],
+      attractions: seedAttractions(cities),
       esim: [],
       insurance: seedInsurance(),
       rentals: seedRentals(cities, countries),

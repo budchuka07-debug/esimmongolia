@@ -40,9 +40,9 @@
         <div class="adm-field"><label>Latitude</label><input name="latitude" type="number" step="any" value="${AdminCore.esc(h.latitude)}"></div>
         <div class="adm-field"><label>Longitude</label><input name="longitude" type="number" step="any" value="${AdminCore.esc(h.longitude)}"></div>
         <div class="adm-field full"><label>Description (MN)</label><textarea name="description_mn">${AdminCore.esc(h.description_mn)}</textarea></div>
-        <div class="adm-field"><label>Cover image URL</label><input name="cover_image" value="${AdminCore.esc(h.cover_image)}"></div>
-        <div class="adm-field"><label>Images (comma URLs)</label><input name="images" value="${AdminCore.esc((h.images || []).join(", "))}"></div>
-        <div class="adm-field"><label>Room images</label><input name="room_images" value="${AdminCore.esc((h.room_images || []).join(", "))}"></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", h.cover_image_url || h.cover_image || "", "Cover image", "esimmongolia/hotels")}
+        ${AdminCloudinary.fieldGallery("gallery_image_urls", h.gallery_image_urls || h.images || [], "Gallery", "esimmongolia/hotels")}
+        ${AdminCloudinary.fieldGallery("room_image_urls", h.room_image_urls || h.room_images || [], "Room images", "esimmongolia/hotels/rooms")}
         <div class="adm-field"><label>Amenities</label><input name="amenities" value="${AdminCore.esc((h.amenities || []).join(", "))}"></div>
         <div class="adm-field"><label>Nearby metro</label><input name="nearby_metro" value="${AdminCore.esc(h.nearby_metro)}"></div>
         <div class="adm-field"><label>Landmarks</label><input name="nearby_landmarks" value="${AdminCore.esc((h.nearby_landmarks || []).join(", "))}"></div>
@@ -66,9 +66,9 @@
       latitude: parseFloat(g("latitude")) || null,
       longitude: parseFloat(g("longitude")) || null,
       description_mn: g("description_mn"),
-      cover_image: g("cover_image"),
-      images: AdminCore.parseCsvList(g("images")),
-      room_images: AdminCore.parseCsvList(g("room_images")),
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
+      gallery_image_urls: AdminCloudinary.readGallery(backdrop, "gallery_image_urls"),
+      room_image_urls: AdminCloudinary.readGallery(backdrop, "room_image_urls"),
       amenities: AdminCore.parseCsvList(g("amenities")),
       nearby_metro: g("nearby_metro"),
       nearby_landmarks: AdminCore.parseCsvList(g("nearby_landmarks")),

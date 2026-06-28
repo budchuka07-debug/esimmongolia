@@ -1,8 +1,8 @@
 /**
- * Travel booking — persist order + QPay amount (hotel admin channel)
+ * Travel booking — persist to esm_bookings (Supabase)
  */
 const ordersStore = require("./lib/orders-store");
-const hohhotHotels = require("./lib/hohhot-hotels");
+const { getSupabase } = require("./lib/supabase-client");
 
 const STATUS = "awaiting_payment";
 
@@ -10,6 +10,17 @@ function genRequestId() {
   const d = new Date();
   const p = (n, l = 2) => String(n).padStart(l, "0");
   return `EM-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(Math.floor(Math.random() * 100))}`;
+}
+
+async function getHotelMeta(hotelId) {
+  if (!hotelId) return null;
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data } = await sb.from("esm_hotels")
+    .select("id, official_name, supplier_reference, city_id")
+    .eq("id", hotelId)
+    .maybeSingle();
+  return data;
 }
 
 function buildSupplierInternal(body, hotelMeta) {
@@ -62,7 +73,7 @@ exports.handler = async (event) => {
   const orderId = genRequestId();
   const cityId = body.city_id || (String(body.destination_city || "").toLowerCase().includes("хөх") ? "hohhot" : null);
   const hotelId = body.hotel_id || null;
-  const hotelMeta = hotelId ? hohhotHotels.getById(hotelId) : null;
+  const hotelMeta = hotelId ? await getHotelMeta(hotelId) : null;
   const selectedItem = String(body.selected_item || body.hotel_official_name || "").trim();
 
   const order = {
