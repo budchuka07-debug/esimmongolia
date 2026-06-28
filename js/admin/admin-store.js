@@ -475,6 +475,8 @@
       esim: [],
       insurance: seedInsurance(),
       rentals: seedRentals(cities, countries),
+      travel_guides: [],
+      health_guides: [],
       ai_knowledge: seedAiKnowledge(cities, countries),
       bookings: seedBookings(cities, hotels),
       users: [],

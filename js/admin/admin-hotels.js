@@ -68,7 +68,14 @@
       description_mn: g("description_mn"),
       cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
       gallery_image_urls: AdminCloudinary.readGallery(backdrop, "gallery_image_urls"),
+      gallery_urls: AdminCloudinary.readGallery(backdrop, "gallery_image_urls"),
       room_image_urls: AdminCloudinary.readGallery(backdrop, "room_image_urls"),
+      image_urls: (() => {
+        const cover = AdminCloudinary.readCover(backdrop, "cover_image_url");
+        const gal = AdminCloudinary.readGallery(backdrop, "gallery_image_urls");
+        const rooms = AdminCloudinary.readGallery(backdrop, "room_image_urls");
+        return [...new Set([cover, ...gal, ...rooms].filter(Boolean))];
+      })(),
       amenities: AdminCore.parseCsvList(g("amenities")),
       nearby_metro: g("nearby_metro"),
       nearby_landmarks: AdminCore.parseCsvList(g("nearby_landmarks")),

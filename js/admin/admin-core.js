@@ -18,6 +18,7 @@
     { id: "esim", label: "eSIM", icon: "📱" },
     { id: "insurance", label: "Insurance", icon: "🛡️" },
     { id: "guides", label: "Travel Guides", icon: "📖" },
+    { id: "health-guides", label: "Health Guides", icon: "🏥" },
     { id: "ai-knowledge", label: "AI Knowledge", icon: "🤖" },
     { section: "Захиалга" },
     { id: "bookings", label: "Bookings", icon: "📋" },

@@ -34,6 +34,7 @@ function mapCity(row, countryRow) {
   if (!row) return null;
   const country = countryRow ? countrySlug(countryRow) : null;
   const aliases = Array.isArray(row.aliases) ? row.aliases : [];
+  const heroUrl = row.cover_image_url || row.hero_image || null;
   return {
     id: row.slug,
     uuid: row.id,
@@ -45,10 +46,12 @@ function mapCity(row, countryRow) {
     name_local: row.name_local,
     aliases: [row.name_mn, row.name_en, row.name_local, ...aliases].filter(Boolean),
     airport_codes: row.airport_codes || [],
+    railway_stations: row.railway_stations || [],
     lat: row.lat,
     lng: row.lng,
-    cover_image_url: row.cover_image_url || row.hero_image || null,
-    hero_image: pickCover({ cover_image_url: row.cover_image_url, hero_image: row.hero_image }, FALLBACK.city),
+    cover_image_url: heroUrl,
+    hero_image_url: heroUrl,
+    hero_image: pickCover({ cover_image_url: heroUrl, hero_image: row.hero_image }, FALLBACK.city),
     description_mn: row.description_mn,
     map_url: row.map_url,
     route_url: row.route_url,
@@ -60,9 +63,13 @@ function mapCity(row, countryRow) {
 
 function mapHotel(row, cityRow, countryRow) {
   if (!row) return null;
-  const gallery = row.gallery_image_urls?.length ? row.gallery_image_urls : (row.images || []);
+  const gallery = row.gallery_urls?.length ? row.gallery_urls
+    : (row.gallery_image_urls?.length ? row.gallery_image_urls : (row.images || []));
   const rooms = row.room_image_urls?.length ? row.room_image_urls : (row.room_images || []);
+  const imageUrls = row.image_urls?.length ? row.image_urls : [];
   const cover = pickCover(row, FALLBACK.hotel);
+  const cloudinaryImages = [...new Set([cover, ...gallery, ...rooms, ...imageUrls].filter(Boolean))]
+    .filter((u) => /res\.cloudinary\.com/i.test(String(u)));
   return {
     type: "hotel",
     id: row.id,
@@ -81,7 +88,10 @@ function mapHotel(row, cityRow, countryRow) {
     cover_image_url: row.cover_image_url || null,
     cover_image: cover,
     image: cover,
+    image_urls: imageUrls.length ? imageUrls : resolveGallery(gallery, null).filter((u) => u !== FALLBACK.hotel),
+    gallery_urls: gallery,
     gallery_image_urls: gallery,
+    cloudinary_images: cloudinaryImages,
     room_image_urls: rooms,
     images: resolveGallery(gallery, FALLBACK.hotel),
     room_images: resolveGallery(rooms, FALLBACK.room),
@@ -149,7 +159,8 @@ function mapTransport(row, fromCity, toCity, transferCity) {
 
 function mapAttraction(row, cityRow) {
   const cover = pickCover(row, FALLBACK.attraction);
-  const gallery = row.gallery_image_urls?.length ? row.gallery_image_urls : [];
+  const gallery = row.image_urls?.length ? row.image_urls
+    : (row.gallery_image_urls?.length ? row.gallery_image_urls : []);
   return {
     type: "attraction",
     id: row.id,
@@ -158,6 +169,7 @@ function mapAttraction(row, cityRow) {
     name_en: row.name_en,
     description_mn: row.description_mn,
     cover_image_url: row.cover_image_url || row.image_url || null,
+    image_urls: gallery,
     gallery_image_urls: gallery,
     image_url: cover,
     image: cover,
@@ -165,6 +177,42 @@ function mapAttraction(row, cityRow) {
     original_price: row.original_price,
     currency: row.currency || "CNY",
     final_price_mnt: row.final_price_mnt
+  };
+}
+
+function mapTravelGuide(row, cityRow, countryRow) {
+  const cover = pickCover(row, FALLBACK.country);
+  return {
+    id: row.id,
+    slug: row.slug,
+    city_id: cityRow?.slug,
+    country_id: countryRow ? countrySlug(countryRow) : null,
+    title_mn: row.title_mn,
+    title_en: row.title_en,
+    summary_mn: row.summary_mn,
+    body_mn: row.body_mn,
+    category: row.category,
+    cover_image_url: row.cover_image_url || null,
+    cover_image: cover,
+    gallery_image_urls: row.gallery_image_urls || []
+  };
+}
+
+function mapHealthGuide(row, cityRow, countryRow) {
+  const cover = pickCover(row, FALLBACK.insurance);
+  return {
+    id: row.id,
+    guide_type: row.guide_type,
+    city_id: cityRow?.slug,
+    country_id: countryRow ? countrySlug(countryRow) : null,
+    title_mn: row.title_mn,
+    description_mn: row.description_mn,
+    address: row.address,
+    phone: row.phone,
+    website: row.website,
+    cover_image_url: row.cover_image_url || null,
+    cover_image: cover,
+    image_urls: row.image_urls || []
   };
 }
 
@@ -202,6 +250,8 @@ module.exports = {
   mapFlight,
   mapTransport,
   mapAttraction,
+  mapTravelGuide,
+  mapHealthGuide,
   buildCityIndex,
   normalizeCityInput
 };

@@ -16,7 +16,9 @@
     flights: "esimmongolia/flights",
     rentals: "esimmongolia/rentals",
     insurance: "esimmongolia/insurance",
-    esim: "esimmongolia/esim"
+    esim: "esimmongolia/esim",
+    guides: "esimmongolia/guides",
+    health: "esimmongolia/health"
   };
 
   function esc(s) {

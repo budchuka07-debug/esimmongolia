@@ -35,6 +35,7 @@
       final_price_mnt: parseInt(g("final_price_mnt"), 10) || 0,
       cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
       gallery_image_urls: AdminCloudinary.readGallery(backdrop, "gallery_image_urls"),
+      image_urls: AdminCloudinary.readGallery(backdrop, "gallery_image_urls"),
       active: g("active") === "true"
     };
   }
