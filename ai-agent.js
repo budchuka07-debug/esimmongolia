@@ -6,6 +6,9 @@
 
   const history = [];
   let lastContext = {};
+  let askBusy = false;
+  let lastAskText = "";
+  let lastAskTime = 0;
 
   const chatEl = () => document.getElementById("aiChat");
   const inputEl = () => document.getElementById("aiAgentInput");
@@ -236,10 +239,18 @@
     const q = normalizeUserQuery(question);
     if (!q) return;
 
+    const now = Date.now();
+    if (askBusy) return;
+    if (!opts?.force && q === lastAskText && now - lastAskTime < 1500) return;
+
     if (!chatEl()) {
       console.warn("[TravelAI] chat container missing");
       return;
     }
+
+    askBusy = true;
+    lastAskText = q;
+    lastAskTime = now;
 
     const silent = opts && opts.silentUser;
 
@@ -300,6 +311,7 @@
       });
     } finally {
       clearTyping();
+      askBusy = false;
     }
   }
 

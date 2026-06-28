@@ -35,15 +35,28 @@ const INTD_DESTINATIONS = [
   { keys: ["хятад", "hyatad", "khyatad", "china"], country: "Хятад", city: null, city_id: null }
 ];
 
+const CORE_CITIES = [
+  { keys: ["шанхай", "шанхайд", "shanghai", "shanhai", "shanghi", "上海"], country: "Хятад", city: "Шанхай", city_id: "shanghai" },
+  { keys: ["бээжин", "бээжинд", "beijing", "beijin", "peking", "北京"], country: "Хятад", city: "Бээжин", city_id: "beijing" },
+  { keys: ["хөх хот", "hohhot", "huhehaote", "呼和浩特"], country: "Хятад", city: "Хөх хот", city_id: "hohhot" },
+  { keys: ["гуанжоу", "guangzhou", "canton", "广州"], country: "Хятад", city: "Гуанжоу", city_id: "guangzhou" },
+  { keys: ["шэньжэнь", "shenzhen", "深圳"], country: "Хятад", city: "Шэньжэнь", city_id: "shenzhen" },
+  { keys: ["ээрэн", "эрээн", "erenhot", "二连"], country: "Хятад", city: "Эрээн", city_id: "erenhot" },
+  { keys: ["бангкок", "bangkok", "bankok"], country: "Тайланд", city: "Бангкок", city_id: "bangkok" },
+  { keys: ["сөүл", "seoul", "soul"], country: "Солонгос", city: "Сөүл", city_id: "seoul" },
+  { keys: ["токио", "tokyo", "tokio"], country: "Япон", city: "Токио", city_id: "tokyo" }
+];
+
 let DESTINATIONS;
 try {
   DESTINATIONS = [
     ...(CHINA_DEST?.buildAiDestinations?.() || []),
+    ...CORE_CITIES,
     ...INTD_DESTINATIONS
   ];
 } catch (err) {
   console.error("[ai-travel-agent] destination seed failed", err);
-  DESTINATIONS = [...INTD_DESTINATIONS];
+  DESTINATIONS = [...CORE_CITIES, ...INTD_DESTINATIONS];
 }
 
 function getChinaProfile(cityId) {
@@ -55,7 +68,7 @@ function normalizeInput(text) {
 }
 
 function matchDestination(text) {
-  const hay = latin.searchBlob(text, CHINA_DEST);
+  const hay = latin.searchBlob(text, CHINA_DEST).toLowerCase();
   let best = null;
   let bestLen = 0;
   for (const d of DESTINATIONS) {
@@ -71,6 +84,19 @@ function matchDestination(text) {
   return best;
 }
 
+function parseMonthDay(text, hay) {
+  const src = `${text} ${hay}`;
+  const month =
+    (src.match(/(\d{1,2})\s*сар(?:ын|анд|d|\.|\s|,)/i) || [])[1] ||
+    (src.match(/(\d{1,2})\s*сар\b/i) || [])[1] ||
+    null;
+  const day =
+    (src.match(/сарын\s*(\d{1,2})/i) || [])[1] ||
+    (src.match(/(\d{1,2})\s*-?\s*(?:нд|наас|nees|ees)\b/i) || [])[1] ||
+    null;
+  return { month, day };
+}
+
 function parseIntent(text) {
   const t = normalizeInput(text);
   const hay = latin.searchBlob(text, CHINA_DEST);
@@ -82,8 +108,9 @@ function parseIntent(text) {
 
   const days = (t.match(/(\d+)\s*хоног/) || hay.match(/(\d+)\s*хоног/) || [])[1] || null;
   const people = (t.match(/(\d+)\s*хүн/) || hay.match(/(\d+)\s*хүн/) || [])[1] || null;
-  const month = (t.match(/(\d{1,2})\s*сар/) || hay.match(/(\d{1,2})\s*сар/) || [])[1] || null;
-  const day = (t.match(/(\d{1,2})\s*-?нд/) || t.match(/сарын\s*(\d{1,2})/) || [])[1] || null;
+  const md = parseMonthDay(text, hay);
+  const month = md.month;
+  const day = md.day;
   const budget = (t.match(/(\d+)\s*(сая|мянга|төгрөг|mnt|юань|cny)/i) ||
     hay.match(/(\d+)\s*(сая|мянга|төгрөг|mnt|юань|cny)/i) || [])[1] || null;
 
@@ -179,9 +206,10 @@ function enrichIntent(intent, message) {
     if (dayMatch) out.days = Number(dayMatch[1]);
     else if (/\b(honog|khonog|хоног)\b/i.test(hay) && (out.city || out.city_id)) out.days = 5;
   }
-  if (!out.month) {
-    const monthMatch = hay.match(/(\d{1,2})\s*сар/) || message.match(/(\d{1,2})\s*(sar|sard|sariin)/i);
-    if (monthMatch) out.month = monthMatch[1];
+  if (!out.month || !out.day) {
+    const md = parseMonthDay(message, hay);
+    if (!out.month && md.month) out.month = md.month;
+    if (!out.day && md.day) out.day = md.day;
   }
   if (!out.people && (out.city || out.city_id)) {
     const peopleMatch = hay.match(/(\d+)\s*хүн/) || message.match(/(\d+)\s*(hun|khun|huun)/i);
@@ -248,7 +276,9 @@ function buildReply(message, history) {
 
   const missing = missingFields(intent);
   if (missing.length > 0 && (isVague(message) || missing.length >= 2)) {
-    return consultant.buildFollowUpReply(withDefaults(intent), missing);
+    if (!missing.includes("destination") || !/(маршрут|marshrut|төлөвлө|itinerary|plan)/i.test(hay)) {
+      return consultant.buildFollowUpReply(withDefaults(intent), missing);
+    }
   }
 
   return buildConsultantOrFollowUp(intent, message);
