@@ -3,149 +3,85 @@
  * Supplier-ready mock inventory with city-based search.
  */
 (function () {
-  const FALLBACK_IMG = "/images/china/guide/hero.jpg";
+  const FALLBACK_IMG = "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
   const IMAGE_KEYS = ["exterior", "lobby", "standard_room", "deluxe_room", "bathroom", "restaurant"];
 
-  const SHARED_GUIDE_IMAGES = [
-    "/images/china/guide/hero.jpg",
-    "/images/china/guide/beijing.jpg",
-    "/images/china/guide/shanghai.jpg",
-    "/images/china/guide/guangzhou.jpg",
-    "/images/china/guide/shenzhen-city.jpg",
-    "/images/china/guide/overview-beijing.jpg",
-    "/images/china/guide/overview-shanghai.jpg",
-    "/images/china/guide/route-asia.jpg",
-    "/images/china/guide/route-cities.jpg",
-    "/images/china/guide/routes-all.jpg",
-    "/images/china/guide/places-20.jpg",
-    "/images/china/guide/route-20places.jpg",
-    "/images/china/guide/shop-mall.jpg",
-    "/images/china/guide/culture-temple.jpg",
-    "/images/china/guide/food-hotpot.jpg",
-    "/images/china/guide/food-xiaolongbao.jpg",
-    "/images/china/guide/food-peking-duck.jpg",
-    "/images/china/guide/internet.jpg",
-    "/images/china/guide/safety-city.jpg",
-    "/images/china/guide/transport-metro.jpg",
-    "/images/china/guide/transport-hsr.jpg",
-    "/images/china/guide/esim.jpg"
-  ];
-
-  const ROUTE_IMAGES = {
-    china: [
-      "/images/routes/china/forbidden-city.jpg",
-      "/images/routes/china/great-wall.jpg",
-      "/images/routes/china/temple-of-heaven.jpg",
-      "/images/routes/china/summer-palace.jpg",
-      "/images/routes/china/shanghai-bund.jpg",
-      "/images/routes/china/yu-garden.jpg",
-      "/images/routes/china/canton-tower.jpg",
-      "/images/routes/china/shenzhen.jpg",
-      "/images/routes/china/hohhot.jpg",
-      "/images/routes/china/chengdu-panda.jpg",
-      "/images/routes/china/xian-terracotta.jpg",
-      "/images/routes/china/xian-wall.jpg",
-      "/images/routes/china/guilin-liriver.jpg",
-      "/images/routes/china/qingdao.jpg",
-      "/images/routes/china/oct-harbour.jpg",
-      "/images/routes/china/disneyland.jpg"
-    ],
-    thailand: [
-      "/images/routes/thailand/grand-palace.jpg",
-      "/images/routes/thailand/wat-pho.jpg",
-      "/images/routes/thailand/chatuchak.jpg",
-      "/images/routes/thailand/chao-phraya.jpg",
-      "/images/routes/thailand/phuket-old-town.jpg",
-      "/images/routes/thailand/patong.jpg",
-      "/images/routes/thailand/phi-phi.jpg",
-      "/images/routes/thailand/big-buddha-phuket.jpg",
-      "/images/routes/thailand/coral-island.jpg",
-      "/images/routes/thailand/ayutthaya-mahathat.jpg",
-      "/images/routes/thailand/ayutthaya-chaiwatthanaram.jpg",
-      "/images/routes/thailand/safari-world.jpg"
-    ],
-    vietnam: [
-      "/images/routes/vietnam/hanoi.jpg",
-      "/images/routes/vietnam/hcmc.jpg",
-      "/images/routes/vietnam/danang.jpg",
-      "/images/routes/vietnam/hoian.jpg"
-    ],
-    japan: [
-      "/images/routes/japan/shibuya.jpg",
-      "/images/routes/japan/skytree.jpg",
-      "/images/routes/japan/sensoji.jpg",
-      "/images/routes/japan/meiji.jpg",
-      "/images/routes/japan/tokyo-museum.jpg",
-      "/images/routes/japan/osaka-castle.jpg",
-      "/images/routes/japan/dotonbori.jpg",
-      "/images/routes/japan/kaiyukan.jpg",
-      "/images/routes/japan/kiyomizu.jpg",
-      "/images/routes/japan/fushimi-inari.jpg",
-      "/images/routes/japan/arashiyama.jpg",
-      "/images/routes/japan/kyoto-museum.jpg"
-    ],
-    korea: [
-      "/images/routes/korea/gyeongbokgung.jpg",
-      "/images/routes/korea/myeongdong.jpg",
-      "/images/routes/korea/n-seoul-tower.jpg",
-      "/images/routes/korea/bukchon.jpg",
-      "/images/routes/korea/haeundae.jpg",
-      "/images/routes/korea/gamcheon.jpg",
-      "/images/routes/korea/national-museum.jpg",
-      "/images/routes/korea/seoul-zoo.jpg",
-      "/images/routes/korea/everland.jpg"
-    ],
-    singapore: [
-      "/images/routes/singapore/marina-bay.jpg",
-      "/images/routes/singapore/gardens-bay.jpg",
-      "/images/routes/singapore/uss.jpg",
-      "/images/routes/singapore/chinatown.jpg",
-      "/images/routes/singapore/zoo.jpg"
-    ],
-    malaysia: [
-      "/images/routes/malaysia/petronas.jpg",
-      "/images/routes/malaysia/penang.jpg",
-      "/images/routes/malaysia/batu-caves.jpg"
-    ],
-    indonesia: [
-      "/images/routes/indonesia/bali.jpg",
-      "/images/routes/indonesia/uluwatu.jpg"
-    ],
-    uae: [
-      "/images/routes/singapore/marina-bay.jpg",
-      "/images/routes/turkey/istanbul.jpg",
-      "/images/routes/china/shanghai-bund.jpg"
-    ],
-    turkey: [
-      "/images/routes/turkey/istanbul.jpg",
-      "/images/routes/turkey/antalya.jpg"
-    ]
-  };
-
-  function buildCountryImagePool(countryId) {
-    const countryImages = ROUTE_IMAGES[countryId] || [];
-    const merged = [...countryImages, ...SHARED_GUIDE_IMAGES];
-    return {
-      exterior: merged,
-      lobby: [...merged.slice(3), ...merged.slice(0, 3)],
-      standard_room: [...merged.slice(5), ...merged.slice(0, 5)],
-      deluxe_room: [...merged.slice(7), ...merged.slice(0, 7)],
-      bathroom: [...merged.slice(9), ...merged.slice(0, 9)],
-      restaurant: [...merged.slice(11), ...merged.slice(0, 11)]
-    };
+  /** Hotel-themed stock photos (Unsplash) — unique per category, not tourism/landmark shots */
+  function u(id, w) {
+    return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w || 800}&q=80`;
   }
 
-  const IMAGE_POOLS = {
-    china: buildCountryImagePool("china"),
-    thailand: buildCountryImagePool("thailand"),
-    vietnam: buildCountryImagePool("vietnam"),
-    japan: buildCountryImagePool("japan"),
-    korea: buildCountryImagePool("korea"),
-    singapore: buildCountryImagePool("singapore"),
-    malaysia: buildCountryImagePool("malaysia"),
-    indonesia: buildCountryImagePool("indonesia"),
-    uae: buildCountryImagePool("uae"),
-    turkey: buildCountryImagePool("turkey")
+  const HOTEL_STOCK = {
+    exterior: [
+      u("1566073771259-6a8506099945"),
+      u("1520250497591-611579863"),
+      u("1542314831-068f7765c4cc"),
+      u("1582719478250-ef43ee9122b"),
+      u("1571896349842-33c89424de2d"),
+      u("1445019980597-93fa8acb246c"),
+      u("1551882547-cec40c12f77e"),
+      u("1566665797767-6aef6ad960ce"),
+      u("1610641817119-ca82ad4381e8"),
+      u("1523215126519-099995af5603"),
+      u("1631049307264-e0a89a3f241a"),
+      u("1590490360182-c54684c4e6e2")
+    ],
+    lobby: [
+      u("1618773928811-624fca6d9ef9"),
+      u("1564501049412-6130c8a8eb73"),
+      u("1584130953409-89a3a9463e5e"),
+      u("1555854877-d156778f2b9d"),
+      u("1519167758481-83f550bb49b5"),
+      u("1566073771259-6a8506099945", 900),
+      u("1523215126519-099995af5603", 900),
+      u("1578683010236-d716f9a3f461", 900),
+      u("1631049307264-e0a89a3f241a", 900),
+      u("1596394518453-47c557139016", 900)
+    ],
+    standard_room: [
+      u("1631049307264-e0a89a3f241a"),
+      u("1590490360182-c54684c4e6e2"),
+      u("1611892440504-1345043067a6"),
+      u("1582719478140-0901289a5b71"),
+      u("1590071243278-336b5d9b9b82"),
+      u("1566665797767-6aef6ad960ce", 900),
+      u("1578683010236-d716f9a3f461", 900),
+      u("1596394518453-47c557139016", 900),
+      u("1618773928811-624fca6d9ef9", 900),
+      u("1522771739844-6a9f6d5a14ee", 900)
+    ],
+    deluxe_room: [
+      u("1618773928811-624fca6d9ef9"),
+      u("1578683010236-d716f9a3f461"),
+      u("1596394518453-47c557139016"),
+      u("1522771739844-6a9f6d5a14ee"),
+      u("1566665797767-6aef6ad960ce"),
+      u("1631049307264-e0a89a3f241a", 900),
+      u("1582719478140-0901289a5b71", 900),
+      u("1611892440504-1345043067a6", 900),
+      u("1590071243278-336b5d9b9b82", 900),
+      u("1520250497591-611579863", 900)
+    ],
+    bathroom: [
+      u("1620626011761-996317b78d01"),
+      u("1584622652206-4255ef7764d0"),
+      u("1552328724-417f8506d4e7"),
+      u("1507652310619-8ddc4b4a087a"),
+      u("1564540574859-0f6400f2f249"),
+      u("1582719478140-0901289a5b71", 700),
+      u("1631049307264-e0a89a3f241a", 700),
+      u("1590490360182-c54684c4e6e2", 700)
+    ],
+    restaurant: [
+      u("1414235077428-338989a2e8c0"),
+      u("1555396273-367ea4eb4db5"),
+      u("1517248135467-4c7edcad34c4"),
+      u("1559339352-11d035aa65de"),
+      u("1424844315991-845022dc0456"),
+      u("1566073771259-6a8506099945", 900),
+      u("1555854877-d156778f2b9d", 900),
+      u("1519167758481-83f550bb49b5", 900)
+    ]
   };
 
   function hashSeed(value) {
@@ -154,25 +90,12 @@
       .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   }
 
-  function pickUnique(pool, start, used) {
-    if (!Array.isArray(pool) || !pool.length) return FALLBACK_IMG;
-    for (let i = 0; i < pool.length; i += 1) {
-      const candidate = pool[(start + i) % pool.length];
-      if (!used.has(candidate)) {
-        used.add(candidate);
-        return candidate;
-      }
-    }
-    return pool[start % pool.length] || FALLBACK_IMG;
-  }
-
   function assignImages(countryId, cityId, hotelIdx) {
-    const pool = IMAGE_POOLS[countryId] || IMAGE_POOLS.china;
-    const base = hashSeed(cityId) + Number(hotelIdx || 0) * 7;
-    const used = new Set();
+    const seed = hashSeed(`${countryId}:${cityId}:${hotelIdx}`);
     const images = {};
     IMAGE_KEYS.forEach((key, i) => {
-      images[key] = pickUnique(pool[key], base + i * 5, used);
+      const pool = HOTEL_STOCK[key];
+      images[key] = pool[(seed + i * 13 + hotelIdx * 3) % pool.length];
     });
     return images;
   }
@@ -197,8 +120,9 @@
     const stars = Number(payload.stars || 4);
     const district = payload.district || "City Center";
     const nearby = payload.nearby_attractions || payload.nearby || [];
+    const nearTxt = nearby.length ? `${nearby.slice(0, 2).join(", ")} руу ойрхон.` : "";
     const description = payload.description_mn ||
-      `${cityMn} хотын ${district} хэсэгт байрлах энэ буудал нь аялал жуулчлал болон бизнесийн зорилготой зочдод тохиромжтой, гол үзвэрүүд рүү очиход хялбар байршилтай.`;
+      `${payload.name_en} — ${cityMn} хотын ${district} хэсэгт байрлах ${stars} одтой зочид буудал. ${nearTxt} Аялал, бизнес хоёуланд тохиромжтой байршил, цэвэр өрөө, найдвартай үйлчилгээ.`;
     return {
       name_en: payload.name_en,
       description_mn: description,
@@ -511,6 +435,7 @@
       image: roomIdx % 2 === 0 ? images.standard_room : images.deluxe_room,
       amenities: [...new Set([...(room.amenities || []), ...baseAmenities.slice(0, 4)])]
     }));
+    const images_list = IMAGE_KEYS.map((k) => images[k]);
     const supplierRef = `SUP-${city.country_id.toUpperCase()}-${cityId.toUpperCase()}-${String(idx + 1).padStart(2, "0")}`;
     return {
       id: `${cityId}_hotel_${idx + 1}`,
@@ -528,6 +453,7 @@
       breakfast: Boolean(spec.breakfast),
       free_cancellation: Boolean(spec.free_cancellation),
       images,
+      images_list,
       rooms,
       amenities: baseAmenities,
       map_url: window.TRAVEL_CITIES?.cityMapUrl(cityId, spec.name_en) || "https://www.google.com/maps",
@@ -547,7 +473,7 @@
   }
 
   window.HOTELS_CATALOG = {
-    IMAGE_POOLS,
+    HOTEL_STOCK,
     CITY_HOTELS,
     FALLBACK_IMG,
     assignImages,

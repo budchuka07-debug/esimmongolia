@@ -380,28 +380,40 @@
   }
 
   function hotelCover(h) {
-    const list = hotelImagesList(h);
-    return list[0] || HOTEL_IMG_FALLBACK;
+    if (h.images?.exterior) return h.images.exterior;
+    if (Array.isArray(h.images_list) && h.images_list.length) return h.images_list[0];
+    if (h.images && typeof h.images === "object" && !Array.isArray(h.images)) {
+      const first = Object.values(h.images).find(Boolean);
+      if (first) return first;
+    }
+    if (Array.isArray(h.images) && h.images.length) return h.images[0];
+    if (h.image) return h.image;
+    return window.HOTELS_CATALOG?.FALLBACK_IMG || window.MOCK_SEARCH?.FALLBACK_IMG || HOTEL_IMG_FALLBACK;
+  }
+
+  function hotelImgFallback() {
+    return window.HOTELS_CATALOG?.FALLBACK_IMG || window.HOTELS_CATALOG?.HOTEL_STOCK?.exterior?.[0] || HOTEL_IMG_FALLBACK;
   }
 
   function hotelImgTag(h, className) {
     const src = hotelCover(h);
     const name = h.name_en || h.name || "Hotel";
     const alt = `${name} — ${cityLabel(h.city_id)}`;
-    const fb = window.HOTELS_CATALOG?.FALLBACK_IMG || HOTEL_IMG_FALLBACK;
-    return `<img class="${className}" src="${src}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">`;
+    const fb = hotelImgFallback();
+    return `<img class="${className}" src="${src}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fb}'">`;
   }
 
   function hotelGalleryHtml(hotel, fb) {
+    const fallback = fb || hotelImgFallback();
     if (hotel.images && typeof hotel.images === "object" && !Array.isArray(hotel.images)) {
       return Object.entries(HOTEL_IMAGE_LABELS).map(([key, label]) => {
-        const src = hotel.images[key] || fb;
-        return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'"><figcaption>${label}</figcaption></figure>`;
+        const src = hotel.images[key] || fallback;
+        return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
       }).join("");
     }
     return hotelImagesList(hotel).map((src, i) => {
       const label = Object.values(HOTEL_IMAGE_LABELS)[i] || "Зураг";
-      return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'"><figcaption>${label}</figcaption></figure>`;
+      return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
     }).join("");
   }
 
@@ -479,7 +491,7 @@
     const body = $("hotelDetailBody");
     if (!modal || !bd || !body) return;
 
-    const fb = window.HOTELS_CATALOG?.FALLBACK_IMG || HOTEL_IMG_FALLBACK;
+    const fb = hotelImgFallback();
     const gallery = hotelGalleryHtml(hotel, fb);
     const nearby = (hotel.nearby_attractions || []).map((a) => `<span class="tp-badge muted">${a}</span>`).join("");
     const amenities = (hotel.amenities || []).map((a) => `<span class="tp-badge">${a}</span>`).join("");
@@ -490,7 +502,7 @@
 
     const rooms = (hotel.rooms || []).map((r) => `
       <div class="tp-hotel-room">
-        ${r.image ? `<img src="${r.image}" alt="${r.name}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">` : ""}
+        ${r.image ? `<img src="${r.image}" alt="${r.name}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${fb}'">` : ""}
         <div>
           <strong>${r.name}</strong>
           ${r.beds ? `<span class="tp-muted"> • ${r.beds} ор</span>` : ""}
