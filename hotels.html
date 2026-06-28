@@ -27,7 +27,7 @@
 <div class="tp-search-card" style="margin-top:16px">
 <div style="padding:20px">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хот</label><input value="Шанхай"></div>
+<div class="tp-field"><label>Хот</label><input type="text" data-loc="city" data-field="city" data-loc-types="city,airport" data-loc-hidden="city_id" value="Шанхай" placeholder="Шанхай, Bangkok…" autocomplete="off"></div>
 <div class="tp-field"><label>Ирэх</label><input type="date"></div>
 <div class="tp-field"><label>Гарах</label><input type="date"></div>
 <div class="tp-field"><label>Хүн</label><input type="number" value="2"></div>
@@ -44,5 +44,19 @@
 <a href="/#esim" class="tp-btn primary">eSIM үзэх</a>
 </div>
 </div>
+<script src="/data/cities.js"></script>
+<script src="/data/countries-registry.js"></script>
+<script src="/data/china-destinations.js"></script>
+<script src="/data/locations-world-seed.js"></script>
+<script src="/data/locations-chunk-extra.js"></script>
+<script src="/data/location-engine.js"></script>
+<script src="/location-autocomplete.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  window.LOCATION_ENGINE?.init?.();
+  if (window.LOCATIONS_CHUNK_EXTRA) window.LOCATION_ENGINE.loadChunk(window.LOCATIONS_CHUNK_EXTRA, "extra");
+  window.LocationAutocomplete?.initAll();
+});
+</script>
 </body>
 </html>

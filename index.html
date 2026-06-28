@@ -261,8 +261,8 @@
 
 <div class="tp-panel active" data-panel="flight">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Улаанбаатар"></div>
-<div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Шанхай" list="chinaCitiesList"></div>
+<div class="tp-field"><label>Хаанаас</label><input type="text" data-loc="from" data-field="from" data-loc-types="city,airport" data-loc-hidden="from_city_id" data-loc-default="ulanbaatar" value="Улаанбаатар" placeholder="Хот, нисэх буудал, PEK…" autocomplete="off"></div>
+<div class="tp-field"><label>Хаашаа</label><input type="text" data-loc="to" data-field="city" data-loc-types="city,airport,country" data-loc-hidden="city_id" value="Шанхай" placeholder="Beijing, 北京, BKK…" autocomplete="off"></div>
 <div class="tp-field"><label>Огноо</label><input data-field="date" type="date"></div>
 <div class="tp-field"><label>Хүн</label><input data-field="people" type="number" value="2" min="1"></div>
 </div>
@@ -287,8 +287,8 @@
 <option value="uae">🇦🇪 АНЭУ</option>
 <option value="turkey">🇹🇷 Турк</option>
 </select></div>
-<div class="tp-field"><label>Хот</label><input data-field="city" id="hotelCityInput" value="Шанхай" list="hotelCitiesList" placeholder="Шанхай, Bangkok, Tokyo…"></div>
-<div class="tp-field"><label>Байршил / бүс</label><input data-field="area" id="hotelAreaInput" list="hotelAreaList" placeholder="Disneyland, Wangfujing, Sukhumvit…"></div>
+<div class="tp-field"><label>Хот</label><input type="text" data-loc="city" id="hotelCityInput" data-field="city" data-loc-types="city,airport" data-loc-hidden="city_id" data-loc-country-select="#hotelCountrySelect" value="Шанхай" placeholder="Шанхай, Bangkok, Tokyo, PEK…" autocomplete="off"></div>
+<div class="tp-field"><label>Байршил / бүс</label><input type="text" data-loc="area" id="hotelAreaInput" data-field="area" data-loc-types="district,landmark" data-loc-hidden="area_id" data-loc-city-context="#hotelCityInput" placeholder="Disneyland, Wangfujing, Sukhumvit…" autocomplete="off"></div>
 </div>
 <div class="tp-form-grid tp-form-grid-3" style="margin-top:10px">
 <div class="tp-field"><label>Ирэх</label><input data-field="checkin" type="date"></div>
@@ -296,8 +296,6 @@
 <div class="tp-field"><label>Зочид</label><input data-field="guests" type="number" value="2" min="1"></div>
 </div>
 </div>
-<datalist id="hotelAreaList"></datalist>
-<datalist id="hotelDistrictList"></datalist>
 <div class="tp-search-actions">
 <button type="button" class="tp-btn primary" data-search-run="hotel">🔍 Буудал хайх</button>
 </div>
@@ -306,8 +304,8 @@
 <div class="tp-panel" data-panel="train">
 <p class="tp-lead" style="margin:0 0 10px">Галт тэрэг болон автобус — эх сурвалжид тулгуурласан мэдээлэл. Баталгаажаагүй цаг, үнэ өөрчлөгдөж болно.</p>
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Эрээн" list="chinaCitiesList"></div>
-<div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Бээжин" list="chinaCitiesList"></div>
+<div class="tp-field"><label>Хаанаас</label><input type="text" data-loc="from" data-field="from" data-loc-types="city,airport" data-loc-hidden="from_city_id" value="Эрээн" placeholder="Эрээн, Beijing…" autocomplete="off"></div>
+<div class="tp-field"><label>Хаашаа</label><input type="text" data-loc="to" data-field="city" data-loc-types="city,airport" data-loc-hidden="city_id" value="Бээжин" placeholder="Бээжин, PEK…" autocomplete="off"></div>
 <div class="tp-field"><label>Огноо</label><input data-field="date" type="date"></div>
 <div class="tp-field"><label>Хүн</label><input data-field="people" value="2"></div>
 </div>
@@ -318,7 +316,7 @@
 
 <div class="tp-panel" data-panel="attraction">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хот</label><input data-field="city" value="Шанхай" list="chinaCitiesList"></div>
+<div class="tp-field"><label>Хот</label><input type="text" data-loc="city" data-field="city" data-loc-types="city,airport" data-loc-hidden="city_id" value="Шанхай" placeholder="Хот, Disneyland…" autocomplete="off"></div>
 <div class="tp-field"><label>Үзвэр</label><input data-field="attraction" value="Disneyland"></div>
 <div class="tp-field"><label>Хүн</label><input data-field="people" value="2"></div>
 </div>
@@ -352,7 +350,7 @@
 <button type="button" class="tp-hotel-filters-close" id="hotelFiltersClose" aria-label="Хаах">×</button>
 </div>
 <div class="tp-hotel-filters-body">
-<div class="tp-field"><label>Дүүрэг / бүс</label><input data-filter="district" list="hotelDistrictList" placeholder="Wangfujing, Pudong…"></div>
+<div class="tp-field"><label>Дүүрэг / бүс</label><input data-filter="district" data-loc="filter-district" data-loc-types="district,landmark" data-loc-hidden="filter_district_id" data-loc-city-context="#hotelCityInput" placeholder="Wangfujing, Pudong…" autocomplete="off"></div>
 <div class="tp-field"><label>Ойролцоох газар</label><input data-filter="nearLandmark" placeholder="The Bund, Grand Palace…"></div>
 <div class="tp-field"><label>Хайх үг</label><input data-filter="keyword" placeholder="Буудлын нэр…"></div>
 <div class="tp-field"><label>Үнэ (₮) — доод</label><input data-filter="priceMinMnt" type="number" min="0" step="10000" placeholder="500000"></div>
@@ -1829,11 +1827,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-<datalist id="chinaCitiesList"></datalist>
-<datalist id="hotelCitiesList"></datalist>
-
 <script src="/data/cities.js"></script>
+<script src="/data/countries-registry.js"></script>
 <script src="/data/china-destinations.js?v=1"></script>
+<script src="/data/locations-world-seed.js"></script>
+<script src="/data/locations-chunk-extra.js"></script>
+<script src="/data/location-engine.js"></script>
+<script src="/location-autocomplete.js"></script>
 <script src="/data/hotel-areas.js?v=6"></script>
 <script src="/data/china-hotel-areas.js?v=1"></script>
 <script src="/data/hohhot-supplier-hotels.js?v=1"></script>
@@ -1841,7 +1841,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/travel-data.js?v=9"></script>
 <script src="/data/transport-routes.js?v=7"></script>
 <script src="/data/mock-search-results.js?v=7"></script>
-<script src="/booking.js?v=8"></script>
+<script src="/booking.js?v=9"></script>
 <script src="/ai-agent.js?v=2"></script>
 <script src="/travel-assistant.js?v=1"></script>
 

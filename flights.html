@@ -27,14 +27,13 @@
 <div class="tp-search-card" style="margin-top:16px">
 <div style="padding:20px">
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хаанаас</label><input value="Улаанбаатар"></div>
-<div class="tp-field"><label>Хаашаа</label><input value="Шанхай"></div>
+<div class="tp-field"><label>Хаанаас</label><input type="text" data-loc="from" data-field="from" data-loc-types="city,airport" data-loc-hidden="from_city_id" data-loc-default="ulanbaatar" value="Улаанбаатар" autocomplete="off"></div>
+<div class="tp-field"><label>Хаашаа</label><input type="text" data-loc="to" data-field="city" data-loc-types="city,airport" data-loc-hidden="city_id" value="Шанхай" autocomplete="off"></div>
 <div class="tp-field"><label>Огноо</label><input type="date"></div>
 <div class="tp-field"><label>Хүн</label><input type="number" value="2"></div>
 </div>
 <div class="tp-search-actions" style="margin-top:14px">
 <a class="tp-btn primary" href="/">Нүүр хуудас дээр хайх</a>
-<button type="button" class="tp-btn" onclick="location.href='/'">Захиалгын хүсэлт</button>
 </div>
 <p class="tp-lead" style="margin-top:12px">Live API холбогдоогүй. <a href="/">Нүүр</a> дээр mock хайлт + inquiry form ашиглана.</p>
 </div>
@@ -46,7 +45,19 @@
 <a href="/#esim" class="tp-btn primary">eSIM авах</a>
 </div>
 </div>
-<script src="/data/travel-data.js"></script>
-<script src="/booking.js"></script>
+<script src="/data/cities.js"></script>
+<script src="/data/countries-registry.js"></script>
+<script src="/data/china-destinations.js"></script>
+<script src="/data/locations-world-seed.js"></script>
+<script src="/data/locations-chunk-extra.js"></script>
+<script src="/data/location-engine.js"></script>
+<script src="/location-autocomplete.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  window.LOCATION_ENGINE?.init?.();
+  if (window.LOCATIONS_CHUNK_EXTRA) window.LOCATION_ENGINE.loadChunk(window.LOCATIONS_CHUNK_EXTRA, "extra");
+  window.LocationAutocomplete?.initAll();
+});
+</script>
 </body>
 </html>

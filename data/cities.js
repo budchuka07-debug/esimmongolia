@@ -3,6 +3,7 @@
  */
 (function () {
   const COUNTRIES = {
+    mongolia: { id: "mongolia", name_mn: "Монгол", name_en: "Mongolia", flag: "🇲🇳", currency: "MNT" },
     china: { id: "china", name_mn: "Хятад", name_en: "China", flag: "🇨🇳", currency: "CNY" },
     thailand: { id: "thailand", name_mn: "Тайланд", name_en: "Thailand", flag: "🇹🇭", currency: "THB" },
     vietnam: { id: "vietnam", name_mn: "Вьетнам", name_en: "Vietnam", flag: "🇻🇳", currency: "VND" },
@@ -16,7 +17,7 @@
   };
 
   const CITIES = {
-    beijing: { id: "beijing", country_id: "china", name_mn: "Бээжин", name_en: "Beijing", local: "北京", aliases: ["Бээжин", "Beijing", "Peking", "北京", "PEK"] },
+    beijing: { id: "beijing", country_id: "china", name_mn: "Бээжин", name_en: "Beijing", local: "北京", aliases: ["Бээжин", "Beijing", "Peking", "北京", "PEK", "PKX"] },
     shanghai: { id: "shanghai", country_id: "china", name_mn: "Шанхай", name_en: "Shanghai", local: "上海", aliases: ["Шанхай", "Shanghai", "上海", "PVG"] },
     guangzhou: { id: "guangzhou", country_id: "china", name_mn: "Гуанжоу", name_en: "Guangzhou", local: "广州", aliases: ["Гуанжоу", "Guangzhou", "Canton", "广州"] },
     shenzhen: { id: "shenzhen", country_id: "china", name_mn: "Шэньжэнь", name_en: "Shenzhen", local: "深圳", aliases: ["Шэньжэнь", "Shenzhen", "深圳"] },

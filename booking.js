@@ -559,7 +559,7 @@
 
     if (type === "hotel") {
       const cityInput = formData.city || "Шанхай";
-      const cityId = window.TRAVEL_CITIES?.normalizeCity(cityInput);
+      const cityId = formData.city_id || window.TRAVEL_CITIES?.normalizeCity(cityInput);
       const countryId = window.TRAVEL_CITIES?.normalizeCountry(formData.country) ||
         (cityId ? window.TRAVEL_CITIES?.getCity(cityId)?.country_id : "china");
       const nights = formData.days || 5;
@@ -581,18 +581,21 @@
       return { results, meta: { cityId, cityInput, countryId: city?.country_id, nights, filters, formData } };
     }
     if (type === "train") {
+      const fromId = formData.from_city_id || window.TRAVEL_CITIES?.normalizeCity(formData.from || "Эрээн");
+      const toId = formData.city_id || window.TRAVEL_CITIES?.normalizeCity(formData.city || "Бээжин");
       const route = mock.transport?.(formData.from || "Эрээн", formData.city || "Бээжин")
         || mock.trains(formData.from || "Эрээн", formData.city || "Бээжин");
       const results = (route.results || route.trains || []).map(priceTransportItem);
-      return { results, meta: { fromId: route.fromId, toId: route.toId, routeKey: route.routeKey } };
+      return { results, meta: { fromId: fromId || route.fromId, toId: toId || route.toId, routeKey: route.routeKey } };
     }
     if (type === "flight") {
+      const fromId = formData.from_city_id || window.TRAVEL_CITIES?.normalizeCity(formData.from || "Улаанбаатар");
+      const toId = formData.city_id || window.TRAVEL_CITIES?.normalizeCity(formData.city || "Шанхай");
       const results = mock.flights(formData.from || "Улаанбаатар", formData.city || "Шанхай").map(priceItem);
-      const toId = window.TRAVEL_CITIES?.normalizeCity(formData.city);
-      return { results, meta: { toId } };
+      return { results, meta: { fromId, toId } };
     }
     if (type === "attraction") {
-      const cityId = window.TRAVEL_CITIES?.normalizeCity(formData.city || "Шанхай") || "shanghai";
+      const cityId = formData.city_id || window.TRAVEL_CITIES?.normalizeCity(formData.city || "Шанхай") || "shanghai";
       const cityName = cityLabel(cityId);
       const people = Number(formData.people || 2);
       const results = [
@@ -1151,54 +1154,48 @@
   }
 
   function updateHotelAreaList(cityInput) {
-    const areaList = $("hotelAreaList");
-    const distList = $("hotelDistrictList");
     const cityId = window.TRAVEL_CITIES?.normalizeCity(cityInput);
-    if (!cityId) {
-      if (areaList) areaList.innerHTML = "";
-      if (distList) distList.innerHTML = "";
-      return;
-    }
-    const areas = window.HOTELS_CATALOG?.getAreas(cityId) || window.HOTEL_AREAS?.getAreaNames(cityId) || [];
+    if (!cityId) return;
+    const distList = $("hotelDistrictList");
+    if (!distList) return;
     const districts = window.HOTELS_CATALOG?.getDistricts(cityId) || [];
-    if (areaList) areaList.innerHTML = areas.map((a) => `<option value="${a}"></option>`).join("");
-    if (distList) distList.innerHTML = districts.map((d) => `<option value="${d}"></option>`).join("");
+    distList.innerHTML = districts.map((d) => `<option value="${d}"></option>`).join("");
   }
 
   function updateHotelDistrictList(cityInput) {
     updateHotelAreaList(cityInput);
   }
 
-  function updateHotelCityList(countryId) {
-    const list = $("hotelCitiesList");
-    if (!list) return;
-    const opts = window.TRAVEL_CITIES?.allCityOptions(countryId) || [];
-    list.innerHTML = opts.map((o) => `<option value="${o.label.split(" — ")[0]}"></option>`).join("");
-    const cities = window.TRAVEL_CITIES?.getCitiesByCountry(countryId) || [];
-    const input = $("hotelCityInput");
-    if (input && cities[0]) {
-      input.value = cities[0].name_mn;
-      updateHotelDistrictList(input.value);
+  function initLocationSearch() {
+    const eng = window.LOCATION_ENGINE;
+    if (!eng) return;
+    eng.init();
+    if (window.LOCATIONS_CHUNK_EXTRA?.cities?.length) {
+      eng.loadChunk(window.LOCATIONS_CHUNK_EXTRA, window.LOCATIONS_CHUNK_EXTRA.tag || "extra");
     }
-  }
+    window.LocationAutocomplete?.initAll();
 
-  function initCountryCitySelects() {
     const countrySel = $("hotelCountrySelect");
     const cityInput = $("hotelCityInput");
-    if (countrySel) {
-      countrySel.addEventListener("change", () => updateHotelCityList(countrySel.value));
-      updateHotelCityList(countrySel.value);
+    if (countrySel && cityInput) {
+      countrySel.addEventListener("change", () => {
+        const cid = countrySel.value;
+        const hits = eng.search("", { types: ["city"], country_id: cid, limit: 1 });
+        if (hits[0]?.city_id) {
+          const c = eng.getCity(hits[0].city_id);
+          cityInput.value = c?.name_mn || hits[0].title;
+          const hidden = cityInput.parentElement?.querySelector('[data-field="city_id"]');
+          if (hidden) hidden.value = hits[0].city_id;
+          cityInput.dataset.resolvedCityId = hits[0].city_id;
+        }
+        updateHotelDistrictList(cityInput.value);
+      });
     }
     cityInput?.addEventListener("change", () => updateHotelDistrictList(cityInput.value));
-    cityInput?.addEventListener("blur", () => updateHotelDistrictList(cityInput.value));
-    if (cityInput?.value) updateHotelDistrictList(cityInput.value);
-    const list = $("chinaCitiesList");
-    const chinaOpts = window.TRAVEL_CITIES?.allCityOptions("china") || [];
-    if (list) list.innerHTML = chinaOpts.map((o) => `<option value="${o.label.split(" — ")[0]}"></option>`).join("");
   }
 
   function initCityDatalists() {
-    initCountryCitySelects();
+    initLocationSearch();
   }
 
   function initInquiryModal() {
