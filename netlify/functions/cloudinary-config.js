@@ -1,5 +1,6 @@
 /**
  * Public Cloudinary config for unsigned uploads (no API secret)
+ * Cloud: dflwo8gmz | Preset: esimmongolia_upload
  */
 exports.handler = async (event) => {
   const headers = {
@@ -35,7 +36,20 @@ exports.handler = async (event) => {
     body: JSON.stringify({
       ok: true,
       cloud_name: cloudName,
-      upload_preset: uploadPreset
+      upload_preset: uploadPreset,
+      folders: {
+        root: "esimmongolia",
+        countries: "esimmongolia/countries",
+        cities: "esimmongolia/cities",
+        hotels: "esimmongolia/hotels",
+        rooms: "esimmongolia/rooms",
+        attractions: "esimmongolia/attractions",
+        trains: "esimmongolia/trains",
+        flights: "esimmongolia/flights",
+        rentals: "esimmongolia/rentals",
+        insurance: "esimmongolia/insurance",
+        esim: "esimmongolia/esim"
+      }
     })
   };
 };

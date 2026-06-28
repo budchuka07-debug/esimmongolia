@@ -17,8 +17,8 @@
         <div class="adm-field"><label>Original price</label><input name="original_price" type="number" step="any" value="${AdminCore.esc(a.original_price)}"></div>
         <div class="adm-field"><label>Currency</label><input name="currency" value="${AdminCore.esc(a.currency || "CNY")}"></div>
         <div class="adm-field"><label>Final price (MNT)</label><input name="final_price_mnt" type="number" value="${AdminCore.esc(a.final_price_mnt)}"></div>
-        ${AdminCloudinary.fieldCover("cover_image_url", a.cover_image_url || a.image_url || "", "Cover image", "esimmongolia/attractions")}
-        ${AdminCloudinary.fieldGallery("gallery_image_urls", a.gallery_image_urls || [], "Gallery", "esimmongolia/attractions")}
+        ${AdminCloudinary.fieldCover("cover_image_url", a.cover_image_url || a.image_url || "", "Cover image", AdminCloudinary.FOLDERS.attractions)}
+        ${AdminCloudinary.fieldGallery("gallery_image_urls", a.gallery_image_urls || [], "Gallery", AdminCloudinary.FOLDERS.attractions, { coverField: "cover_image_url", coverUrl: a.cover_image_url || a.image_url || "" })}
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${a.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${a.active === false ? "selected" : ""}>Үгүй</option></select></div>
       </div>`;
   }

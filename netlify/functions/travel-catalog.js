@@ -9,7 +9,7 @@ const { getSupabase } = require("./lib/supabase-client");
 const {
   mapCountry, mapCity, buildCityIndex, normalizeCityInput, countrySlug
 } = require("./lib/travel-data-lib");
-const { pickCover, FALLBACK } = require("./lib/travel-images");
+const { pickCover, resolveGallery, FALLBACK, cdnUrl } = require("./lib/travel-images");
 
 function cors() {
   return {
@@ -157,7 +157,7 @@ exports.handler = async (event) => {
             id: c.id,
             name: c.name_mn,
             cn: c.local || c.name_local || "",
-            img: c.hero_image || pickCover({ cover_image_url: c.cover_image_url, hero_image: c.hero_image }, FALLBACK.city),
+            img: cdnUrl(c.hero_image || pickCover({ cover_image_url: c.cover_image_url, hero_image: c.hero_image }, FALLBACK.city), { size: "hero", fallback: FALLBACK.city }),
             attractions: (atts || []).map((a) => a.name_mn),
             transport: c.transport_mn || "",
             budget: c.budget_hint_mn || "",
@@ -174,7 +174,7 @@ exports.handler = async (event) => {
           code: c.iso_code,
           name: c.name_mn,
           flag: c.flag,
-          img: c.cover_image || pickCover(c, FALLBACK.country),
+          img: cdnUrl(c.cover_image || pickCover(c, FALLBACK.country), { size: "card", fallback: FALLBACK.country }),
           href: c.id === "china" ? "/china/" : `/${c.id}-route.html`
         }));
 

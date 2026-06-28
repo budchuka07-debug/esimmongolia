@@ -36,6 +36,7 @@
         <div class="adm-field"><label>Final price (MNT)</label><input name="final_price_mnt" type="number" value="${AdminCore.esc(f.final_price_mnt)}"></div>
         <div class="adm-field"><label>Data confidence</label><select name="data_confidence"><option value="high">high</option><option value="medium">medium</option><option value="low">low</option></select></div>
         <div class="adm-field"><label>Active</label><select name="active"><option value="true">Тийм</option><option value="false">Үгүй</option></select></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", f.cover_image_url || "", "Cover image", AdminCloudinary.FOLDERS.flights)}
       </div>${supplierFields(f.supplier_reference)}`;
   }
 
@@ -54,6 +55,7 @@
       final_price_mnt: parseInt(g("final_price_mnt"), 10) || 0,
       data_confidence: g("data_confidence"),
       active: g("active") === "true",
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
       supplier_reference: {
         supplier_name: g("supplier_name"),
         supplier_url: g("supplier_url"),

@@ -24,8 +24,8 @@
         <div class="adm-field full"><label>Internet (MN)</label><input name="internet_info_mn" value="${AdminCore.esc(row.internet_info_mn)}"></div>
         <div class="adm-field"><label>Distance to beach</label><input name="distance_to_beach" value="${AdminCore.esc(row.distance_to_beach)}"></div>
         <div class="adm-field"><label>Distance to center</label><input name="distance_to_center" value="${AdminCore.esc(row.distance_to_center)}"></div>
-        ${AdminCloudinary.fieldCover("cover_image_url", row.cover_image_url || "", "Cover image", "esimmongolia/rentals")}
-        ${AdminCloudinary.fieldGallery("gallery_image_urls", row.gallery_image_urls || row.images || [], "Gallery", "esimmongolia/rentals")}
+        ${AdminCloudinary.fieldCover("cover_image_url", row.cover_image_url || "", "Cover image", AdminCloudinary.FOLDERS.rentals)}
+        ${AdminCloudinary.fieldGallery("gallery_image_urls", row.gallery_image_urls || row.images || [], "Gallery", AdminCloudinary.FOLDERS.rentals, { coverField: "cover_image_url", coverUrl: row.cover_image_url || "" })}
         <div class="adm-field"><label>Amenities</label><input name="amenities" value="${AdminCore.esc((row.amenities || []).join(", "))}"></div>
         <div class="adm-field"><label>Suitable for</label><input name="suitable_for" value="${AdminCore.esc((row.suitable_for || []).join(", "))}"></div>
         <div class="adm-field full"><label>Description (MN)</label><textarea name="description_mn">${AdminCore.esc(row.description_mn)}</textarea></div>

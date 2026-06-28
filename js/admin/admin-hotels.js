@@ -40,9 +40,9 @@
         <div class="adm-field"><label>Latitude</label><input name="latitude" type="number" step="any" value="${AdminCore.esc(h.latitude)}"></div>
         <div class="adm-field"><label>Longitude</label><input name="longitude" type="number" step="any" value="${AdminCore.esc(h.longitude)}"></div>
         <div class="adm-field full"><label>Description (MN)</label><textarea name="description_mn">${AdminCore.esc(h.description_mn)}</textarea></div>
-        ${AdminCloudinary.fieldCover("cover_image_url", h.cover_image_url || h.cover_image || "", "Cover image", "esimmongolia/hotels")}
-        ${AdminCloudinary.fieldGallery("gallery_image_urls", h.gallery_image_urls || h.images || [], "Gallery", "esimmongolia/hotels")}
-        ${AdminCloudinary.fieldGallery("room_image_urls", h.room_image_urls || h.room_images || [], "Room images", "esimmongolia/hotels/rooms")}
+        ${AdminCloudinary.fieldCover("cover_image_url", h.cover_image_url || h.cover_image || "", "Cover image", AdminCloudinary.FOLDERS.hotels)}
+        ${AdminCloudinary.fieldGallery("gallery_image_urls", h.gallery_image_urls || h.images || [], "Gallery", AdminCloudinary.FOLDERS.hotels, { coverField: "cover_image_url", coverUrl: h.cover_image_url || h.cover_image || "" })}
+        ${AdminCloudinary.fieldGallery("room_image_urls", h.room_image_urls || h.room_images || [], "Room images", AdminCloudinary.FOLDERS.rooms)}
         <div class="adm-field"><label>Amenities</label><input name="amenities" value="${AdminCore.esc((h.amenities || []).join(", "))}"></div>
         <div class="adm-field"><label>Nearby metro</label><input name="nearby_metro" value="${AdminCore.esc(h.nearby_metro)}"></div>
         <div class="adm-field"><label>Landmarks</label><input name="nearby_landmarks" value="${AdminCore.esc((h.nearby_landmarks || []).join(", "))}"></div>

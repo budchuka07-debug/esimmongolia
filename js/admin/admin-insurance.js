@@ -15,6 +15,7 @@
         <div class="adm-field"><label>Days max</label><input name="days_max" type="number" value="${AdminCore.esc(row.days_max)}"></div>
         <div class="adm-field"><label>Final price (MNT)</label><input name="final_price_mnt" type="number" value="${AdminCore.esc(row.final_price_mnt)}"></div>
         <div class="adm-field"><label>Active</label><select name="active"><option value="true">Тийм</option><option value="false">Үгүй</option></select></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", row.cover_image_url || "", "Cover image", AdminCloudinary.FOLDERS.insurance)}
       </div>
       <div class="adm-supplier-box">
         <h3>🔒 Supplier</h3>
@@ -40,6 +41,7 @@
       days_max: parseInt(g("days_max"), 10) || 30,
       final_price_mnt: parseInt(g("final_price_mnt"), 10) || 0,
       active: g("active") === "true",
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url"),
       supplier_reference: {
         supplier_name: g("supplier_name"),
         supplier_url: g("supplier_url"),

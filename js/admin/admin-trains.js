@@ -39,6 +39,7 @@
         <div class="adm-field"><label>Source URL</label><input name="source_url" value="${AdminCore.esc(t.source_url)}"></div>
         <div class="adm-field"><label>Last checked</label><input name="last_checked_at" type="date" value="${AdminCore.esc(t.last_checked_at || "")}"></div>
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${t.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${t.active === false ? "selected" : ""}>Үгүй</option></select></div>
+        ${AdminCloudinary.fieldCover("cover_image_url", t.cover_image_url || "", "Cover image", AdminCloudinary.FOLDERS.trains)}
       </div>
       <h4 style="margin:16px 0 8px">Зэрэглэл / вагоны төрөл (MNT)</h4>
       <div class="adm-form-grid">${classFields}</div>`;
@@ -63,7 +64,8 @@
       source_name: g("source_name"),
       source_url: g("source_url"),
       last_checked_at: g("last_checked_at") || null,
-      active: g("active") === "true"
+      active: g("active") === "true",
+      cover_image_url: AdminCloudinary.readCover(backdrop, "cover_image_url")
     };
   }
 

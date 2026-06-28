@@ -20,7 +20,7 @@
         <div class="adm-field"><label>Railway stations</label><input name="railway_stations" value="${AdminCore.esc((c.railway_stations || []).join(", "))}"></div>
         <div class="adm-field"><label>Lat</label><input name="lat" type="number" step="any" value="${AdminCore.esc(c.lat)}"></div>
         <div class="adm-field"><label>Lng</label><input name="lng" type="number" step="any" value="${AdminCore.esc(c.lng)}"></div>
-        ${AdminCloudinary.fieldCover("cover_image_url", c.cover_image_url || c.hero_image || "", "Cover image", "esimmongolia/cities")}
+        ${AdminCloudinary.fieldCover("cover_image_url", c.cover_image_url || c.hero_image || "", "Cover image", AdminCloudinary.FOLDERS.cities)}
         <div class="adm-field"><label>Popular</label><select name="popular"><option value="true" ${c.popular ? "selected" : ""}>Тийм</option><option value="false" ${!c.popular ? "selected" : ""}>Үгүй</option></select></div>
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${c.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${c.active === false ? "selected" : ""}>Үгүй</option></select></div>
       </div>`;

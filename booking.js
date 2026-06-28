@@ -319,25 +319,29 @@
     const box = $("platformDestinations");
     const data = window.TRAVEL_DATA;
     if (!box || !data) return;
-    box.innerHTML = data.destinations.map((d) => `
+    box.innerHTML = data.destinations.map((d) => {
+      const img = travelImg(d.img, { kind: "country", size: "card", alt: d.name });
+      return `
       <a class="tp-dest-card" href="${d.href}">
-        <img src="${d.img}" alt="${d.name}" loading="lazy">
+        ${img}
         <div class="tp-dest-body">
           <div class="tp-dest-name">${d.flag} ${d.name}</div>
           <div class="tp-dest-sub">Маршрут + eSIM</div>
         </div>
-      </a>
-    `).join("");
+      </a>`;
+    }).join("");
   }
 
   function renderChinaCities() {
     const box = $("platformChinaCities");
     const data = window.TRAVEL_DATA;
     if (!box || !data) return;
-    box.innerHTML = data.chinaCities.map((c) => `
+    box.innerHTML = data.chinaCities.map((c) => {
+      const img = travelImg(c.img, { kind: "city", size: "hero", alt: `${c.name} — ${c.cn}`, className: "tp-china-head-img" });
+      return `
       <article class="tp-china-card" id="city-${c.id}">
         <div class="tp-china-head">
-          <img src="${c.img}" alt="${c.name} — ${c.cn}" loading="lazy">
+          ${img}
           <div class="tp-china-body">
             <h3>${c.name} <span style="color:#64748b;font-weight:600">${c.cn}</span></h3>
             <div class="tp-china-meta">
@@ -354,8 +358,8 @@
             </div>
           </div>
         </div>
-      </article>
-    `).join("");
+      </article>`;
+    }).join("");
 
     box.querySelectorAll("[data-book-city]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -445,25 +449,44 @@
     return HOTEL_IMG_FALLBACK;
   }
 
+  function travelImg(url, opts) {
+    const TI = window.TravelImages;
+    opts = opts || {};
+    const kind = opts.kind || "hotel";
+    const resolved = TI?.pickCover
+      ? TI.pickCover(typeof url === "object" ? url : { cover_image_url: url }, kind)
+      : (url || opts.fallback || HOTEL_IMG_FALLBACK);
+    if (TI?.imgTag) return TI.imgTag(resolved, { ...opts, kind });
+    const src = resolved || opts.fallback || HOTEL_IMG_FALLBACK;
+    return `<img class="${opts.className || ""}" src="${src}" alt="${opts.alt || ""}" loading="lazy" decoding="async">`;
+  }
+
   function hotelImgTag(h, className) {
-    const src = hotelCover(h);
     const name = h.name_en || h.name || "Hotel";
     const alt = `${name} — ${cityLabel(h.city_id)}`;
-    const fb = hotelImgFallback();
-    return `<img class="${className}" src="${src}" alt="${alt}" loading="lazy" onerror="this.onerror=null;this.src='${fb}'">`;
+    return travelImg(hotelCover(h), { className, kind: "hotel", size: "card", alt });
   }
 
   function hotelGalleryHtml(hotel, fb) {
     const fallback = fb || hotelImgFallback();
+    const mkFig = (src, label) => {
+      const img = travelImg(src, {
+        kind: "hotel",
+        size: "hero",
+        alt: `${hotel.name_en} — ${label}`,
+        className: "",
+        fallback
+      });
+      return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg">${img}<figcaption>${label}</figcaption></figure>`;
+    };
     if (hotel.images && typeof hotel.images === "object" && !Array.isArray(hotel.images)) {
-      return Object.entries(HOTEL_IMAGE_LABELS).map(([key, label]) => {
-        const src = hotel.images[key] || fallback;
-        return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
-      }).join("");
+      return Object.entries(HOTEL_IMAGE_LABELS).map(([key, label]) =>
+        mkFig(hotel.images[key] || fallback, label)
+      ).join("");
     }
     return hotelImagesList(hotel).map((src, i) => {
       const label = Object.values(HOTEL_IMAGE_LABELS)[i] || "Зураг";
-      return `<figure class="tp-hotel-gallery-item tp-hotel-gallery-lg"><img src="${src}" alt="${hotel.name_en} — ${label}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}'"><figcaption>${label}</figcaption></figure>`;
+      return mkFig(src, label);
     }).join("");
   }
 
@@ -967,10 +990,15 @@
   }
 
   function renderAttractionCard(a) {
-    const img = window.TravelImages?.pickCover(a, "attraction") || a.image || "/images/routes/china/panda.jpg";
+    const img = travelImg(a.image || a.cover_image_url, {
+      kind: "attraction",
+      size: "card",
+      className: "tp-hotel-img",
+      alt: a.name_mn || a.name
+    });
     return `
       <article class="tp-train-card" data-item-id="${a.id}">
-        <img class="tp-hotel-img" src="${img}" alt="${a.name_mn || a.name}" loading="lazy">
+        ${img}
         <h4 class="tp-hotel-name">${a.name_mn || a.name}</h4>
         <p class="tp-hotel-desc">${a.description_mn || a.description || ""}</p>
         <div class="tp-card-price-row">

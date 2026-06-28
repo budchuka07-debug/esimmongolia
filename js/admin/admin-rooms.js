@@ -18,8 +18,8 @@
         <div class="adm-field"><label>Breakfast</label><select name="breakfast_included"><option value="true" ${r.breakfast_included ? "selected" : ""}>Тийм</option><option value="false" ${!r.breakfast_included ? "selected" : ""}>Үгүй</option></select></div>
         <div class="adm-field"><label>Free cancel</label><select name="free_cancel"><option value="true" ${r.free_cancel ? "selected" : ""}>Тийм</option><option value="false" ${!r.free_cancel ? "selected" : ""}>Үгүй</option></select></div>
         <div class="adm-field"><label>Final price (MNT)</label><input name="final_price_mnt" type="number" value="${AdminCore.esc(r.final_price_mnt)}"></div>
-        ${AdminCloudinary.fieldCover("cover_image_url", r.cover_image_url || "", "Cover image", "esimmongolia/rooms")}
-        ${AdminCloudinary.fieldGallery("room_image_urls", r.room_image_urls || r.images || [], "Room images", "esimmongolia/rooms")}
+        ${AdminCloudinary.fieldCover("cover_image_url", r.cover_image_url || "", "Cover image", AdminCloudinary.FOLDERS.rooms)}
+        ${AdminCloudinary.fieldGallery("room_image_urls", r.room_image_urls || r.images || [], "Room images", AdminCloudinary.FOLDERS.rooms, { coverField: "cover_image_url", coverUrl: r.cover_image_url || "" })}
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${r.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${r.active === false ? "selected" : ""}>Үгүй</option></select></div>
       </div>`;
   }
