@@ -4,7 +4,7 @@
 (function () {
   const FALLBACK_IMG = "/images/hotels/exterior-01.jpg";
   const IMAGE_KEYS = ["exterior", "lobby", "standard_room", "deluxe_room", "bathroom", "restaurant"];
-  const COVER_KEYS = ["exterior", "lobby", "standard_room", "deluxe_room", "restaurant", "bathroom"];
+  const COVER_KEYS = ["exterior", "lobby"];
 
   const CITY_HOTEL_TARGETS = {
     shanghai: 20, beijing: 20, hohhot: 15, bangkok: 20, phuket: 15,

@@ -380,8 +380,9 @@
   }
 
   function hotelCover(h) {
-    if (h.images && h.cover_key && h.images[h.cover_key]) return h.images[h.cover_key];
     if (h.images?.exterior) return h.images.exterior;
+    if (h.images?.lobby) return h.images.lobby;
+    if (h.cover_key && h.images?.[h.cover_key]) return h.images[h.cover_key];
     if (Array.isArray(h.images_list) && h.images_list.length) {
       const idx = hashHotelIdx(h.id) % h.images_list.length;
       return h.images_list[idx];
