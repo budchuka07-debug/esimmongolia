@@ -25,6 +25,17 @@
     harbin: { id: "harbin", country_id: "china", name_mn: "Харбин", name_en: "Harbin", local: "哈尔滨", aliases: ["Харбин", "Harbin", "哈尔滨"] },
     xian: { id: "xian", country_id: "china", name_mn: "Сиань", name_en: "Xi'an", local: "西安", aliases: ["Сиань", "Xi'an", "Xian", "西安"] },
     yiwu: { id: "yiwu", country_id: "china", name_mn: "Иү", name_en: "Yiwu", local: "义乌", aliases: ["Иү", "Yiwu", "义乌"] },
+    dalian: { id: "dalian", country_id: "china", name_mn: "Далян", name_en: "Dalian", local: "大连", aliases: ["Далян", "Dalian", "大连", "DLC"] },
+    hangzhou: { id: "hangzhou", country_id: "china", name_mn: "Ханчжоу", name_en: "Hangzhou", local: "杭州", aliases: ["Ханчжоу", "Hangzhou", "杭州", "HGH"] },
+    suzhou: { id: "suzhou", country_id: "china", name_mn: "Сүчжоу", name_en: "Suzhou", local: "苏州", aliases: ["Сүчжоу", "Suzhou", "苏州"] },
+    nanjing: { id: "nanjing", country_id: "china", name_mn: "Нанжин", name_en: "Nanjing", local: "南京", aliases: ["Нанжин", "Nanjing", "南京", "NKG"] },
+    qingdao: { id: "qingdao", country_id: "china", name_mn: "Циндао", name_en: "Qingdao", local: "青岛", aliases: ["Циндао", "Qingdao", "青岛", "TAO"] },
+    xiamen: { id: "xiamen", country_id: "china", name_mn: "Шямын", name_en: "Xiamen", local: "厦门", aliases: ["Шямын", "Xiamen", "厦门", "XMN"] },
+    kunming: { id: "kunming", country_id: "china", name_mn: "Куньмин", name_en: "Kunming", local: "昆明", aliases: ["Куньмин", "Kunming", "昆明", "KMG"] },
+    wuhan: { id: "wuhan", country_id: "china", name_mn: "Уухан", name_en: "Wuhan", local: "武汉", aliases: ["Уухан", "Wuhan", "武汉", "WUH"] },
+    changsha: { id: "changsha", country_id: "china", name_mn: "Чанша", name_en: "Changsha", local: "长沙", aliases: ["Чанша", "Changsha", "长沙", "CSX"] },
+    zhangjiajie: { id: "zhangjiajie", country_id: "china", name_mn: "Жанжяжэ", name_en: "Zhangjiajie", local: "张家界", aliases: ["Жанжяжэ", "Zhangjiajie", "张家界", "DYG"] },
+    sanya: { id: "sanya", country_id: "china", name_mn: "Саня", name_en: "Sanya", local: "三亚", aliases: ["Саня", "Sanya", "三亚", "SYX"] },
     erenhot: { id: "erenhot", country_id: "china", name_mn: "Эрээн", name_en: "Erenhot", local: "二连浩特", aliases: ["Эрээн", "Erenhot", "Erlian", "二连浩特"] },
     bangkok: { id: "bangkok", country_id: "thailand", name_mn: "Бангкок", name_en: "Bangkok", local: "กรุงเทพ", aliases: ["Бангкок", "Bangkok", "BKK"] },
     phuket: { id: "phuket", country_id: "thailand", name_mn: "Пхукет", name_en: "Phuket", local: "ภูเก็ต", aliases: ["Пхукет", "Phuket", "HKT"] },
@@ -104,7 +115,13 @@
   }
 
   function getCitiesByCountry(countryId) {
-    return Object.values(CITIES).filter((c) => c.country_id === countryId && c.id !== "ulanbaatar");
+    const list = Object.values(CITIES).filter((c) => c.country_id === countryId && c.id !== "ulanbaatar");
+    if (countryId === "china" && window.CHINA_DESTINATIONS?.TIER1) {
+      const order = [...window.CHINA_DESTINATIONS.TIER1, ...window.CHINA_DESTINATIONS.TIER2];
+      const rank = Object.fromEntries(order.map((id, i) => [id, i]));
+      list.sort((a, b) => (rank[a.id] ?? 999) - (rank[b.id] ?? 999));
+    }
+    return list;
   }
 
   function allCityOptions(countryId) {

@@ -7,10 +7,39 @@
   const COVER_KEYS = ["exterior", "lobby"];
 
   const CITY_HOTEL_TARGETS = {
-    shanghai: 20, beijing: 20, hohhot: 15, bangkok: 20, phuket: 15,
+    shanghai: 20, beijing: 20, bangkok: 20, phuket: 15,
     da_nang: 15, seoul: 20, tokyo: 20, bali: 15
   };
   const DEFAULT_HOTEL_COUNT = 12;
+  const CHINA_DEFAULT_HOTEL_COUNT = 30;
+
+  function isChinaCatalogCity(cityId) {
+    return window.CHINA_DESTINATIONS?.isChinaCity(cityId) || window.TRAVEL_CITIES?.getCity(cityId)?.country_id === "china";
+  }
+
+  function hotelTargetForCity(cityId) {
+    if (window.CHINA_DESTINATIONS?.isChinaCity(cityId)) {
+      return window.CHINA_DESTINATIONS.getHotelCount(cityId);
+    }
+    return CITY_HOTEL_TARGETS[cityId] || DEFAULT_HOTEL_COUNT;
+  }
+
+  function starsForSlot(cityId, globalIdx, seed) {
+    if (isChinaCatalogCity(cityId) && window.CHINA_DESTINATIONS?.starForHotelIndex) {
+      return window.CHINA_DESTINATIONS.starForHotelIndex(globalIdx);
+    }
+    return 3 + Math.floor(pseudoRandom(seed + 13) * 3);
+  }
+
+  function priceForTier(cityId, globalIdx, seed, stars) {
+    if (isChinaCatalogCity(cityId) && window.CHINA_DESTINATIONS?.tierLabelForIndex) {
+      const tier = window.CHINA_DESTINATIONS.tierLabelForIndex(globalIdx);
+      const ranges = { budget: [80, 180], mid: [250, 450], luxury: [550, 1200] };
+      const [lo, hi] = ranges[tier] || [120, 400];
+      return Math.round(lo + pseudoRandom(seed + 19) * (hi - lo));
+    }
+    return Math.round(55 + pseudoRandom(seed + 19) * 120 + stars * 35);
+  }
 
   const HOTEL_BRANDS = [
     "Holiday Inn", "Marriott", "Hilton", "Hyatt", "Novotel", "Sheraton",
@@ -74,8 +103,8 @@
     const seed = hashSeed(`${cityId}:${area.id}:${idx}`);
     const brand = HOTEL_BRANDS[Math.floor(pseudoRandom(seed) * HOTEL_BRANDS.length)];
     const suffix = HOTEL_SUFFIXES[Math.floor(pseudoRandom(seed + 7) * HOTEL_SUFFIXES.length)];
-    const stars = 3 + Math.floor(pseudoRandom(seed + 13) * 3);
-    const basePrice = 55 + Math.floor(pseudoRandom(seed + 19) * 120) + stars * 35;
+    const stars = starsForSlot(cityId, globalIdx, seed);
+    const basePrice = priceForTier(cityId, globalIdx, seed, stars);
     const areaFactor = area.distance_to_center_km > 15 ? 0.85 : area.distance_to_airport_km < 5 ? 0.9 : 1;
     const price = Math.round(basePrice * areaFactor * (0.9 + pseudoRandom(seed + 23) * 0.4));
 
@@ -125,7 +154,7 @@
     if (!city) return [];
     const cityMn = city.name_mn;
     const areas = window.HOTEL_AREAS?.getAreas(cityId) || [];
-    const target = CITY_HOTEL_TARGETS[cityId] || DEFAULT_HOTEL_COUNT;
+    const target = hotelTargetForCity(cityId);
     const specs = [];
     let globalIdx = 0;
 
@@ -202,7 +231,10 @@
       nights: nightsNum,
       original_price: Math.round((Number(spec.price_per_night) || 0) * nightsNum),
       currency: country.currency || "USD",
-      internal_supplier_reference: supplierRef
+      internal_supplier_reference: supplierRef,
+      tier: isChinaCatalogCity(cityId) && window.CHINA_DESTINATIONS?.tierLabelForIndex
+        ? window.CHINA_DESTINATIONS.tierLabelForIndex(idx)
+        : null
     };
   }
 
@@ -305,6 +337,10 @@
   window.HOTELS_CATALOG = {
     HOTEL_STOCK,
     CITY_HOTEL_TARGETS,
+    CHINA_DEFAULT_HOTEL_COUNT,
+    DEFAULT_HOTEL_COUNT,
+    hotelTargetForCity,
+    isChinaCatalogCity,
     FALLBACK_IMG,
     assignImages,
     buildHotel,

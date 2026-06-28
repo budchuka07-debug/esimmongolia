@@ -30,10 +30,10 @@
     const fromMn = window.TRAVEL_CITIES?.getCityLabelMn(fromId) || fromInput;
 
     const airportMap = {
-      shanghai: "PVG", beijing: "PEK", guangzhou: "CAN", shenzhen: "SZX",
+      ...(window.CHINA_DESTINATIONS?.buildAirportMap?.() || {}),
       bangkok: "BKK", phuket: "HKT", tokyo: "NRT", seoul: "ICN",
       singapore: "SIN", dubai: "DXB", istanbul: "IST", bali: "DPS",
-      ulanbaatar: "UBN"
+      hanoi: "HAN", ho_chi_minh: "SGN", kuala_lumpur: "KUL"
     };
     const destAp = airportMap[toId] || "PVG";
     const fromAp = airportMap[fromId] || "UBN";

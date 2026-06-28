@@ -4,29 +4,74 @@
  */
 const { randomUUID } = require("crypto");
 
-const DESTINATIONS = [
-  { keys: ["шанхай", "shanghai"], country: "Хятад", city: "Шанхай" },
-  { keys: ["бээжин", "beijing"], country: "Хятад", city: "Бээжин" },
-  { keys: ["гуанжоу", "guangzhou"], country: "Хятад", city: "Гуанжоу" },
-  { keys: ["шэньжэнь", "shenzhen"], country: "Хятад", city: "Шэньжэнь" },
-  { keys: ["солонгос", "korea", "сеул", "seoul"], country: "Солонгос", city: "Сөүл" },
-  { keys: ["япон", "japan", "tokyo", "токио"], country: "Япон", city: "Токио" },
-  { keys: ["тайланд", "thailand", "bangkok", "бангкок"], country: "Тайланд", city: "Бангкок" },
-  { keys: ["вьетнам", "vietnam", "hanoi", "ханой"], country: "Вьетнам", city: "Ханой" },
-  { keys: ["сингапур", "singapore"], country: "Сингапур", city: "Сингапур" },
-  { keys: ["турк", "turkey", "istanbul"], country: "Турк", city: "Стамбул" },
-  { keys: ["дубай", "dubai"], country: "ОАЭ", city: "Дубай" },
-  { keys: ["хятад", "china"], country: "Хятад", city: null }
+let CHINA_DEST;
+try {
+  CHINA_DEST = require("../../data/china-destinations.js");
+} catch {
+  CHINA_DEST = null;
+}
+
+const INTL_DESTINATIONS = [
+  { keys: ["эрээн", "erenhot", "eren hot", "erian"], country: "Хятад", city: "Эрээн", city_id: "erenhot" },
+  { keys: ["солонгос", "korea", "сеул", "seoul"], country: "Солонгос", city: "Сөүл", city_id: "seoul" },
+  { keys: ["пусан", "busan"], country: "Солонгос", city: "Пусан", city_id: "busan" },
+  { keys: ["япон", "japan", "tokyo", "токио"], country: "Япон", city: "Токио", city_id: "tokyo" },
+  { keys: ["осака", "osaka"], country: "Япон", city: "Осака", city_id: "osaka" },
+  { keys: ["тайланд", "thailand", "bangkok", "бангкок"], country: "Тайланд", city: "Бангкок", city_id: "bangkok" },
+  { keys: ["пхукет", "phuket"], country: "Тайланд", city: "Пхукет", city_id: "phuket" },
+  { keys: ["вьетнам", "vietnam", "hanoi", "ханой"], country: "Вьетнам", city: "Ханой", city_id: "hanoi" },
+  { keys: ["хошимин", "ho chi minh", "saigon"], country: "Вьетнам", city: "Хошимин", city_id: "ho_chi_minh" },
+  { keys: ["сингапур", "singapore"], country: "Сингапур", city: "Сингапур", city_id: "singapore" },
+  { keys: ["бали", "bali"], country: "Индонез", city: "Бали", city_id: "bali" },
+  { keys: ["турк", "turkey", "istanbul"], country: "Турк", city: "Стамбул", city_id: "istanbul" },
+  { keys: ["дубай", "dubai"], country: "ОАЭ", city: "Дубай", city_id: "dubai" },
+  { keys: ["хятад", "china"], country: "Хятад", city: null, city_id: null }
 ];
 
+const DESTINATIONS = [
+  ...(CHINA_DEST?.buildAiDestinations?.() || []),
+  ...INTL_DESTINATIONS
+];
+
+function getChinaProfile(cityId) {
+  return cityId && CHINA_DEST?.getCity ? CHINA_DEST.getCity(cityId) : null;
+}
+
+/** Latin keyboard Mongolian → Cyrillic hints for intent parsing */
+function normalizeInput(text) {
+  let t = String(text || "").toLowerCase();
+
+  const cityAliases = [
+    [/\bhoh?\s*ho?t\b/g, "хөх хот"],
+    [/\bhuh\s*hot\b/g, "хөх хот"],
+    [/\bbee\s*jin\b/g, "бээжин"],
+    [/\bshan\s*xai\b/g, "шанхай"],
+    [/\beren\s*hot\b/g, "эрээн"],
+    [/\bgu[a-z]*\s*zhou\b/g, "гуанжоу"]
+  ];
+  for (const [re, repl] of cityAliases) t = t.replace(re, repl);
+
+  t = t.replace(/(\d+)\s*h(ü|u{1,2}?)n\b/gi, "$1 хүн");
+  t = t.replace(/(\d+)\s*hon?og\b/gi, "$1 хоног");
+  t = t.replace(/(\d+)\s*khonog\b/gi, "$1 хоног");
+  t = t.replace(/\b(zardal|zartal|zardaliin)\b/gi, "зардал");
+  t = t.replace(/\b(tusev|tosov|tösöv)\b/gi, "төсөв");
+  t = t.replace(/\b(yavah|yvah|yaah)\b/gi, "явах");
+  t = t.replace(/\b(honog|khonog)\b/gi, "хоног");
+
+  return t;
+}
+
 function parseIntent(text) {
-  const t = String(text || "").toLowerCase();
+  const t = normalizeInput(text);
   let country = null;
   let city = null;
+  let city_id = null;
   for (const d of DESTINATIONS) {
     if (d.keys.some((k) => t.includes(k))) {
       country = d.country;
       city = d.city;
+      city_id = d.city_id || null;
       break;
     }
   }
@@ -39,6 +84,7 @@ function parseIntent(text) {
   return {
     country,
     city,
+    city_id,
     days: days ? Number(days) : null,
     people: people ? Number(people) : null,
     month,
@@ -52,6 +98,7 @@ function parseIntent(text) {
     wantsVisa: /виз|visa/i.test(t),
     wantsFood: /хоол|food/i.test(t),
     wantsTransport: /метро|тээвэр|transport/i.test(t),
+    wantsCost: /зардал|төсөв|zardal|tusev|cost|price|une|үн/i.test(t),
     purpose: /худалдаа|business|бизнес/i.test(t) ? "бизнес" :
       /сургалт|study/i.test(t) ? "сургалт" :
       /гэр бүл|family/i.test(t) ? "гэр бүл" : "аялал"
@@ -68,6 +115,7 @@ function mergeIntent(history, message) {
   return {
     country: base.country || merged.country,
     city: base.city || merged.city,
+    city_id: base.city_id || merged.city_id,
     days: base.days || merged.days,
     people: base.people || merged.people,
     month: base.month || merged.month,
@@ -81,6 +129,7 @@ function mergeIntent(history, message) {
     wantsVisa: base.wantsVisa || merged.wantsVisa,
     wantsFood: base.wantsFood || merged.wantsFood,
     wantsTransport: base.wantsTransport || merged.wantsTransport,
+    wantsCost: base.wantsCost || merged.wantsCost,
     purpose: base.purpose !== "аялал" ? base.purpose : merged.purpose
   };
 }
@@ -99,7 +148,7 @@ function isVague(msg) {
 function missingFields(intent) {
   const m = [];
   if (!intent.country && !intent.city) m.push("destination");
-  if (!intent.days && !intent.month) m.push("dates");
+  if (!intent.days && !intent.month && !intent.wantsCost) m.push("dates");
   if (!intent.people) m.push("people");
   return m;
 }
@@ -134,9 +183,10 @@ function buildFollowUp(intent, missing) {
 }
 
 function buildFullReply(intent) {
-  const city = intent.city || (intent.country === "Хятад" ? "Бээжин" : intent.country || "таны сонгосон хот");
-  const country = intent.country || "гадаад";
-  const days = intent.days || 5;
+  const profile = intent.city_id ? getChinaProfile(intent.city_id) : null;
+  const city = intent.city || profile?.name_mn || (intent.country === "Хятад" ? "Бээжин" : intent.country || "таны сонгосон хот");
+  const country = intent.country || profile?.country_id || "гадаад";
+  const days = intent.days || profile?.recommended_stay_days || 5;
   const people = intent.people || 2;
   const dateHint = intent.month
     ? `${intent.month} сар${intent.day ? "ын " + intent.day : ""}`
@@ -195,6 +245,13 @@ function buildTopicReply(intent, message) {
   }
   if (intent.wantsVisa || /виз/i.test(t)) {
     return `🛂 Виз (Монгол иргэн):\n• Хятад: L виз, ЭСЯ-наас\n• eVisa одоогоор байхгүй\n• Нислэг + буудлын захиалга хавсаргана\n\nДэлгэрэнгүй: esimmongolia.com/china/#visa`;
+  }
+  if (intent.wantsCost || /зардал|төсөв|zardal|tusev/i.test(t)) {
+    const days = intent.days || 5;
+    const people = intent.people || 2;
+    const low = days * 280 * people;
+    const high = days * 620 * people;
+    return `💰 ${city} — ${people} хүн, ${days} хоног (ойролцоо):\n• Нийт ${low}–${high} CNY (нислэг, буудал, хоол, тээвэр)\n• Хөх хот→Бээжин галт тэрэг ~200 CNY/хүн\n• Буудал ~250–500 CNY/өдөр\n\nХоног, огноогоо бичвэл илүү нарийвчилна.`;
   }
   return null;
 }
