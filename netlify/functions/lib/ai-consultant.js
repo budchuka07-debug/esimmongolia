@@ -377,10 +377,10 @@ function buildGreetingReply() {
   return {
     reply: `Сайн байна уу! Би eSIM Mongolia-ийн аяллын зөвлөх. Таны хувийн аяллын агент шиг — маршрут, буудал, нислэг, eSIM, төсөв, виз бүгдийг **Монгол хэлээр** дэлгэрэнгүй зөвлөнө.
 
-Жишээ нь ингэж бичээрэй:
+Жишээ нь ингэж бичээрэй (кирилл эсвэл латинаар):
 • «8 сард Шанхай 5 хоног, 2 хүн»
-• «Хөх хотоос Бээжин 3 хоног, гэр бүл 4 хүн, төсөв 8000 юань»
-• «Guangzhou business trip, 4 хоног, 4 одтой буудал хэрэгтэй»
+• «sain baina, shanghai ruu 5 honog 2 hun — tuslah»
+• «Hohhot 3 honog, ger bulel 4 hun, tosov 8000 yuan»
 
 **Чат бүрэн үнэгүй** — утас, email, form шаардлагагүй. Захиалахыг хүсвэл л доорх товчоос сонгоно.`,
     cards: [],
@@ -426,7 +426,7 @@ function buildTopicReply(intent, message) {
   const t = message.toLowerCase();
   const parts = [`${city}-тай холбоотой асуулагдлаа — дэлгэрэнгүй тайлбарлая.\n`];
 
-  if (intent.wantsFlight || /нислэг/i.test(t)) {
+  if (intent.wantsFlight || /нислэг|flight|nisleg|nisleh/i.test(t)) {
     const cityId = intent.city_id || "shanghai";
     const profile = getProfile(cityId);
     const destName = profile?.name_mn || city;
@@ -447,7 +447,7 @@ function buildTopicReply(intent, message) {
     }
     return wrapTopic(parts, intent, "flight");
   }
-  if (intent.wantsHotel || /буудал/i.test(t)) {
+  if (intent.wantsHotel || /буудал|hotel|budal|buudal/i.test(t)) {
     const areas = CITY_PLANS[intent.city_id]?.hotelAreas || [{ area: "City Center", why: "төв, аюулгүй" }];
     parts.push("🏨 **Буудлын бүс:**");
     areas.forEach((a) => parts.push(`• ${a.area} — ${a.why}`));
@@ -460,7 +460,7 @@ function buildTopicReply(intent, message) {
     parts.push("Maps + WeChat-д 5–10 GB ихэнх 5–7 хоногт хангалттай. Видео их бол 15 GB+ сонго.");
     return wrapTopic(parts, intent, "esim");
   }
-  if (intent.wantsCost || /зардал|төсөв/i.test(t)) {
+  if (intent.wantsCost || /зардал|төсөв|tosov|tusev|zardal|budget|cost/i.test(t)) {
     const budget = calcBudget(intent, profile);
     parts.push(`💰 **Төсөв (${budget.people} хүн, ${budget.days} хоног):**`);
     parts.push(`• Буудал: ${budget.hotel}\n• Хоол: ${budget.food}\n• Тээвэр: ${budget.metro}\n• Үзвэр: ${budget.attractions}`);

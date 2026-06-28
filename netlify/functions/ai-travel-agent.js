@@ -4,6 +4,7 @@
  */
 const { randomUUID } = require("crypto");
 const consultant = require("./lib/ai-consultant");
+const latin = require("./lib/mongolian-latin");
 
 let CHINA_DEST;
 try {
@@ -12,75 +13,73 @@ try {
   CHINA_DEST = null;
 }
 
-const INTL_DESTINATIONS = [
-  { keys: ["эрээн", "erenhot", "eren hot", "erian"], country: "Хятад", city: "Эрээн", city_id: "erenhot" },
-  { keys: ["солонгос", "korea", "сеул", "seoul"], country: "Солонгос", city: "Сөүл", city_id: "seoul" },
-  { keys: ["пусан", "busan"], country: "Солонгос", city: "Пусан", city_id: "busan" },
-  { keys: ["япон", "japan", "tokyo", "токио"], country: "Япон", city: "Токио", city_id: "tokyo" },
+const INTD_DESTINATIONS = [
+  { keys: ["эрээн", "erenhot", "eren hot", "erian", "erlen", "erlen hot"], country: "Хятад", city: "Эрээн", city_id: "erenhot" },
+  { keys: ["солонгос", "solongos", "korea", "south korea"], country: "Солонгос", city: null, city_id: null },
+  { keys: ["сеул", "seoul", "soul", "incheon"], country: "Солонгос", city: "Сөүл", city_id: "seoul" },
+  { keys: ["пусан", "busan", "pusan"], country: "Солонгос", city: "Пусан", city_id: "busan" },
+  { keys: ["япон", "yapon", "japan"], country: "Япон", city: null, city_id: null },
+  { keys: ["токио", "tokyo", "tokio"], country: "Япон", city: "Токио", city_id: "tokyo" },
   { keys: ["осака", "osaka"], country: "Япон", city: "Осака", city_id: "osaka" },
-  { keys: ["тайланд", "thailand", "bangkok", "бангкок"], country: "Тайланд", city: "Бангкок", city_id: "bangkok" },
+  { keys: ["тайланд", "tailand", "thailand", "tai land"], country: "Тайланд", city: null, city_id: null },
+  { keys: ["бангкок", "bangkok", "bankok"], country: "Тайланд", city: "Бангкок", city_id: "bangkok" },
   { keys: ["пхукет", "phuket"], country: "Тайланд", city: "Пхукет", city_id: "phuket" },
-  { keys: ["вьетнам", "vietnam", "hanoi", "ханой"], country: "Вьетнам", city: "Ханой", city_id: "hanoi" },
-  { keys: ["хошимин", "ho chi minh", "saigon"], country: "Вьетнам", city: "Хошимин", city_id: "ho_chi_minh" },
-  { keys: ["сингапур", "singapore"], country: "Сингапур", city: "Сингапур", city_id: "singapore" },
+  { keys: ["вьетнам", "vietnam", "viet nam"], country: "Вьетнам", city: null, city_id: null },
+  { keys: ["ханой", "hanoi", "ha noi"], country: "Вьетнам", city: "Ханой", city_id: "hanoi" },
+  { keys: ["хошимин", "ho chi minh", "hochiminh", "saigon"], country: "Вьетнам", city: "Хошимин", city_id: "ho_chi_minh" },
+  { keys: ["сингапур", "singapore", "singapor"], country: "Сингапур", city: "Сингапур", city_id: "singapore" },
   { keys: ["бали", "bali"], country: "Индонез", city: "Бали", city_id: "bali" },
-  { keys: ["турк", "turkey", "istanbul"], country: "Турк", city: "Стамбул", city_id: "istanbul" },
-  { keys: ["дубай", "dubai"], country: "ОАЭ", city: "Дубай", city_id: "dubai" },
-  { keys: ["хятад", "china"], country: "Хятад", city: null, city_id: null }
+  { keys: ["турк", "turk", "turkey"], country: "Турк", city: null, city_id: null },
+  { keys: ["стамбул", "istanbul", "stambul"], country: "Турк", city: "Стамбул", city_id: "istanbul" },
+  { keys: ["дубай", "dubai", "dubay"], country: "ОАЭ", city: "Дубай", city_id: "dubai" },
+  { keys: ["хятад", "hyatad", "khyatad", "china"], country: "Хятад", city: null, city_id: null }
 ];
 
 const DESTINATIONS = [
   ...(CHINA_DEST?.buildAiDestinations?.() || []),
-  ...INTL_DESTINATIONS
+  ...INTD_DESTINATIONS
 ];
 
 function getChinaProfile(cityId) {
   return cityId && CHINA_DEST?.getCity ? CHINA_DEST.getCity(cityId) : null;
 }
 
-/** Latin keyboard Mongolian → Cyrillic hints for intent parsing */
 function normalizeInput(text) {
-  let t = String(text || "").toLowerCase();
+  return latin.normalizeLatinMongolian(text, CHINA_DEST);
+}
 
-  const cityAliases = [
-    [/\bhoh?\s*ho?t\b/g, "хөх хот"],
-    [/\bhuh\s*hot\b/g, "хөх хот"],
-    [/\bbee\s*jin\b/g, "бээжин"],
-    [/\bshan\s*xai\b/g, "шанхай"],
-    [/\beren\s*hot\b/g, "эрээн"],
-    [/\bgu[a-z]*\s*zhou\b/g, "гуанжоу"]
-  ];
-  for (const [re, repl] of cityAliases) t = t.replace(re, repl);
-
-  t = t.replace(/(\d+)\s*h(ü|u{1,2}?)n\b/gi, "$1 хүн");
-  t = t.replace(/(\d+)\s*hon?og\b/gi, "$1 хоног");
-  t = t.replace(/(\d+)\s*khonog\b/gi, "$1 хоног");
-  t = t.replace(/\b(zardal|zartal|zardaliin)\b/gi, "зардал");
-  t = t.replace(/\b(tusev|tosov|tösöv)\b/gi, "төсөв");
-  t = t.replace(/\b(yavah|yvah|yaah)\b/gi, "явах");
-  t = t.replace(/\b(honog|khonog)\b/gi, "хоног");
-
-  return t;
+function matchDestination(text) {
+  const hay = latin.searchBlob(text, CHINA_DEST);
+  let best = null;
+  let bestLen = 0;
+  for (const d of DESTINATIONS) {
+    for (const k of d.keys || []) {
+      const key = String(k).toLowerCase();
+      if (!key || key.length < 2) continue;
+      if (hay.includes(key) && key.length > bestLen) {
+        best = d;
+        bestLen = key.length;
+      }
+    }
+  }
+  return best;
 }
 
 function parseIntent(text) {
   const t = normalizeInput(text);
-  let country = null;
-  let city = null;
-  let city_id = null;
-  for (const d of DESTINATIONS) {
-    if (d.keys.some((k) => t.includes(k))) {
-      country = d.country;
-      city = d.city;
-      city_id = d.city_id || null;
-      break;
-    }
-  }
-  const days = (t.match(/(\d+)\s*хоног/) || [])[1] || null;
-  const people = (t.match(/(\d+)\s*хүн/) || [])[1] || null;
-  const month = (t.match(/(\d{1,2})\s*сар/) || [])[1] || null;
+  const hay = latin.searchBlob(text, CHINA_DEST);
+
+  const dest = matchDestination(text);
+  const country = dest?.country || null;
+  const city = dest?.city || null;
+  const city_id = dest?.city_id || null;
+
+  const days = (t.match(/(\d+)\s*хоног/) || hay.match(/(\d+)\s*хоног/) || [])[1] || null;
+  const people = (t.match(/(\d+)\s*хүн/) || hay.match(/(\d+)\s*хүн/) || [])[1] || null;
+  const month = (t.match(/(\d{1,2})\s*сар/) || hay.match(/(\d{1,2})\s*сар/) || [])[1] || null;
   const day = (t.match(/(\d{1,2})\s*-?нд/) || t.match(/сарын\s*(\d{1,2})/) || [])[1] || null;
-  const budget = (t.match(/(\d+)\s*(сая|мянга|төгрөг|mnt|юань|cny)/i) || [])[1] || null;
+  const budget = (t.match(/(\d+)\s*(сая|мянга|төгрөг|mnt|юань|cny)/i) ||
+    hay.match(/(\d+)\s*(сая|мянга|төгрөг|mnt|юань|cny)/i) || [])[1] || null;
 
   return {
     country,
@@ -91,24 +90,24 @@ function parseIntent(text) {
     month,
     day,
     budget,
-    wantsDisney: /disneyland|дисней/i.test(t),
-    wantsEsim: /esim|интернэт|интернет/i.test(t),
-    wantsFlight: /нислэг|flight|нисэх/i.test(t),
-    wantsHotel: /буудал|hotel|зочид/i.test(t),
-    wantsTrain: /галт тэрэг|train|12306/i.test(t),
-    wantsVisa: /виз|visa/i.test(t),
-    wantsFood: /хоол|food/i.test(t),
-    wantsTransport: /метро|тээвэр|transport/i.test(t),
-    wantsCost: /зардал|төсөв|zardal|tusev|cost|price|une|үн/i.test(t),
-    wantsInsurance: /даатгал|insurance/i.test(t),
-    hasChildren: /хүүхэд|child|kids/i.test(t),
-    hasElderly: /ахмад|tom hun|том хүн|elderly/i.test(t),
-    hotelLevel: /5 од|5 star|luxury/i.test(t) ? 5 :
-      /4 од|4 star|mid/i.test(t) ? 4 :
-      /2 од|budget|хямд/i.test(t) ? 2 : null,
-    purpose: /худалдаа|business|бизнес/i.test(t) ? "бизнес" :
-      /сургалт|study/i.test(t) ? "сургалт" :
-      /гэр бүл|family/i.test(t) ? "гэр бүл" : "аялал"
+    wantsDisney: /disneyland|дисней/i.test(hay),
+    wantsEsim: /esim|интернэт|интернет/i.test(hay),
+    wantsFlight: /нислэг|нисэх|flight/i.test(hay),
+    wantsHotel: /буудал|hotel|зочид/i.test(hay),
+    wantsTrain: /галт тэрэг|train|12306/i.test(hay),
+    wantsVisa: /виз|visa/i.test(hay),
+    wantsFood: /хоол|food/i.test(hay),
+    wantsTransport: /метро|тээвэр|transport/i.test(hay),
+    wantsCost: /зардал|төсөв|cost|price|үн|une/i.test(hay),
+    wantsInsurance: /даатгал|insurance/i.test(hay),
+    hasChildren: /хүүхэд|child|kids/i.test(hay),
+    hasElderly: /ахмад|том хүн|elderly/i.test(hay),
+    hotelLevel: /5 од|5 star|luxury/i.test(hay) ? 5 :
+      /4 од|4 star|mid/i.test(hay) ? 4 :
+      /2 од|budget|хямд/i.test(hay) ? 2 : null,
+    purpose: /худалдаа|business|бизнес/i.test(hay) ? "бизнес" :
+      /сургалт|study/i.test(hay) ? "сургалт" :
+      /гэр бүл|family/i.test(hay) ? "гэр бүл" : "аялал"
   };
 }
 
@@ -118,7 +117,7 @@ function mergeIntent(history, message) {
     .filter((m) => m.role === "user")
     .map((m) => m.content)
     .join(" ");
-  const merged = parseIntent(all + " " + message);
+  const merged = parseIntent(`${all} ${message}`);
   return {
     country: base.country || merged.country,
     city: base.city || merged.city,
@@ -147,13 +146,16 @@ function mergeIntent(history, message) {
 
 function isGreeting(msg) {
   const t = msg.trim().toLowerCase();
-  return /^(сайн уу|сайн байна уу|hello|hi|hey|баярлалаа|thanks)[!.?\s]*$/i.test(t) ||
+  return latin.latinGreeting(t) ||
+    /^(сайн уу|сайн байна уу|hello|hi|hey|баярлалаа|thanks)[!.?\s]*$/i.test(t) ||
     (t.length < 20 && /сайн уу|сайн байна/i.test(t));
 }
 
 function isVague(msg) {
-  const t = msg.toLowerCase();
-  return /яаж|юу хийх|төлөвлө|зөвлө|санал|help|тусла/i.test(t) && t.length < 80;
+  return latin.latinVague(msg) || (() => {
+    const t = normalizeInput(msg);
+    return /яаж|юу хийх|төлөвлө|зөвлө|санал|тусла/i.test(t) && t.length < 80;
+  })();
 }
 
 function missingFields(intent) {
@@ -166,12 +168,13 @@ function missingFields(intent) {
 
 function buildReply(message, history) {
   const intent = mergeIntent(history, message);
+  const hay = latin.searchBlob(message, CHINA_DEST);
 
   if (isGreeting(message)) {
     return consultant.buildGreetingReply();
   }
 
-  if (intent.wantsInsurance || /даатгал/i.test(message)) {
+  if (intent.wantsInsurance || /даатгал|insurance/i.test(hay)) {
     return consultant.buildInsuranceReply(intent);
   }
 
@@ -179,12 +182,12 @@ function buildReply(message, history) {
   if (full) return full;
 
   const topic = consultant.buildTopicReply(intent, message);
-  if (topic && !/маршрут|төлөвлө/i.test(message)) {
+  if (topic && !/маршрут|төлөвлө|marshrut|tuluvlolt|plan/i.test(hay)) {
     return topic;
   }
 
   const missing = missingFields(intent);
-  if (missing.length > 0) {
+  if (missing.length > 0 && (isVague(message) || missing.length >= 2)) {
     return consultant.buildFollowUpReply(intent, missing);
   }
 

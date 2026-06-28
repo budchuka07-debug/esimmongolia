@@ -487,8 +487,14 @@
     const c = getCity(cityId);
     if (!c) return [cityId];
     const keys = [cityId, c.name_en.toLowerCase(), c.name_mn.toLowerCase(), c.name_zh];
-    if (cityId === "hohhot") keys.push("hohhot", "huh hot", "hoh hot", "huhehaote", "хөх хот");
-    if (cityId === "xian") keys.push("xi'an", "xian");
+    const en = c.name_en.toLowerCase();
+    keys.push(en.replace(/\s+/g, ""), en.replace(/\s+/g, "-"));
+    if (cityId === "hohhot") keys.push("hohhot", "huh hot", "hoh hot", "huhehaote", "хөх хот", "hohhot");
+    if (cityId === "xian") keys.push("xi'an", "xian", "xi an");
+    if (cityId === "shanghai") keys.push("shang hai", "shan xai", "shanghair");
+    if (cityId === "beijing") keys.push("bei jing", "beijin", "peking");
+    if (cityId === "guangzhou") keys.push("guang zhou", "canton");
+    if (cityId === "shenzhen") keys.push("shen zhen");
     return [...new Set(keys.filter(Boolean))];
   }
 
