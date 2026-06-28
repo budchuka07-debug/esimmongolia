@@ -58,8 +58,8 @@
   background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
   color: #fff;
   border-radius: 20px;
-  padding: 36px 28px;
-  margin: 8px 0 24px;
+  padding: 36px 28px 44px;
+  margin: 8px 0 0;
   box-shadow: var(--tp-shadow);
 }
 .tp-hero h1 { margin: 0 0 10px; font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1.25; }
@@ -75,14 +75,35 @@
 }
 
 /* Search card */
+.tp-home-search {
+  position: relative;
+  z-index: 2;
+  margin-top: -28px;
+  margin-bottom: 0;
+}
 .tp-search-card {
   background: var(--tp-white);
   border-radius: 18px;
   box-shadow: var(--tp-shadow);
   border: 1px solid var(--tp-border);
-  margin-top: -20px;
-  position: relative;
-  z-index: 2;
+  margin: 0;
+  overflow: hidden;
+}
+.tp-home-search:not(.has-results) .tp-search-card {
+  border-radius: 18px;
+}
+.tp-home-search.has-results .tp-search-card {
+  border-radius: 18px 18px 0 0;
+  border-bottom: none;
+  box-shadow: none;
+}
+#resultsContainer.tp-results-container {
+  margin-top: 0 !important;
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-top: none;
+  border-radius: 0 0 18px 18px;
+  box-shadow: var(--tp-shadow);
   overflow: hidden;
 }
 .tp-tabs {
@@ -155,6 +176,25 @@
 .tp-section h2 { font-size: 1.35rem; margin: 0 0 6px; color: var(--tp-text); }
 .tp-section .tp-lead { color: var(--tp-muted); font-size: 14px; margin: 0 0 16px; }
 
+/* Home browse — services + routes under search */
+.tp-home-browse {
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 18px;
+  box-shadow: var(--tp-shadow);
+  padding: 24px 18px 20px;
+  margin: 28px 0 36px;
+}
+.tp-home-browse .tp-section { margin: 0; }
+.tp-home-browse .tp-services-featured {
+  margin: 0 0 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--tp-border);
+}
+.tp-home-browse .tp-routes-featured { margin: 0; }
+.tp-home-browse h2 { font-size: 1.2rem; }
+.tp-home-browse .tp-lead { margin-bottom: 14px; }
+
 /* Destination cards */
 .tp-dest-grid {
   display: grid;
@@ -182,14 +222,13 @@
 .tp-dest-card .tp-dest-sub { font-size: 11px; color: var(--tp-muted); margin-top: 2px; }
 
 /* Service grid */
-.tp-services-featured { margin-top: 0; }
 .tp-service-grid {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 @media (min-width: 900px) {
-  .tp-services-featured .tp-service-grid {
+  .tp-home-browse .tp-service-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }

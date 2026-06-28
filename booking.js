@@ -850,6 +850,14 @@
     box.innerHTML = pins || "<span class='tp-muted'>Буудал олдсонгүй</span>";
   }
 
+  function syncHomeSearchShell() {
+    const wrap = document.querySelector(".tp-home-search");
+    const container = $("resultsContainer");
+    if (!wrap || !container) return;
+    const shown = container.style.display !== "none";
+    wrap.classList.toggle("has-results", shown);
+  }
+
   function setHotelResultsLayout(isHotel) {
     const container = $("resultsContainer");
     const sidebar = $("hotelFiltersSidebar");
@@ -858,6 +866,7 @@
       container.style.display = "";
       container.classList.toggle("tp-hotel-layout", isHotel);
     }
+    syncHomeSearchShell();
     if (sidebar) sidebar.classList.toggle("tp-hotel-filters-visible", isHotel);
     if (toolbar) toolbar.style.display = isHotel ? "" : "none";
     if (!isHotel) {
