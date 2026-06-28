@@ -3,44 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin — Hotel Booking | eSIM Mongolia</title>
-<link rel="stylesheet" href="/admin.css">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin CMS | eSIM Mongolia Travel OS</title>
+<link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
 
-<div id="admLogin" class="adm-login">
-  <h1>🏨 Admin Booking</h1>
-  <p style="color:#94a3b8;font-size:14px">Hotel захиалга — supplier channel (Hohhot)</p>
-  <form id="admLoginForm">
-    <div class="adm-field">
-      <label>Admin key</label>
-      <input type="password" id="admKeyInput" placeholder="ADMIN_SECRET" required autocomplete="current-password">
-    </div>
-    <button type="submit" class="adm-btn primary" style="width:100%">Нэвтрэх</button>
-  </form>
-  <p style="font-size:11px;color:#64748b;margin-top:12px">Netlify: ADMIN_SECRET env тохируулна</p>
+<div id="admLoginWrap" class="adm-login-wrap">
+  <div class="adm-login-card">
+    <h1>🛫 eSIM Mongolia</h1>
+    <p>Admin CMS — Travel OS удирдлага</p>
+    <form id="admLoginForm">
+      <div class="adm-field" style="margin-bottom:14px">
+        <label>Admin key</label>
+        <input type="password" id="admKeyInput" placeholder="ADMIN_SECRET" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="adm-btn primary" style="width:100%">Нэвтрэх</button>
+    </form>
+    <p style="font-size:11px;color:#94a3b8;margin-top:14px;margin-bottom:0">Netlify: ADMIN_SECRET env. Local: дурын key.</p>
+  </div>
 </div>
 
-<div id="admApp" style="display:none">
-  <header class="adm-header">
-    <h1>🏨 Hotel Booking Admin</h1>
-    <div>
-      <button type="button" class="adm-btn" id="admRefresh">↻ Refresh</button>
-      <button type="button" class="adm-btn" id="admLogout">Гарах</button>
+<div id="admApp" class="adm-app" style="display:none">
+  <aside class="adm-sidebar" id="admSidebar">
+    <div class="adm-sidebar-brand">
+      <strong>eSIM Mongolia</strong>
+      <small>Admin CMS · Travel OS</small>
     </div>
-  </header>
-  <div class="adm-layout">
-    <aside class="adm-sidebar">
-      <h2 style="font-size:13px;color:#94a3b8;margin:0 0 12px">Захиалгууд</h2>
-      <div id="admOrderList"></div>
-    </aside>
-    <main class="adm-main" id="admDetail">
-      <p class="adm-empty">Захиалга сонгоно уу</p>
-    </main>
+    <nav class="adm-nav" id="admNav"></nav>
+    <div class="adm-sidebar-foot">
+      <a href="/" class="adm-btn sm" style="width:100%;justify-content:center;margin-bottom:8px">← Customer site</a>
+      <button type="button" class="adm-btn sm" id="admLogout" style="width:100%">Гарах</button>
+    </div>
+  </aside>
+
+  <div class="adm-main">
+    <header class="adm-topbar">
+      <button type="button" class="adm-btn adm-menu-toggle" id="admMenuToggle">☰</button>
+      <h1 id="admPageTitle">Dashboard</h1>
+      <input type="search" class="adm-topbar-search" id="admGlobalSearch" placeholder="Хайх… (хот, буудал, захиалга)">
+    </header>
+    <main class="adm-content" id="admContent"></main>
   </div>
 </div>
 
 <div class="adm-toast" id="admToast"></div>
-<script src="/admin.js"></script>
+
+<script src="/js/admin/admin-store.js"></script>
+<script src="/js/admin/admin-core.js"></script>
+<script src="/js/admin/admin-dashboard.js"></script>
+<script src="/js/admin/admin-countries.js"></script>
+<script src="/js/admin/admin-cities.js"></script>
+<script src="/js/admin/admin-hotels.js"></script>
+<script src="/js/admin/admin-rooms.js"></script>
+<script src="/js/admin/admin-flights.js"></script>
+<script src="/js/admin/admin-trains.js"></script>
+<script src="/js/admin/admin-insurance.js"></script>
+<script src="/js/admin/admin-rentals.js"></script>
+<script src="/js/admin/admin-ai-knowledge.js"></script>
+<script src="/js/admin/admin-bookings.js"></script>
+<script src="/js/admin/admin-settings.js"></script>
+<script src="/js/admin/admin-placeholders.js"></script>
 </body>
 </html>
