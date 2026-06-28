@@ -1,5 +1,5 @@
 /**
- * AI Travel Advisor — free ChatGPT-style chat (no form required)
+ * AI Travel Advisor — human consultant chat (free, no form required)
  */
 (function () {
   const ENDPOINT = "/.netlify/functions/ai-travel-agent";
@@ -10,6 +10,8 @@
   const chatEl = () => document.getElementById("aiChat");
   const inputEl = () => document.getElementById("aiAgentInput");
   const heroInput = () => document.getElementById("aiSearchInput");
+
+  const CARD_ICONS = { hotel: "🏨", flight: "✈️", esim: "📶", attraction: "🎫" };
 
   function scrollChat() {
     const box = chatEl();
@@ -34,10 +36,77 @@
   }
 
   function formatReply(text) {
-    return escapeHtml(text).replace(/\n/g, "<br>");
+    let s = escapeHtml(text);
+    s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    const lines = s.split("\n");
+    const out = [];
+    let inList = false;
+
+    lines.forEach((line) => {
+      const trimmed = line.trim();
+      if (/^\d+-р өдөр:/.test(trimmed) || /^[•\-]\s/.test(trimmed)) {
+        if (!inList) { out.push('<ul class="tp-ai-list">'); inList = true; }
+        const item = trimmed.replace(/^\d+-р өдөр:\s*/, "").replace(/^[•\-]\s*/, "");
+        const dayMatch = trimmed.match(/^(\d+-р өдөр:)/);
+        const prefix = dayMatch ? `<strong>${dayMatch[1]}</strong> ` : "";
+        out.push(`<li>${prefix}${item || trimmed}</li>`);
+      } else {
+        if (inList) { out.push("</ul>"); inList = false; }
+        if (/^🗺|^📋|^💰|^🚇|^🏨|^📶|^✈️|^🛡|^🛂/.test(trimmed)) {
+          out.push(`<p class="tp-ai-heading">${trimmed}</p>`);
+        } else if (trimmed) {
+          out.push(`<p>${trimmed}</p>`);
+        }
+      }
+    });
+    if (inList) out.push("</ul>");
+    return out.join("");
   }
 
-  function appendAi(text, ctas, context) {
+  function renderCards(cards) {
+    if (!cards || !cards.length) return "";
+    const grouped = { hotel: [], flight: [], esim: [], attraction: [] };
+    cards.forEach((c) => {
+      if (grouped[c.type]) grouped[c.type].push(c);
+    });
+
+    let html = '<div class="tp-ai-cards">';
+    Object.entries(grouped).forEach(([type, list]) => {
+      if (!list.length) return;
+      const label = { hotel: "Буудлын санал", flight: "Нислэг", esim: "eSIM", attraction: "Үзвэр" }[type];
+      html += `<div class="tp-ai-card-group"><div class="tp-ai-card-label">${label}</div><div class="tp-ai-card-grid">`;
+      list.forEach((c) => {
+        html += `<article class="tp-ai-card tp-ai-card-${type}">
+          <div class="tp-ai-card-icon">${CARD_ICONS[type] || "📌"}</div>
+          <div class="tp-ai-card-body">
+            ${c.badge ? `<span class="tp-ai-card-badge">${escapeHtml(c.badge)}</span>` : ""}
+            <strong>${escapeHtml(c.title)}</strong>
+            ${c.subtitle ? `<div class="tp-ai-card-sub">${escapeHtml(c.subtitle)}</div>` : ""}
+            ${c.detail ? `<div class="tp-ai-card-detail">${escapeHtml(c.detail)}</div>` : ""}
+            ${c.price ? `<div class="tp-ai-card-price">${escapeHtml(c.price)}</div>` : ""}
+          </div>
+        </article>`;
+      });
+      html += "</div></div>";
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderQuickReplies(replies) {
+    if (!replies || !replies.length) return "";
+    return `<div class="tp-ai-quick">${replies.map((q) =>
+      `<button type="button" class="tp-quick-chip" data-quick-id="${q.id}">${escapeHtml(q.label)}</button>`
+    ).join("")}</div>`;
+  }
+
+  function appendAi(payload) {
+    const text = typeof payload === "string" ? payload : payload.reply;
+    const ctas = typeof payload === "object" ? payload.ctas : [];
+    const quickReplies = typeof payload === "object" ? payload.quickReplies : [];
+    const cards = typeof payload === "object" ? payload.cards : [];
+    const context = typeof payload === "object" ? payload.context : {};
+
     const box = chatEl();
     if (!box) return;
     if (context) lastContext = { ...lastContext, ...context };
@@ -53,15 +122,20 @@
     }
 
     wrap.innerHTML = `
-      <div class="tp-msg-avatar" aria-hidden="true">🤖</div>
-      <div class="tp-msg-bubble">
-        <div class="tp-msg ai">${formatReply(text)}</div>
+      <div class="tp-msg-avatar" aria-hidden="true">🧳</div>
+      <div class="tp-msg-bubble tp-msg-bubble-wide">
+        <div class="tp-msg ai tp-msg-rich">${formatReply(text)}</div>
+        ${renderCards(cards)}
+        ${renderQuickReplies(quickReplies)}
         ${ctaHtml}
       </div>`;
     box.appendChild(wrap);
 
     wrap.querySelectorAll("[data-cta-id]").forEach((btn) => {
       btn.addEventListener("click", () => handleCta(btn.dataset.ctaId));
+    });
+    wrap.querySelectorAll("[data-quick-id]").forEach((btn) => {
+      btn.addEventListener("click", () => handleQuickReply(btn.dataset.quickId));
     });
     scrollChat();
   }
@@ -73,30 +147,42 @@
     el.className = "tp-msg-row ai typing-row";
     el.id = "aiTyping";
     el.innerHTML = `
-      <div class="tp-msg-avatar">🤖</div>
-      <div class="tp-msg ai typing"><span class="tp-dots"><span></span><span></span><span></span></span></div>`;
+      <div class="tp-msg-avatar">🧳</div>
+      <div class="tp-msg ai typing"><span class="tp-typing-label">Зөвлөгөө бэлдэж байна</span> <span class="tp-dots"><span></span><span></span><span></span></span></div>`;
     box.appendChild(el);
     scrollChat();
     return el;
   }
 
-  function ctaFollowUpMessages() {
-    const city = lastContext.city || lastContext.country || "тэнд";
+  function quickReplyMessages() {
+    const city = lastContext.city || "Шанхай";
+    const days = lastContext.days || 5;
+    const people = lastContext.people || 2;
     return {
-      route_plan: `${city} руу ${lastContext.days || 5} хоногийн дэлгэрэнгүй маршрут өгнө үү. Өдөр бүр ямар газар очих, хэдэн цаг зарцуулахыг жагсаана уу.`,
+      hotel_suggest: `${city} дотор метротой ойр, аюулгүй буудлын бүс, ${people} хүнд тохирох өдрийн үнийн санал өгнө үү.`,
       flight_check: `${city} руу нислэгийн боломж, үнийн хязгаар, аль үед захиалах нь дээр вэ?`,
-      hotel_suggest: `${city} дотор метротой ойр, аюулгүй буудлын бүс, өдрийн үнийн санал өгнө үү.`,
-      ticket_suggest: `${city} дотор үзвэр, музей, Disneyland зэрэг тасалбарын үнэ, захиалгын зөвлөмж.`,
-      visa_info: `${lastContext.country || "Хятад"} руу Монгол иргэний визийн мэдээлэл, шаардлагатай материал.`,
       esim_view: null,
-      create_booking: null,
-      book_flight: null,
-      book_hotel: null,
-      book_train: null,
-      book_attraction: null,
-      book_esim: null,
-      book_full: null
+      route_plan: `${city} ${days} хоногийн өдөр өдрөөр дэлгэрэнгүй маршрут гарга. Цаг, газар бүрийг тодорхой бич.`,
+      budget_calc: `${city} ${days} хоног, ${people} хүн — буудал, хоол, метро, үзвэр тусад нь төсөв тооцоол.`,
+      insurance: `${city} аялалд даатгал нэмэх сонголт, үнэ, хамгаалалтыг тайлбарла.`,
+      ticket_suggest: `${city} дотор үзвэр, Disneyland, музейний тасалбарын үнэ, захиалгын зөвлөмж.`,
+      visa_info: `${lastContext.country || "Хятад"} руу Монгол иргэний визийн мэдээлэл.`,
+      create_booking: null
     };
+  }
+
+  function handleQuickReply(id) {
+    if (id === "esim_view") {
+      document.querySelector("#esim")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    const msg = quickReplyMessages()[id];
+    if (msg) ask(msg);
+    else handleCta(id);
+  }
+
+  function ctaFollowUpMessages() {
+    return quickReplyMessages();
   }
 
   function handleCta(id) {
@@ -120,9 +206,8 @@
       return;
     }
 
-    const followUps = ctaFollowUpMessages();
-    const msg = followUps[id];
-    if (msg) ask(msg, { silentUser: false });
+    const msg = ctaFollowUpMessages()[id];
+    if (msg) ask(msg);
   }
 
   function buildPresetFromContext() {
@@ -169,12 +254,24 @@
       if (data.sessionId) sessionStorage.setItem("aiSessionId", data.sessionId);
 
       const reply = data.reply || "Уучлаарай, одоогоор хариу өгч чадсангүй. Дахин оролдоно уу.";
-      appendAi(reply, data.ctas || [], data.context || {});
+      appendAi({
+        reply,
+        ctas: data.ctas || [],
+        quickReplies: data.quickReplies || [],
+        cards: data.cards || [],
+        context: data.context || {}
+      });
 
       history.push({ role: "assistant", content: reply });
     } catch (err) {
       if (typing) typing.remove();
-      appendAi("Холболт түр алдаатай байна. Дахин асуугаарай — form бөглөх шаардлагагүй.", [], {});
+      appendAi({
+        reply: "Холболт түр алдаатай байна. Дахин асуугаарай — чат үнэгүй, form шаардлагагүй.",
+        ctas: [],
+        quickReplies: [],
+        cards: [],
+        context: {}
+      });
     }
   }
 
@@ -210,14 +307,21 @@
       }
     });
 
-    appendAi(
-      "Сайн байна уу! Би таны AI аяллын зөвлөх. Хаашаа явах, хэзээ, хэдэн хүн, төсөв — ямар ч зүйл асуугаарай. Form бөглөх шаардлагагүй, чөлөөтэй чатлаарай.",
-      [],
-      {}
-    );
+    appendAi({
+      reply: "Сайн байна! Би таны **хувийн аяллын зөвлөх**. Маршрут, буудал, нислэг, eSIM, төсөв — бүгдийг дэлгэрэнгүй, Монгол хэлээр зөвлөнө.\n\n**Чат бүрэн үнэгүй** — утас, email, form шаардлагагүй.\n\nЖишээ: «8 сард Шанхай 5 хоног, 2 хүн» гэж бичээрэй.",
+      quickReplies: [
+        { id: "route_plan", label: "🗺 Маршрут" },
+        { id: "hotel_suggest", label: "🏨 Буудал" },
+        { id: "flight_check", label: "✈️ Нислэг" },
+        { id: "esim_view", label: "📶 eSIM" }
+      ],
+      ctas: [],
+      cards: [],
+      context: {}
+    });
   }
 
-  window.TravelAI = { ask, goToChatAndAsk, handleCta, getContext: () => ({ ...lastContext }) };
+  window.TravelAI = { ask, goToChatAndAsk, handleCta, handleQuickReply, getContext: () => ({ ...lastContext }) };
 
   document.addEventListener("DOMContentLoaded", init);
 })();
