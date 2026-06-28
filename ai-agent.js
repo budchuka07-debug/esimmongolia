@@ -1,14 +1,16 @@
 /**
- * AI Travel Advisor — human consultant chat (free, no form required)
+ * AI Travel Advisor — real chat UI + local responses + Netlify/Supabase backend
  */
 (function () {
   const ENDPOINT = "/.netlify/functions/ai-travel-agent";
+  const REMOTE_TIMEOUT_MS = 8000;
+  const USE_REMOTE = true;
 
   const history = [];
   let lastContext = {};
-  let askBusy = false;
-  let lastAskText = "";
-  let lastAskTime = 0;
+  let sendBusy = false;
+  let lastSendText = "";
+  let lastSendTime = 0;
 
   const chatEl = () => document.getElementById("aiChat");
   const inputEl = () => document.getElementById("aiAgentInput");
@@ -21,6 +23,20 @@
     if (box) box.scrollTop = box.scrollHeight;
   }
 
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function normalizeUserQuery(q) {
+    return String(q || "")
+      .replace(/\.\/+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function appendUser(text) {
     const box = chatEl();
     if (!box) return;
@@ -29,13 +45,6 @@
     wrap.innerHTML = `<div class="tp-msg user">${escapeHtml(text)}</div>`;
     box.appendChild(wrap);
     scrollChat();
-  }
-
-  function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
   }
 
   function formatReply(text) {
@@ -55,7 +64,7 @@
         out.push(`<li>${prefix}${item || trimmed}</li>`);
       } else {
         if (inList) { out.push("</ul>"); inList = false; }
-        if (/^🗺|^📋|^💰|^🚇|^🏨|^📶|^✈️|^🛡|^🛂/.test(trimmed)) {
+        if (/^🗺|^📋|^💰|^🚇|^🏨|^📶|^✈️|^🛡|^🛂|^🇹|^🇻|^🇯|^🇰|^🇨|^🇹/.test(trimmed)) {
           out.push(`<p class="tp-ai-heading">${trimmed}</p>`);
         } else if (trimmed) {
           out.push(`<p>${trimmed}</p>`);
@@ -105,20 +114,22 @@
 
   function appendAi(payload) {
     const text = typeof payload === "string" ? payload : payload.reply;
-    const ctas = typeof payload === "object" ? payload.ctas : [];
-    const quickReplies = typeof payload === "object" ? payload.quickReplies : [];
-    const cards = typeof payload === "object" ? payload.cards : [];
-    const context = typeof payload === "object" ? payload.context : {};
+    const ctas = typeof payload === "object" ? (payload.ctas || []) : [];
+    const quickReplies = typeof payload === "object" ? (payload.quickReplies || []) : [];
+    const cards = typeof payload === "object" ? (payload.cards || []) : [];
+    const context = typeof payload === "object" ? (payload.context || {}) : {};
 
     const box = chatEl();
     if (!box) return;
-    if (context) lastContext = { ...lastContext, ...context };
+    if (context && Object.keys(context).length) {
+      lastContext = { ...lastContext, ...context };
+    }
 
     const wrap = document.createElement("div");
     wrap.className = "tp-msg-row ai";
 
     let ctaHtml = "";
-    if (ctas && ctas.length) {
+    if (ctas.length) {
       ctaHtml = `<div class="tp-msg-ctas">${ctas.map((c) =>
         `<button type="button" class="tp-cta-chip" data-cta-id="${c.id}">${escapeHtml(c.label)}</button>`
       ).join("")}</div>`;
@@ -144,17 +155,127 @@
   }
 
   function showTyping() {
+    clearTyping();
     const box = chatEl();
-    if (!box) return null;
+    if (!box) return;
     const el = document.createElement("div");
     el.className = "tp-msg-row ai typing-row";
     el.id = "aiTyping";
     el.innerHTML = `
       <div class="tp-msg-avatar">🧳</div>
-      <div class="tp-msg ai typing"><span class="tp-typing-label">Зөвлөгөө бэлдэж байна</span> <span class="tp-dots"><span></span><span></span><span></span></span></div>`;
+      <div class="tp-msg ai typing">
+        <span class="tp-typing-label">AI аяллын зөвлөх бичиж байна...</span>
+        <span class="tp-dots"><span></span><span></span><span></span></span>
+      </div>`;
     box.appendChild(el);
     scrollChat();
-    return el;
+  }
+
+  function clearTyping() {
+    document.getElementById("aiTyping")?.remove();
+  }
+
+  function isWeakRemoteReply(reply) {
+    if (!reply) return true;
+    return /хаашаа явахаа хэлбэл/i.test(reply) && !/🗺|маршрут|1-р өдөр/i.test(reply);
+  }
+
+  function generateLocalTravelResponse(message) {
+    if (window.AiLocalResponses?.generateLocalTravelResponse) {
+      return window.AiLocalResponses.generateLocalTravelResponse(message);
+    }
+    return {
+      reply: "Сайн байна уу! Аяллын зөвлөх бэлэн. «7 сард Шанхай 5 хоног 2 хүн» гэж бичээрэй.",
+      quickReplies: [],
+      ctas: [],
+      context: {},
+      cards: []
+    };
+  }
+
+  async function fetchRemoteTravelResponse(message) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REMOTE_TIMEOUT_MS);
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          sessionId: sessionStorage.getItem("aiSessionId") || null,
+          history: history.slice(-10),
+          locale: "mn"
+        })
+      });
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (_) {
+        return null;
+      }
+      if (!res.ok || !data.reply) return null;
+      if (data.sessionId) sessionStorage.setItem("aiSessionId", data.sessionId);
+      if (isWeakRemoteReply(data.reply)) return null;
+      return {
+        reply: data.reply,
+        ctas: data.ctas || [],
+        quickReplies: data.quickReplies || [],
+        cards: data.cards || [],
+        context: data.context || {}
+      };
+    } catch (_) {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function resolveTravelResponse(message) {
+    if (USE_REMOTE) {
+      const remote = await fetchRemoteTravelResponse(message);
+      if (remote) return remote;
+    }
+    await new Promise((r) => setTimeout(r, 400));
+    return generateLocalTravelResponse(message);
+  }
+
+  async function handleAiSendMessage(rawText, opts) {
+    const q = normalizeUserQuery(rawText);
+    if (!q) return;
+
+    const now = Date.now();
+    if (sendBusy) return;
+    if (!opts?.force && q === lastSendText && now - lastSendTime < 1200) return;
+    if (!chatEl()) return;
+
+    sendBusy = true;
+    lastSendText = q;
+    lastSendTime = now;
+
+    const silent = opts && opts.silentUser;
+    if (!silent) {
+      appendUser(q);
+      history.push({ role: "user", content: q });
+    }
+
+    if (inputEl()) inputEl().value = "";
+    if (heroInput()) heroInput().value = "";
+
+    showTyping();
+
+    try {
+      const payload = await resolveTravelResponse(q);
+      clearTyping();
+      appendAi(payload);
+      history.push({ role: "assistant", content: payload.reply });
+    } catch (err) {
+      clearTyping();
+      appendAi(generateLocalTravelResponse(q));
+    } finally {
+      sendBusy = false;
+      scrollChat();
+    }
   }
 
   function quickReplyMessages() {
@@ -180,22 +301,18 @@
       return;
     }
     const msg = quickReplyMessages()[id];
-    if (msg) ask(msg);
+    if (msg) handleAiSendMessage(msg);
     else handleCta(id);
-  }
-
-  function ctaFollowUpMessages() {
-    return quickReplyMessages();
   }
 
   function handleCta(id) {
     const bookingMap = {
       create_booking: { type: "full", title: "Бүтэн аяллын захиалга үүсгэх" },
-      book_flight: { type: "flight", title: "Нислэг захиалах" },
-      book_hotel: { type: "hotel", title: "Буудал захиалах" },
-      book_train: { type: "train", title: "Галт тэрэгний тасалбар захиалах" },
-      book_attraction: { type: "attraction", title: "Үзвэр захиалах" },
-      book_esim: { type: "esim", title: "eSIM авах" }
+      book_flight: { type: "flight", title: "Нислэг захиалах", tab: "flight" },
+      book_hotel: { type: "hotel", title: "Буудал захиалах", tab: "hotel" },
+      book_train: { type: "train", title: "Галт тэрэгний тасалбар захиалах", tab: "train" },
+      book_attraction: { type: "attraction", title: "Үзвэр захиалах", tab: "attraction" },
+      book_esim: { type: "esim", title: "eSIM авах", tab: "esim-tab" }
     };
 
     if (id === "esim_view") {
@@ -204,13 +321,19 @@
     }
 
     const book = bookingMap[id];
-    if (book && window.TravelBooking) {
+    if (book?.tab && window.TravelBooking?.setTab) {
+      window.TravelBooking.setTab(book.tab);
+      document.getElementById("tpSearchCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (book && window.TravelBooking?.openBookingForm) {
       window.TravelBooking.openBookingForm(book.type, buildPresetFromContext(), book.title);
       return;
     }
 
-    const msg = ctaFollowUpMessages()[id];
-    if (msg) ask(msg);
+    const msg = quickReplyMessages()[id];
+    if (msg) handleAiSendMessage(msg);
   }
 
   function buildPresetFromContext() {
@@ -224,97 +347,6 @@
     };
   }
 
-  function clearTyping() {
-    document.getElementById("aiTyping")?.remove();
-  }
-
-  function normalizeUserQuery(q) {
-    return String(q || "")
-      .replace(/\.\/+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  async function ask(question, opts) {
-    const q = normalizeUserQuery(question);
-    if (!q) return;
-
-    const now = Date.now();
-    if (askBusy) return;
-    if (!opts?.force && q === lastAskText && now - lastAskTime < 1500) return;
-
-    if (!chatEl()) {
-      console.warn("[TravelAI] chat container missing");
-      return;
-    }
-
-    askBusy = true;
-    lastAskText = q;
-    lastAskTime = now;
-
-    const silent = opts && opts.silentUser;
-
-    if (!silent) {
-      appendUser(q);
-      history.push({ role: "user", content: q });
-    }
-
-    if (inputEl()) inputEl().value = "";
-    if (heroInput()) heroInput().value = "";
-
-    clearTyping();
-    showTyping();
-
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: q,
-          sessionId: sessionStorage.getItem("aiSessionId") || null,
-          history: history.slice(-10),
-          locale: "mn"
-        })
-      });
-
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (_) {
-        throw new Error("invalid_json");
-      }
-
-      if (!res.ok) {
-        throw new Error(data.error || `http_${res.status}`);
-      }
-
-      if (data.sessionId) sessionStorage.setItem("aiSessionId", data.sessionId);
-
-      const reply = data.reply || "Уучлаарай, одоогоор хариу өгч чадсангүй. Дахин оролдоно уу.";
-      appendAi({
-        reply,
-        ctas: data.ctas || [],
-        quickReplies: data.quickReplies || [],
-        cards: data.cards || [],
-        context: data.context || {}
-      });
-
-      history.push({ role: "assistant", content: reply });
-    } catch (err) {
-      console.error("[TravelAI]", err);
-      appendAi({
-        reply: "Холболт түр алдаатай байна. Дахин асуугаарай — чат үнэгүй, form шаардлагагүй.",
-        ctas: [],
-        quickReplies: [],
-        cards: [],
-        context: {}
-      });
-    } finally {
-      clearTyping();
-      askBusy = false;
-    }
-  }
-
   function goToChatAndAsk(text) {
     const q = normalizeUserQuery(text || heroInput()?.value || inputEl()?.value);
     if (window.TravelAssistant?.openAiChat) {
@@ -322,7 +354,7 @@
       return;
     }
     document.getElementById("aiAgentSection")?.scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => ask(q), 300);
+    if (q) setTimeout(() => handleAiSendMessage(q), 300);
   }
 
   function bindChatForm() {
@@ -333,13 +365,13 @@
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      ask(normalizeUserQuery(input?.value));
+      handleAiSendMessage(input?.value);
     });
 
     input?.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        ask(normalizeUserQuery(input.value));
+        handleAiSendMessage(input.value);
       }
     });
   }
@@ -349,7 +381,7 @@
     if (!box || box.dataset.aiWelcome === "1") return;
     box.dataset.aiWelcome = "1";
     appendAi({
-      reply: "Сайн байна уу! Би eSIM Mongolia-ийн аяллын зөвлөх.\n\nЖишээ:\n• 7 сард Шанхай 6 хоног 2 хүн\n• shanhai 6 honog 7 sard\n• sain baina, shanghai ruu 5 honog — tuslah\n\n**Чат үнэгүй** — form шаардлагагүй.",
+      reply: "Сайн байна уу! Би таны **аяллын зөвлөх**. Маршрут, буудал, нислэг, eSIM, төсөв — бүгдийг Монгол хэлээр зөвлөнө.\n\nЖишээ: «7 сард Шанхай 5 хоног 2 хүн»\n\n**Чат үнэгүй** — form, утас, QPay, login шаардлагагүй.",
       quickReplies: [
         { id: "route_plan", label: "🗺 Маршрут" },
         { id: "hotel_suggest", label: "🏨 Буудал" },
@@ -386,7 +418,17 @@
     });
   }
 
-  window.TravelAI = { ask, goToChatAndAsk, handleCta, handleQuickReply, getContext: () => ({ ...lastContext }) };
+  const ask = handleAiSendMessage;
+
+  window.TravelAI = {
+    ask,
+    handleAiSendMessage,
+    generateLocalTravelResponse,
+    goToChatAndAsk,
+    handleCta,
+    handleQuickReply,
+    getContext: () => ({ ...lastContext })
+  };
 
   document.addEventListener("DOMContentLoaded", init);
 })();
