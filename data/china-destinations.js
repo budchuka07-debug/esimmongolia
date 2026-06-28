@@ -491,7 +491,7 @@
     keys.push(en.replace(/\s+/g, ""), en.replace(/\s+/g, "-"));
     if (cityId === "hohhot") keys.push("hohhot", "huh hot", "hoh hot", "huhehaote", "хөх хот", "hohhot");
     if (cityId === "xian") keys.push("xi'an", "xian", "xi an");
-    if (cityId === "shanghai") keys.push("shang hai", "shan xai", "shanghair");
+    if (cityId === "shanghai") keys.push("shang hai", "shan xai", "shanghair", "shanhai", "shanghi");
     if (cityId === "beijing") keys.push("bei jing", "beijin", "peking");
     if (cityId === "guangzhou") keys.push("guang zhou", "canton");
     if (cityId === "shenzhen") keys.push("shen zhen");

@@ -164,16 +164,35 @@ function isVague(msg) {
   })();
 }
 
+function enrichIntent(intent, message) {
+  const out = { ...intent };
+  if (!out.city_id) {
+    const dest = matchDestination(message);
+    if (dest) {
+      out.country = dest.country || out.country;
+      out.city = dest.city || out.city;
+      out.city_id = dest.city_id || out.city_id;
+    }
+  }
+  if (!out.people && (out.city || out.city_id) && (out.days || out.month)) {
+    out.people = 2;
+  }
+  if (!out.days && out.month && (out.city || out.city_id)) {
+    out.days = 5;
+  }
+  return out;
+}
+
 function missingFields(intent) {
   const m = [];
   if (!intent.country && !intent.city) m.push("destination");
   if (!intent.days && !intent.month && !intent.wantsCost) m.push("dates");
-  if (!intent.people) m.push("people");
+  if (!intent.people && !(intent.city && (intent.days || intent.month))) m.push("people");
   return m;
 }
 
 function buildReply(message, history) {
-  const intent = mergeIntent(history, message);
+  const intent = enrichIntent(mergeIntent(history, message), message);
   const hay = latin.searchBlob(message, CHINA_DEST);
 
   if (isGreeting(message)) {

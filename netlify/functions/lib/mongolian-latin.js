@@ -24,11 +24,17 @@ function applyReplacements(text, pairs) {
 /** @param {string} text @param {{ getAll?: () => { name_en: string, name_mn: string, city_id: string }[] } | null} chinaDest */
 function normalizeLatinMongolian(text, chinaDest) {
   let t = foldAscii(text);
+  t = t.replace(/\bshanhai\b/gi, "shanghai");
+  t = t.replace(/\bshanghi\b/gi, "shanghai");
+  t = t.replace(/\bbeejing\b/gi, "beijing");
+  t = t.replace(/\bbeijin\b/gi, "beijing");
+  t = t.replace(/\bguanjou\b/gi, "guangzhou");
+  t = t.replace(/\bshenzen\b/gi, "shenzhen");
 
   const cityPairs = [
     ["hohhot", "хөх хот"], ["huh hot", "хөх хот"], ["hoh hot", "хөх хот"], ["huhehaote", "хөх хот"],
     ["ulaanbaatar", "улаанбаатар"], ["ulaan baatar", "улаанбаатар"], ["ulaanbaatar", "улаанбаатар"],
-    ["shanghai", "шанхай"], ["shan xai", "шанхай"], ["shang hai", "шанхай"], ["shanghair", "шанхай"],
+    ["shanghai", "шанхай"], ["shanhai", "шанхай"], ["shan xai", "шанхай"], ["shang hai", "шанхай"], ["shanghair", "шанхай"],
     ["beijing", "бээжин"], ["bee jing", "бээжин"], ["beijin", "бээжин"], ["peking", "бээжин"],
     ["guangzhou", "гуанжоу"], ["guang zhou", "гуанжоу"], ["canton", "гуанжоу"],
     ["shenzhen", "шэньжэнь"], ["shen zhen", "шэньжэнь"],
@@ -113,7 +119,9 @@ function normalizeLatinMongolian(text, chinaDest) {
 }
 
 function searchBlob(text, chinaDest) {
-  const raw = foldAscii(text);
+  const raw = foldAscii(text)
+    .replace(/\bshanhai\b/gi, "shanghai")
+    .replace(/\bshanghi\b/gi, "shanghai");
   const normalized = normalizeLatinMongolian(text, chinaDest);
   return `${raw} ${normalized}`;
 }
