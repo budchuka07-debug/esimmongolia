@@ -158,8 +158,11 @@
 /* Destination cards */
 .tp-dest-grid {
   display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+}
+.tp-routes-featured .tp-dest-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 .tp-dest-card {
   border-radius: var(--tp-r);
@@ -169,33 +172,53 @@
   text-decoration: none;
   color: inherit;
   box-shadow: 0 2px 8px rgba(0,0,0,.04);
-  transition: transform .15s, box-shadow .15s;
+  transition: transform .18s, box-shadow .18s;
 }
-.tp-dest-card:hover { transform: translateY(-2px); box-shadow: var(--tp-shadow); }
-.tp-dest-card img { width: 100%; height: 100px; object-fit: cover; display: block; }
+.tp-dest-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--tp-shadow); }
+.tp-dest-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
+.tp-routes-featured .tp-dest-card img { height: 132px; }
 .tp-dest-card .tp-dest-body { padding: 10px 12px; }
 .tp-dest-card .tp-dest-name { font-weight: 800; font-size: 14px; }
 .tp-dest-card .tp-dest-sub { font-size: 11px; color: var(--tp-muted); margin-top: 2px; }
 
 /* Service grid */
+.tp-services-featured { margin-top: 0; }
 .tp-service-grid {
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+@media (min-width: 900px) {
+  .tp-services-featured .tp-service-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 .tp-service-card {
   background: var(--tp-white);
   border: 1px solid var(--tp-border);
   border-radius: var(--tp-r);
-  padding: 18px;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
   text-align: left;
   font-family: inherit;
+  transition: transform .18s, box-shadow .18s, border-color .18s;
 }
-.tp-service-card:hover { border-color: var(--tp-blue); box-shadow: var(--tp-shadow); }
-.tp-service-card .icon { font-size: 1.6rem; }
+.tp-service-card:hover {
+  border-color: var(--tp-blue);
+  box-shadow: var(--tp-shadow);
+  transform: translateY(-3px);
+}
+.tp-service-card .tp-service-img {
+  width: 100%;
+  height: 112px;
+  object-fit: cover;
+  display: block;
+}
+.tp-service-card .tp-service-body { padding: 14px 16px 16px; }
+.tp-service-card .icon { font-size: 1.4rem; line-height: 1; }
 .tp-service-card h3 { margin: 8px 0 4px; font-size: 15px; }
-.tp-service-card p { margin: 0; font-size: 13px; color: var(--tp-muted); }
+.tp-service-card p { margin: 0; font-size: 13px; color: var(--tp-muted); line-height: 1.4; }
 
 /* China city cards */
 .tp-china-grid { display: grid; gap: 16px; }

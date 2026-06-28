@@ -239,10 +239,22 @@
 </div>
 </section>
 
+<section class="tp-section tp-services-featured" id="platformServicesSection">
+<h2>🧳 Үйлчилгээ</h2>
+<p class="tp-lead">Нэг платформоос бүгдийг — зураг дээр дарж шууд эхлээрэй</p>
+<div class="tp-service-grid" id="platformServices"></div>
+</section>
+
+<section class="tp-section tp-routes-featured" id="platformDestinationsSection">
+<h2>🌏 Алдартай маршрут</h2>
+<p class="tp-lead">Монголчуудын хамгийн их сонгодог улсууд</p>
+<div class="tp-dest-grid" id="platformDestinations"></div>
+</section>
+
 <div class="tp-search-card" id="tpSearchCard">
 <div class="tp-tabs" role="tablist">
-<button type="button" class="tp-tab active" data-tab="ai">🤖 AI зөвлөх</button>
-<button type="button" class="tp-tab" data-tab="flight">✈️ Нислэг</button>
+<button type="button" class="tp-tab" data-tab="ai">🤖 AI зөвлөх</button>
+<button type="button" class="tp-tab active" data-tab="flight">✈️ Нислэг</button>
 <button type="button" class="tp-tab" data-tab="hotel">🏨 Буудал</button>
 <button type="button" class="tp-tab" data-tab="train">🚄 Тээвэр</button>
 <button type="button" class="tp-tab" data-tab="attraction">🎫 Үзвэр</button>
@@ -250,15 +262,15 @@
 <button type="button" class="tp-tab" data-tab="visa">🛂 Виз</button>
 </div>
 
-<div class="tp-panel active" data-panel="ai">
+<div class="tp-panel" data-panel="ai">
 <textarea class="tp-ai-box" id="aiSearchInput" rows="2" placeholder="Асуултаа чөлөөтэй бичээрэй… Жишээ: 8 сарын 15-нд Шанхай 5 хоног, 2 хүн. Disneyland + eSIM."></textarea>
 <div class="tp-search-actions">
 <button type="button" class="tp-btn primary" id="aiSearchBtn">💬 Чат эхлүүлэх</button>
 </div>
-<p class="tp-lead" style="margin:10px 0 0;font-size:13px">Form бөглөх шаардлагагүй — шууд AI-тай ярина.</p>
+<p class="tp-lead" style="margin:10px 0 0;font-size:13px">Form бөглөх шаардлагагүй — шууд AI-тай ярина. Эсвэл баруун доод 🤖 товчоос нээнэ үү.</p>
 </div>
 
-<div class="tp-panel" data-panel="flight">
+<div class="tp-panel active" data-panel="flight">
 <div class="tp-form-grid">
 <div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Улаанбаатар"></div>
 <div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Шанхай" list="chinaCitiesList"></div>
@@ -399,18 +411,6 @@
 </div>
 </div>
 <div class="tp-filters-overlay" id="hotelFiltersOverlay" style="display:none"></div>
-
-<section class="tp-section">
-<h2>🌏 Алдартай чиглэл</h2>
-<p class="tp-lead">Монголчуудын хамгийн их сонгодог улсууд</p>
-<div class="tp-dest-grid" id="platformDestinations"></div>
-</section>
-
-<section class="tp-section">
-<h2>🧳 Үйлчилгээ</h2>
-<p class="tp-lead">Нэг платформоос бүгдийг</p>
-<div class="tp-service-grid" id="platformServices"></div>
-</section>
 
 <section class="tp-section" id="chinaFeatured">
 <h2>🇨🇳 Хятад — дэлгэрэнгүй</h2>
@@ -1823,10 +1823,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/china-hotel-areas.js?v=1"></script>
 <script src="/data/hohhot-supplier-hotels.js?v=1"></script>
 <script src="/data/hotels-catalog.js?v=7"></script>
-<script src="/data/travel-data.js?v=8"></script>
+<script src="/data/travel-data.js?v=9"></script>
 <script src="/data/transport-routes.js?v=7"></script>
 <script src="/data/mock-search-results.js?v=7"></script>
-<script src="/booking.js?v=7"></script>
+<script src="/booking.js?v=8"></script>
 <script src="/ai-agent.js?v=2"></script>
 <script src="/travel-assistant.js?v=1"></script>
 

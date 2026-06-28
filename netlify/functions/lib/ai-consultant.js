@@ -1,6 +1,13 @@
 /**
  * AI Travel Consultant — detailed Mongolian responses (human agent tone)
  */
+const {
+  formatCnyRangeMnt,
+  formatCnyApproxMnt,
+  formatCnyMinPlusMnt,
+  PRICE_FOOTNOTE
+} = require("./customer-pricing.js");
+
 let CHINA_DEST;
 try {
   CHINA_DEST = require("../../../data/china-destinations.js");
@@ -46,8 +53,8 @@ const CITY_PLANS = {
       ]
     },
     flights: [
-      { airline: "MIAT Mongolian Airlines", dep: "09:40", arr: "12:35", dur: "2ц 55мин", price: "~1,850 CNY" },
-      { airline: "Air China", dep: "11:20", arr: "13:10", dur: "2ц 50мин", price: "~1,720 CNY" }
+      { airline: "MIAT Mongolian Airlines", dep: "09:40", arr: "12:35", dur: "2ц 55мин", price_cny: 1850 },
+      { airline: "Air China", dep: "11:20", arr: "13:10", dur: "2ц 50мин", price_cny: 1720 }
     ],
     esim: { name: "China eSIM 7 хоног", data: "5–10 GB", price: "QPay-ээр", note: "WeChat, Alipay VPN-гүй ажиллана" }
   },
@@ -67,8 +74,8 @@ const CITY_PLANS = {
       ]
     },
     flights: [
-      { airline: "Air China", dep: "08:30", arr: "10:45", dur: "2ц 15мин", price: "~1,680 CNY" },
-      { airline: "MIAT", dep: "14:20", arr: "16:30", dur: "2ц 10мин", price: "~1,750 CNY" }
+      { airline: "Air China", dep: "08:30", arr: "10:45", dur: "2ц 15мин", price_cny: 1680 },
+      { airline: "MIAT", dep: "14:20", arr: "16:30", dur: "2ц 10мин", price_cny: 1750 }
     ],
     esim: { name: "China eSIM 7 хоног", data: "5–10 GB", price: "QPay-ээр", note: "Maps + WeChat-д хангалттай" }
   },
@@ -156,12 +163,12 @@ function calcBudget(intent, profile) {
   const totalMax = hotelMax + foodMax + metroMax + attrMax + flightEst + 800;
 
   return {
-    hotel: `${hotelMin.toLocaleString()}–${hotelMax.toLocaleString()} CNY`,
-    food: `${foodMin.toLocaleString()}–${foodMax.toLocaleString()} CNY`,
-    metro: `${metroMin.toLocaleString()}–${metroMax.toLocaleString()} CNY`,
-    attractions: `${attrMin.toLocaleString()}–${attrMax.toLocaleString()} CNY`,
-    flight: `~${flightEst.toLocaleString()} CNY/хүн (нислэг тусад)`,
-    total: `${totalMin.toLocaleString()}–${totalMax.toLocaleString()} CNY`,
+    hotel: formatCnyRangeMnt(hotelMin, hotelMax),
+    food: formatCnyRangeMnt(foodMin, foodMax),
+    metro: formatCnyRangeMnt(metroMin, metroMax),
+    attractions: formatCnyRangeMnt(attrMin, attrMax),
+    flight: `${formatCnyApproxMnt(flightEst)}/хүн (нислэг тусад)`,
+    total: formatCnyRangeMnt(totalMin, totalMax),
     days,
     people
   };
@@ -181,7 +188,7 @@ function buildHotelCards(cityId, intent) {
     title: `${city} — ${a.area}`,
     subtitle: `${stars + (i === 2 ? 1 : 0)} од, ${intent.days || 5} хоног`,
     detail: a.why,
-    price: `${280 + i * 120}–${450 + i * 150} CNY/өдөр`,
+    price: `${formatCnyRangeMnt(280 + i * 120, 450 + i * 150, "/өдөр")}`,
     badge: i === 0 ? "Санал болгох" : null
   }));
 }
@@ -192,14 +199,14 @@ function buildFlightCards(cityId, intent) {
   const ap = profile?.airport?.primary || "PVG";
   const city = profile?.name_mn || intent.city;
   const flights = plan?.flights || [
-    { airline: "MIAT / Air China", dep: "09:00–14:00", arr: "12:00–17:00", dur: "2–3 цаг", price: "~1,700 CNY" }
+    { airline: "MIAT / Air China", dep: "09:00–14:00", arr: "12:00–17:00", dur: "2–3 цаг", price_cny: 1700 }
   ];
   return flights.map((f) => ({
     type: "flight",
     title: `${f.airline}`,
     subtitle: `УБ (${ap}) → ${city}`,
     detail: `${f.dep} – ${f.arr} · ${f.dur}`,
-    price: f.price,
+    price: f.price_cny ? formatCnyApproxMnt(f.price_cny) : f.price,
     badge: "Шууд нислэг"
   }));
 }
@@ -231,7 +238,7 @@ function buildAttractionCards(cityId, intent) {
     title: name,
     subtitle: profile?.name_mn || "",
     detail: "Klook / Trip.com-оор урьдчилж захиалбал хямд",
-    price: "100–600 CNY",
+    price: formatCnyRangeMnt(100, 600),
     badge: null
   }));
   if (cityId === "shanghai" || intent.wantsDisney) {
@@ -240,7 +247,7 @@ function buildAttractionCards(cityId, intent) {
       title: "Shanghai Disneyland",
       subtitle: "1 бүтэн өдөр",
       detail: "Баасан, амралтын өдөр их хүнтэй — мягмар, лхагва сонго",
-      price: "450–600 CNY/хүн",
+      price: formatCnyRangeMnt(450, 600, "/хүн"),
       badge: "Заавал"
     });
   }
@@ -308,6 +315,7 @@ function buildConsultantReply(intent, message) {
     parts.push(`• Үзвэр/тасалбар: ${budget.attractions}`);
     parts.push(`• Нислэг: ${budget.flight}`);
     parts.push(`• **Нийт (ойролцоо): ${budget.total}**`);
+    parts.push(PRICE_FOOTNOTE);
 
     if (profile?.transport_info_mn) {
       parts.push(`\n🚇 Тээврийн зөвлөмж: ${profile.transport_info_mn}. Google Maps ажиллахгүй тул Amap (高德) эсвэл Apple Maps ашигла.`);
@@ -406,7 +414,7 @@ function buildTopicReply(intent, message) {
     const areas = CITY_PLANS[intent.city_id]?.hotelAreas || [{ area: "City Center", why: "төв, аюулгүй" }];
     parts.push("🏨 **Буудлын бүс:**");
     areas.forEach((a) => parts.push(`• ${a.area} — ${a.why}`));
-    parts.push("\n3 од = 250–350 CNY, 4 од = 380–550 CNY, 5 од = 650+ CNY. Метротой ойр байрлал цаг хэмнэнэ.");
+    parts.push(`\n3 од = ${formatCnyRangeMnt(250, 350)}/өдөр, 4 од = ${formatCnyRangeMnt(380, 550)}/өдөр, 5 од = ${formatCnyMinPlusMnt(650)}/өдөр. Метротой ойр байрлал цаг хэмнэнэ.`);
     return wrapTopic(parts, intent, "hotel");
   }
   if (intent.wantsEsim || /esim/i.test(t)) {
@@ -419,6 +427,7 @@ function buildTopicReply(intent, message) {
     parts.push(`💰 **Төсөв (${budget.people} хүн, ${budget.days} хоног):**`);
     parts.push(`• Буудал: ${budget.hotel}\n• Хоол: ${budget.food}\n• Тээвэр: ${budget.metro}\n• Үзвэр: ${budget.attractions}`);
     parts.push(`• **Нийт: ${budget.total}** (нислэг тусад)`);
+    parts.push(PRICE_FOOTNOTE);
     return wrapTopic(parts, intent, "budget");
   }
   return null;

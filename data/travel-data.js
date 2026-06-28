@@ -13,14 +13,15 @@ window.TRAVEL_DATA = {
   ],
 
   services: [
-    { id: "flight", icon: "✈️", title: "Нислэг шалгах", desc: "Хямд нислэг хайх, захиалгын хүсэлт", href: "/flights.html" },
-    { id: "hotel", icon: "🏨", title: "Буудал хайх", desc: "Буудал, байршил, үнэ", href: "/hotels.html" },
-    { id: "train", icon: "🚄", title: "Галт тэрэг / Автобус", desc: "12306, автобус — эх сурвалжид тулгуурласан", tab: "train" },
-    { id: "attraction", icon: "🎫", title: "Үзвэр үйлчилгээ", desc: "Disneyland, музей, тур", href: "/aylal.html" },
-    { id: "esim", icon: "📶", title: "eSIM", desc: "Хятад, Ази, Global дата", anchor: "#esim" },
-    { id: "visa", icon: "🛂", title: "Визийн мэдээлэл", desc: "Материал, элчин сайд", href: "/china/#visa" },
-    { id: "transport", icon: "🚇", title: "Нийтийн тээврийн заавар", desc: "Метро, автобус, карт", href: "/china/#transport" },
-    { id: "route", icon: "🗺️", title: "Аяллын маршрут", desc: "Хот, маршрут, зөвлөгөө", href: "/marshrut.html" }
+    { id: "ai", icon: "🤖", title: "AI зөвлөх", desc: "Чат үнэгүй — form шаардлагагүй", img: "/images/china/guide/internet.jpg", action: "ai_chat" },
+    { id: "flight", icon: "✈️", title: "Нислэг шалгах", desc: "Хямд нислэг хайх, захиалгын хүсэлт", img: "/images/routes/china/shanghai-bund.jpg", tab: "flight" },
+    { id: "hotel", icon: "🏨", title: "Буудал хайх", desc: "Буудал, байршил, үнэ", img: "/images/hotels/exterior-01.jpg", tab: "hotel" },
+    { id: "train", icon: "🚄", title: "Галт тэрэг / Автобус", desc: "12306, автобус — эх сурвалжид тулгуурласан", img: "/images/china/guide/transport-hsr.jpg", tab: "train" },
+    { id: "attraction", icon: "🎫", title: "Үзвэр үйлчилгээ", desc: "Disneyland, музей, тур", img: "/images/routes/china/panda.jpg", tab: "attraction" },
+    { id: "esim", icon: "📶", title: "eSIM", desc: "Хятад, Ази, Global дата", img: "/images/china/guide/internet.jpg", anchor: "#esim" },
+    { id: "visa", icon: "🛂", title: "Визийн мэдээлэл", desc: "Материал, элчин сайд", img: "/images/china/guide/route-asia.jpg", tab: "visa" },
+    { id: "transport", icon: "🚇", title: "Нийтийн тээврийн заавар", desc: "Метро, автобус, карт", img: "/images/china/guide/app-amap.jpg", href: "/china/#transport" },
+    { id: "route", icon: "🗺️", title: "Аяллын маршрут", desc: "Хот, маршрут, зөвлөгөө", img: "/images/china/guide/routes-all.jpg", href: "/marshrut.html" }
   ],
 
   /** Admin-configurable pricing (default 15%, range 10–20%) */

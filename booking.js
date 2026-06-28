@@ -43,7 +43,7 @@
     route: "Маршрут захиалах"
   };
 
-  let activeTab = "ai";
+  let activeTab = "flight";
   let lastMockResults = [];
   let lastSearchMeta = {};
   let pendingBooking = null;
@@ -375,9 +375,12 @@
     if (!grid) return;
     grid.innerHTML = data.services.map((s) => `
       <button type="button" class="tp-service-card" data-service="${s.id}">
-        <div class="icon">${s.icon}</div>
-        <h3>${s.title}</h3>
-        <p>${s.desc}</p>
+        ${s.img ? `<img class="tp-service-img" src="${s.img}" alt="${s.title}" loading="lazy">` : ""}
+        <div class="tp-service-body">
+          <div class="icon">${s.icon}</div>
+          <h3>${s.title}</h3>
+          <p>${s.desc}</p>
+        </div>
       </button>
     `).join("");
 
@@ -385,6 +388,10 @@
       card.addEventListener("click", () => {
         const s = data.services.find((x) => x.id === card.dataset.service);
         if (!s) return;
+        if (s.action === "ai_chat") {
+          window.TravelAssistant?.openAiChat?.();
+          return;
+        }
         if (s.tab) { setTab(s.tab); window.scrollTo({ top: $("tpSearchCard")?.offsetTop - 20 || 0, behavior: "smooth" }); return; }
         if (s.anchor) { window.location.hash = s.anchor.replace("#", ""); document.querySelector(s.anchor)?.scrollIntoView({ behavior: "smooth" }); return; }
         if (s.href) { window.location.href = s.href; return; }
@@ -1217,7 +1224,7 @@
     initHotelDetailModal();
     initCityDatalists();
     initHotelFiltersUI();
-    setTab("ai");
+    setTab("flight");
 
     if (location.hash === "#esim") {
       document.querySelector("#esim")?.scrollIntoView({ behavior: "smooth" });
