@@ -1846,13 +1846,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/flight-routes.js?v=1"></script>
 <script src="/data/mock-search-results.js?v=8"></script>
 <script src="/booking.js?v=12"></script>
-<script src="/ai-agent.js?v=3"></script>
+<script src="/ai-agent.js?v=4"></script>
 <script src="/travel-assistant.js?v=2"></script>
 
 <div class="tp-assist-dock" id="tpAssistDock">
 <div class="tp-chat-widget tp-chat-dock" id="aiChatWidget">
 <div class="tp-chat" id="aiChat" aria-live="polite"></div>
-<form id="aiAgentForm" class="tp-chat-composer">
+<form id="aiAgentForm" class="tp-chat-composer" autocomplete="off">
 <textarea class="tp-ai-box tp-chat-input" id="aiAgentInput" rows="2" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Асуултаа бичээрэй… Enter = илгээх, Shift+Enter = шинэ мөр"></textarea>
 <button type="submit" class="tp-btn primary tp-chat-send" aria-label="Илгээх">➤</button>
 </form>

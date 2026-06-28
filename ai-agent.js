@@ -225,8 +225,15 @@
     document.getElementById("aiTyping")?.remove();
   }
 
+  function normalizeUserQuery(q) {
+    return String(q || "")
+      .replace(/\.\/+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   async function ask(question, opts) {
-    const q = String(question || "").trim();
+    const q = normalizeUserQuery(question);
     if (!q) return;
 
     if (!chatEl()) {
@@ -297,7 +304,7 @@
   }
 
   function goToChatAndAsk(text) {
-    const q = text || heroInput()?.value || inputEl()?.value;
+    const q = normalizeUserQuery(text || heroInput()?.value || inputEl()?.value);
     if (window.TravelAssistant?.openAiChat) {
       window.TravelAssistant.openAiChat(q || "");
       return;
@@ -314,13 +321,13 @@
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      ask(input?.value);
+      ask(normalizeUserQuery(input?.value));
     });
 
     input?.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        ask(input.value);
+        ask(normalizeUserQuery(input.value));
       }
     });
   }
@@ -330,7 +337,7 @@
     if (!box || box.dataset.aiWelcome === "1") return;
     box.dataset.aiWelcome = "1";
     appendAi({
-      reply: "Сайн байна! Би таны **хувийн аяллын зөвлөх**. Маршрут, буудал, нислэг, eSIM, төсөв — бүгдийг дэлгэрэнгүй, Монгол хэлээр зөвлөнө.\n\n**Чат бүрэн үнэгүй** — утас, email, form шаардлагагүй.\n\nЖишээ: «8 сард Шанхай 5 хоног, 2 хүн» гэж бичээрэй.",
+      reply: "Сайн байна уу! Би eSIM Mongolia-ийн аяллын зөвлөх.\n\nЖишээ:\n• 7 сард Шанхай 6 хоног 2 хүн\n• shanhai 6 honog 7 sard\n• sain baina, shanghai ruu 5 honog — tuslah\n\n**Чат үнэгүй** — form шаардлагагүй.",
       quickReplies: [
         { id: "route_plan", label: "🗺 Маршрут" },
         { id: "hotel_suggest", label: "🏨 Буудал" },

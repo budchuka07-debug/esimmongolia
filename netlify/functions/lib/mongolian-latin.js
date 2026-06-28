@@ -24,6 +24,7 @@ function applyReplacements(text, pairs) {
 /** @param {string} text @param {{ getAll?: () => { name_en: string, name_mn: string, city_id: string }[] } | null} chinaDest */
 function normalizeLatinMongolian(text, chinaDest) {
   let t = foldAscii(text);
+  t = t.replace(/\.\/+/g, " ").replace(/\s+/g, " ").trim();
   t = t.replace(/\bshanhai\b/gi, "shanghai");
   t = t.replace(/\bshanghi\b/gi, "shanghai");
   t = t.replace(/\bbeejing\b/gi, "beijing");
@@ -128,8 +129,7 @@ function searchBlob(text, chinaDest) {
 
 function latinGreeting(text) {
   const t = foldAscii(text);
-  return /^(sain uu|sainuu|sain baina|sain bna|hello|hi|hey|sain)\b/.test(t) ||
-    (t.length < 24 && /\bsain\b/.test(t));
+  return /^(sain uu|sainuu|sain baina|sain bna|hello|hi|hey|sain)[!.?\s]*$/i.test(t);
 }
 
 function latinVague(text) {

@@ -153,8 +153,7 @@ function mergeIntent(history, message) {
 function isGreeting(msg) {
   const t = msg.trim().toLowerCase();
   return latin.latinGreeting(t) ||
-    /^(сайн уу|сайн байна уу|hello|hi|hey|баярлалаа|thanks)[!.?\s]*$/i.test(t) ||
-    (t.length < 20 && /сайн уу|сайн байна/i.test(t));
+    /^(сайн уу|сайн байна уу|сайн байна|hello|hi|hey|баярлалаа|thanks)[!.?\s]*$/i.test(t);
 }
 
 function isVague(msg) {
@@ -166,6 +165,7 @@ function isVague(msg) {
 
 function enrichIntent(intent, message) {
   const out = { ...intent };
+  const hay = latin.searchBlob(message, CHINA_DEST);
   if (!out.city_id) {
     const dest = matchDestination(message);
     if (dest) {
@@ -174,13 +174,48 @@ function enrichIntent(intent, message) {
       out.city_id = dest.city_id || out.city_id;
     }
   }
-  if (!out.people && (out.city || out.city_id) && (out.days || out.month)) {
-    out.people = 2;
+  if (!out.days) {
+    const dayMatch = hay.match(/(\d+)\s*хоног/) || message.match(/(\d+)\s*(honog|khonog)/i);
+    if (dayMatch) out.days = Number(dayMatch[1]);
+    else if (/\b(honog|khonog|хоног)\b/i.test(hay) && (out.city || out.city_id)) out.days = 5;
+  }
+  if (!out.month) {
+    const monthMatch = hay.match(/(\d{1,2})\s*сар/) || message.match(/(\d{1,2})\s*(sar|sard|sariin)/i);
+    if (monthMatch) out.month = monthMatch[1];
+  }
+  if (!out.people && (out.city || out.city_id)) {
+    const peopleMatch = hay.match(/(\d+)\s*хүн/) || message.match(/(\d+)\s*(hun|khun|huun)/i);
+    if (peopleMatch) out.people = Number(peopleMatch[1]);
+    else out.people = 2;
   }
   if (!out.days && out.month && (out.city || out.city_id)) {
     out.days = 5;
   }
   return out;
+}
+
+function withDefaults(intent) {
+  const out = {
+    ...intent,
+    days: Number(intent.days) || 5,
+    people: Number(intent.people) || 2
+  };
+  if (out.city_id && !out.city) {
+    const profile = getChinaProfile(out.city_id);
+    if (profile?.name_mn) out.city = profile.name_mn;
+  }
+  return out;
+}
+
+function buildConsultantOrFollowUp(intent, message) {
+  const resolved = withDefaults(intent);
+  if (resolved.city_id || resolved.city) {
+    const full = consultant.buildConsultantReply(resolved, message);
+    if (full) return full;
+  }
+  const missing = missingFields(resolved);
+  if (missing.length) return consultant.buildFollowUpReply(resolved, missing);
+  return consultant.buildGreetingReply();
 }
 
 function missingFields(intent) {
@@ -203,7 +238,7 @@ function buildReply(message, history) {
     return consultant.buildInsuranceReply(intent);
   }
 
-  const full = consultant.buildConsultantReply(intent, message);
+  const full = consultant.buildConsultantReply(withDefaults(intent), message);
   if (full) return full;
 
   const topic = consultant.buildTopicReply(intent, message);
@@ -213,13 +248,10 @@ function buildReply(message, history) {
 
   const missing = missingFields(intent);
   if (missing.length > 0 && (isVague(message) || missing.length >= 2)) {
-    return consultant.buildFollowUpReply(intent, missing);
+    return consultant.buildFollowUpReply(withDefaults(intent), missing);
   }
 
-  return consultant.buildConsultantReply(
-    { ...intent, city: intent.city || "Шанхай", city_id: intent.city_id || "shanghai", days: intent.days || 5, people: intent.people || 2 },
-    message
-  ) || consultant.buildGreetingReply();
+  return buildConsultantOrFollowUp(intent, message);
 }
 
 exports.handler = async (event) => {
