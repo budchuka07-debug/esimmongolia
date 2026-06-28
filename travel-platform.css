@@ -886,6 +886,102 @@
 .tp-flight-card {
   padding: 14px;
 }
+.tp-train-card-expanded {
+  grid-column: 1 / -1;
+}
+.tp-train-route-title {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.tp-train-mode-label {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--tp-muted);
+  font-weight: 600;
+}
+.tp-train-class-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+.tp-train-class-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--tp-text);
+}
+.tp-train-class-grid {
+  display: grid;
+  gap: 10px;
+}
+@media (min-width: 640px) {
+  .tp-train-class-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+  .tp-train-class-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.tp-train-class-card {
+  border: 1px solid var(--tp-border);
+  border-radius: 12px;
+  padding: 12px;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tp-train-class-card:hover {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+.tp-train-class-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: start;
+}
+.tp-train-class-icon { font-size: 22px; line-height: 1; }
+.tp-train-class-name { font-weight: 800; font-size: 14px; line-height: 1.3; }
+.tp-train-class-short { font-size: 12px; color: var(--tp-muted); margin-top: 2px; line-height: 1.4; }
+.tp-train-class-price {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--tp-green);
+  white-space: nowrap;
+}
+.tp-train-class-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tp-train-class-actions .tp-btn-book,
+.tp-train-class-actions .tp-btn-detail {
+  flex: 1;
+  min-width: 110px;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+.tp-train-class-detail-hero {
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  border: 1px solid var(--tp-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.tp-train-svg {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+.tp-train-class-detail h3 { margin: 0 0 8px; font-size: 1.2rem; }
+.tp-train-class-detail-route { font-size: 13px; color: var(--tp-muted); margin: 0 0 12px; font-weight: 600; }
+.tp-train-class-detail-desc { font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
+.tp-train-class-detail-block h4 { margin: 0 0 6px; font-size: 14px; }
+.tp-train-class-detail-block p { margin: 0 0 12px; font-size: 14px; line-height: 1.55; color: #475569; }
+.tp-train-class-detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.tp-train-class-detail-price { margin-bottom: 14px; }
 .tp-results { display: grid; gap: 12px; margin-top: 14px; }
 .tp-result-card {
   border: 1px solid var(--tp-border);
