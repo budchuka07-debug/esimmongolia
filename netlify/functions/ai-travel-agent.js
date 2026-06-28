@@ -35,10 +35,16 @@ const INTD_DESTINATIONS = [
   { keys: ["хятад", "hyatad", "khyatad", "china"], country: "Хятад", city: null, city_id: null }
 ];
 
-const DESTINATIONS = [
-  ...(CHINA_DEST?.buildAiDestinations?.() || []),
-  ...INTD_DESTINATIONS
-];
+let DESTINATIONS;
+try {
+  DESTINATIONS = [
+    ...(CHINA_DEST?.buildAiDestinations?.() || []),
+    ...INTD_DESTINATIONS
+  ];
+} catch (err) {
+  console.error("[ai-travel-agent] destination seed failed", err);
+  DESTINATIONS = [...INTD_DESTINATIONS];
+}
 
 function getChinaProfile(cityId) {
   return cityId && CHINA_DEST?.getCity ? CHINA_DEST.getCity(cityId) : null;
@@ -218,7 +224,18 @@ exports.handler = async (event) => {
   const sessionId = body.sessionId || randomUUID();
   const history = Array.isArray(body.history) ? body.history.slice(-12) : [];
 
-  const result = buildReply(message, history);
+  let result;
+  try {
+    result = buildReply(message, history);
+  } catch (err) {
+    console.error("[ai-travel-agent] buildReply failed", err);
+    result = consultant.buildGreetingReply();
+    result.reply = `${result.reply}\n\n(Түр алдаа гарлаа — дахин асуугаарай.)`;
+  }
+
+  if (!result?.reply) {
+    result = consultant.buildGreetingReply();
+  }
 
   console.log("[ai-travel-agent]", { sessionId, len: message.length });
 

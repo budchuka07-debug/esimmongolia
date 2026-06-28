@@ -843,7 +843,7 @@
     bd.style.display = "block";
   }
 
-  function renderTrainCard(t) {
+  function renderTrainCardContent(t) {
     const dep = t.departure_time
       ? `<div class="tp-train-time">${t.departure_time}</div>`
       : `<div class="tp-train-time tp-train-time-muted">${t.departure_note || "—"}</div>`;
@@ -889,7 +889,7 @@
       </article>`;
   }
 
-  function renderBusCard(t) {
+  function renderBusCardContent(t) {
     const dep = t.departure_time
       ? `<div class="tp-train-time">${t.departure_time}</div>`
       : `<div class="tp-train-time tp-train-time-muted">${t.departure_note || "—"}</div>`;
@@ -929,9 +929,11 @@
       </article>`;
   }
 
-  function renderTransportCard(t) {
-    if (t.transport_type === "bus") return renderBusCard(t);
-    return renderTrainCard(t);
+  function renderTransportCard(item) {
+    if (!item) return "";
+    if (item.transport_type === "bus") return renderBusCardContent(item);
+    if (item.transport_type === "train") return renderTrainCardContent(item);
+    return renderTrainCardContent(item);
   }
 
   function renderTransportSections(results) {
@@ -952,11 +954,6 @@
       })
       .filter(Boolean)
       .join("");
-  }
-
-  /** @deprecated use renderTransportCard */
-  function renderTrainCard(t) {
-    return renderTransportCard(t);
   }
 
   function flightRouteBadge(f) {

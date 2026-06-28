@@ -221,9 +221,18 @@
     };
   }
 
+  function clearTyping() {
+    document.getElementById("aiTyping")?.remove();
+  }
+
   async function ask(question, opts) {
     const q = String(question || "").trim();
     if (!q) return;
+
+    if (!chatEl()) {
+      console.warn("[TravelAI] chat container missing");
+      return;
+    }
 
     const silent = opts && opts.silentUser;
 
@@ -235,7 +244,8 @@
     if (inputEl()) inputEl().value = "";
     if (heroInput()) heroInput().value = "";
 
-    const typing = showTyping();
+    clearTyping();
+    showTyping();
 
     try {
       const res = await fetch(ENDPOINT, {
@@ -248,8 +258,17 @@
           locale: "mn"
         })
       });
-      const data = await res.json();
-      if (typing) typing.remove();
+
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (_) {
+        throw new Error("invalid_json");
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || `http_${res.status}`);
+      }
 
       if (data.sessionId) sessionStorage.setItem("aiSessionId", data.sessionId);
 
@@ -264,7 +283,7 @@
 
       history.push({ role: "assistant", content: reply });
     } catch (err) {
-      if (typing) typing.remove();
+      console.error("[TravelAI]", err);
       appendAi({
         reply: "Холболт түр алдаатай байна. Дахин асуугаарай — чат үнэгүй, form шаардлагагүй.",
         ctas: [],
@@ -272,6 +291,8 @@
         cards: [],
         context: {}
       });
+    } finally {
+      clearTyping();
     }
   }
 
@@ -285,11 +306,13 @@
     setTimeout(() => ask(q), 300);
   }
 
-  function init() {
+  function bindChatForm() {
     const form = document.getElementById("aiAgentForm");
     const input = inputEl();
+    if (!form || form.dataset.aiBound === "1") return;
+    form.dataset.aiBound = "1";
 
-    form?.addEventListener("submit", (e) => {
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
       ask(input?.value);
     });
@@ -300,18 +323,12 @@
         ask(input.value);
       }
     });
+  }
 
-    document.getElementById("aiSearchBtn")?.addEventListener("click", () => {
-      goToChatAndAsk(heroInput()?.value);
-    });
-
-    heroInput?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        goToChatAndAsk(heroInput()?.value);
-      }
-    });
-
+  function showWelcome() {
+    const box = chatEl();
+    if (!box || box.dataset.aiWelcome === "1") return;
+    box.dataset.aiWelcome = "1";
     appendAi({
       reply: "Сайн байна! Би таны **хувийн аяллын зөвлөх**. Маршрут, буудал, нислэг, eSIM, төсөв — бүгдийг дэлгэрэнгүй, Монгол хэлээр зөвлөнө.\n\n**Чат бүрэн үнэгүй** — утас, email, form шаардлагагүй.\n\nЖишээ: «8 сард Шанхай 5 хоног, 2 хүн» гэж бичээрэй.",
       quickReplies: [
@@ -323,6 +340,30 @@
       ctas: [],
       cards: [],
       context: {}
+    });
+  }
+
+  function initChatUi(retries) {
+    if (!chatEl()) {
+      if (retries > 0) setTimeout(() => initChatUi(retries - 1), 50);
+      return;
+    }
+    bindChatForm();
+    showWelcome();
+  }
+
+  function init() {
+    initChatUi(40);
+
+    document.getElementById("aiSearchBtn")?.addEventListener("click", () => {
+      goToChatAndAsk(heroInput()?.value);
+    });
+
+    heroInput()?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        goToChatAndAsk(heroInput()?.value);
+      }
     });
   }
 
