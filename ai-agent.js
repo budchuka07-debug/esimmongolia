@@ -180,6 +180,16 @@
     return /хаашаа явахаа хэлбэл/i.test(reply) && !/🗺|маршрут|1-р өдөр/i.test(reply);
   }
 
+  /** Strip internal pricing/markup lines from backend replies */
+  function sanitizeCustomerReply(text) {
+    return String(text || "")
+      .split("\n")
+      .filter((line) => !/15\s*%\s*үйлчилгээ|540₮\/юань|markup_percent|supplier_price|үйлчилгээний хураамж|ашиг.*хувь/i.test(line))
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
   function generateLocalTravelResponse(message) {
     if (window.AiLocalResponses?.generateLocalTravelResponse) {
       return window.AiLocalResponses.generateLocalTravelResponse(message);
@@ -218,7 +228,7 @@
       if (data.sessionId) sessionStorage.setItem("aiSessionId", data.sessionId);
       if (isWeakRemoteReply(data.reply)) return null;
       return {
-        reply: data.reply,
+        reply: sanitizeCustomerReply(data.reply),
         ctas: data.ctas || [],
         quickReplies: data.quickReplies || [],
         cards: data.cards || [],

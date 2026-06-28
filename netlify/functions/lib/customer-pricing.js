@@ -1,4 +1,4 @@
-/** Customer-facing CNY → MNT (540 rate + 15% markup), aligned with travel-data.js */
+/** Customer-facing CNY → MNT (internal markup applied; never expose % to customers) */
 const FX_CNY = 540;
 const MARKUP_PERCENT = 15;
 
@@ -24,7 +24,8 @@ function formatCnyMinPlusMnt(minCny) {
   return `${formatMnt(cnyToMnt(minCny))}+`;
 }
 
-const PRICE_FOOTNOTE = "Үнэ: 540₮/юань ханшаар, 15% үйлчилгээний хураамжтай MNT.";
+/** Customer-safe disclaimer — never expose markup % or supplier rates */
+const PRICE_FOOTNOTE = "Үнэ MNT-ээр ойролцоо — захиалах үед эцсийн дүн баталгаажна.";
 
 module.exports = {
   FX_CNY,
