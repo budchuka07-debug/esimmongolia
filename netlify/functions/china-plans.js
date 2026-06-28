@@ -1,7 +1,7 @@
 // Хятад eSIM — china.html-тэй ижил supplier үнэ (TGT-д China-only багц байхгүй)
 
 const USD_RATE = 3680;
-const MARKUP = 1.4;
+const MARKUP_CHINA = 1.35;
 
 const SUPPLIER_PRICES = [
   { days: "7 хоног", daysNum: 7, gb1: 3.8, gb2: 6.23, gb3: 9.42, unlimited: 13.83 },
@@ -18,7 +18,7 @@ const DATA_LABELS = {
 };
 
 function sellPriceMnt(usd) {
-  return Math.round((Number(usd) * USD_RATE * MARKUP) / 100) * 100;
+  return Math.round((Number(usd) * USD_RATE * MARKUP_CHINA) / 100) * 100;
 }
 
 function getChinaPlans() {

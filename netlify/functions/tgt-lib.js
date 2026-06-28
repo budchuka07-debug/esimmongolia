@@ -4,6 +4,7 @@ const { getCountryName, buildStaticNameMap } = require("./country-names");
 
 const USD_RATE = 3680;
 const MARKUP = 1.4;
+const MARKUP_CHINA = 1.35;
 
 const RESTCOUNTRIES_ALL =
   "https://restcountries.com/v3.1/all?fields=cca2,name,altSpellings";
@@ -200,10 +201,12 @@ function getProductCountryCodes(p) {
   return [...codes];
 }
 
-function calculateSellPriceMnt(usd) {
+function calculateSellPriceMnt(usd, countryCode) {
   const u = Number(usd || 0);
   if (!Number.isFinite(u) || u <= 0) return null;
-  return Math.round((u * USD_RATE * MARKUP) / 100) * 100;
+  const cc = String(countryCode || "").toUpperCase();
+  const markup = cc === "CN" ? MARKUP_CHINA : MARKUP;
+  return Math.round((u * USD_RATE * markup) / 100) * 100;
 }
 
 function parseDataCapacity(p) {
@@ -315,7 +318,7 @@ function normalizeProduct(p) {
   const valInfo = parseValidity(p);
   const countryCode = getProductCountryCode(p);
   const countryName = getProductCountryName(p);
-  const sellPriceMnt = calculateSellPriceMnt(price);
+  const sellPriceMnt = calculateSellPriceMnt(price, countryCode);
 
   return {
     productCode,
@@ -573,4 +576,5 @@ module.exports = {
   normalizeName,
   USD_RATE,
   MARKUP,
+  MARKUP_CHINA,
 };
