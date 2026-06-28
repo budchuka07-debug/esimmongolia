@@ -40,6 +40,18 @@ node scripts/generate-travel-seed.mjs   # regenerates seed/002_bulk_inventory.sq
 
 Then SQL Editor → `seed/002_bulk_inventory.sql` → Run (~500 hotels, 100 cities, etc.)
 
+**Hotel placeholder images (Cloudinary MVP):**
+
+```bash
+node scripts/setup-hotel-seed-assets.mjs
+node scripts/upload-hotel-placeholders.mjs
+node scripts/assign-hotel-images.mjs
+```
+
+Then SQL Editor → `seed/003_hotel_cloudinary_images.sql` → Run (500 hotel image UPDATEs)
+
+Requires migration `006_hotel_image_source.sql` for `image_source` column.
+
 5. Netlify env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_UPLOAD_PRESET`
 
 ## Regenerate seed

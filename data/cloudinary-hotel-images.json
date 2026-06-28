@@ -1,0 +1,555 @@
+{
+  "cloud_name": "dflwo8gmz",
+  "base_folder": "esimmongolia/hotel-placeholders",
+  "uploaded_at": "2026-06-28T21:05:51.102Z",
+  "categories": {
+    "budget": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680752/esimmongolia/hotel-placeholders/budget/oy2d5umgrogkdspkizdg.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/oy2d5umgrogkdspkizdg",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "exterior-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680753/esimmongolia/hotel-placeholders/budget/kgnc6sgqpummdjvtza1w.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/kgnc6sgqpummdjvtza1w",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "exterior-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680754/esimmongolia/hotel-placeholders/budget/kdxxmu4ndbx4rw7uge3k.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/kdxxmu4ndbx4rw7uge3k",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "exterior-04.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680755/esimmongolia/hotel-placeholders/budget/xugxfsxn8g6ulyjsj1g2.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/xugxfsxn8g6ulyjsj1g2",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "exterior-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680756/esimmongolia/hotel-placeholders/budget/ohxt593f2zvu180ft52u.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/ohxt593f2zvu180ft52u",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "exterior-06.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680756/esimmongolia/hotel-placeholders/budget/vu00786gcplzriwxq5ig.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/vu00786gcplzriwxq5ig",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "standard_room-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680758/esimmongolia/hotel-placeholders/budget/g8buv5at9owxts5a6ycx.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/g8buv5at9owxts5a6ycx",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "standard_room-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680759/esimmongolia/hotel-placeholders/budget/iyxuvnazbftroj0jqst8.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/budget/iyxuvnazbftroj0jqst8",
+        "folder": "esimmongolia/hotel-placeholders/budget",
+        "filename": "standard_room-03.jpg"
+      }
+    ],
+    "midrange": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680760/esimmongolia/hotel-placeholders/midrange/g8a2wjz4vfd04pkyuywt.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/midrange/g8a2wjz4vfd04pkyuywt",
+        "folder": "esimmongolia/hotel-placeholders/midrange",
+        "filename": "exterior-07.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680760/esimmongolia/hotel-placeholders/midrange/o62ztgcdog8er1fk517g.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/midrange/o62ztgcdog8er1fk517g",
+        "folder": "esimmongolia/hotel-placeholders/midrange",
+        "filename": "exterior-08.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680761/esimmongolia/hotel-placeholders/midrange/zoq1fri4j72dxg20h2jo.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/midrange/zoq1fri4j72dxg20h2jo",
+        "folder": "esimmongolia/hotel-placeholders/midrange",
+        "filename": "lobby-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680762/esimmongolia/hotel-placeholders/midrange/igd47g0ce7vc6xzjlgop.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/midrange/igd47g0ce7vc6xzjlgop",
+        "folder": "esimmongolia/hotel-placeholders/midrange",
+        "filename": "lobby-06.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680762/esimmongolia/hotel-placeholders/midrange/hhafawg2vlz9efdakksx.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/midrange/hhafawg2vlz9efdakksx",
+        "folder": "esimmongolia/hotel-placeholders/midrange",
+        "filename": "standard_room-06.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680763/esimmongolia/hotel-placeholders/midrange/cwbhih50mwalo4fvhyeg.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/midrange/cwbhih50mwalo4fvhyeg",
+        "folder": "esimmongolia/hotel-placeholders/midrange",
+        "filename": "standard_room-07.jpg"
+      }
+    ],
+    "luxury": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680764/esimmongolia/hotel-placeholders/luxury/abbbxqaqz4ffprqxlznk.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/abbbxqaqz4ffprqxlznk",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "deluxe_room-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680764/esimmongolia/hotel-placeholders/luxury/wqcxytyhfq5klstjlzyq.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/wqcxytyhfq5klstjlzyq",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "deluxe_room-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680765/esimmongolia/hotel-placeholders/luxury/xbbifbhm4caduztgenky.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/xbbifbhm4caduztgenky",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "exterior-09.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680766/esimmongolia/hotel-placeholders/luxury/oqjjpwshcwjsszd25tzz.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/oqjjpwshcwjsszd25tzz",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "exterior-10.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680767/esimmongolia/hotel-placeholders/luxury/pofx3kg764y4vlsfzxf0.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/pofx3kg764y4vlsfzxf0",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "exterior-11.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680768/esimmongolia/hotel-placeholders/luxury/fuzbxekve1zpmz8hzvn4.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/fuzbxekve1zpmz8hzvn4",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "exterior-12.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680768/esimmongolia/hotel-placeholders/luxury/kranufne6cszwanyzlls.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/kranufne6cszwanyzlls",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "lobby-11.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680769/esimmongolia/hotel-placeholders/luxury/c1edrdgcyxwc8h7qn1ar.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/luxury/c1edrdgcyxwc8h7qn1ar",
+        "folder": "esimmongolia/hotel-placeholders/luxury",
+        "filename": "lobby-12.jpg"
+      }
+    ],
+    "beach": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680770/esimmongolia/hotel-placeholders/beach/ka5oysmr6r4ihnzxf4dv.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/beach/ka5oysmr6r4ihnzxf4dv",
+        "folder": "esimmongolia/hotel-placeholders/beach",
+        "filename": "deluxe_room-08.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680771/esimmongolia/hotel-placeholders/beach/uisodettubjug79s8qcz.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/beach/uisodettubjug79s8qcz",
+        "folder": "esimmongolia/hotel-placeholders/beach",
+        "filename": "exterior-03.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680771/esimmongolia/hotel-placeholders/beach/yrvzjrd1fjsirpdnnpgy.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/beach/yrvzjrd1fjsirpdnnpgy",
+        "folder": "esimmongolia/hotel-placeholders/beach",
+        "filename": "exterior-07.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680772/esimmongolia/hotel-placeholders/beach/qznlgilgqwa95vroigxz.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/beach/qznlgilgqwa95vroigxz",
+        "folder": "esimmongolia/hotel-placeholders/beach",
+        "filename": "exterior-09.jpg"
+      }
+    ],
+    "city": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680773/esimmongolia/hotel-placeholders/city/yarmnl5wlu8bsmj9dkwr.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/city/yarmnl5wlu8bsmj9dkwr",
+        "folder": "esimmongolia/hotel-placeholders/city",
+        "filename": "exterior-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680774/esimmongolia/hotel-placeholders/city/zpxute0lc2s55jslmbcd.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/city/zpxute0lc2s55jslmbcd",
+        "folder": "esimmongolia/hotel-placeholders/city",
+        "filename": "exterior-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680775/esimmongolia/hotel-placeholders/city/c0lgcd3fgwt0firdnia9.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/city/c0lgcd3fgwt0firdnia9",
+        "folder": "esimmongolia/hotel-placeholders/city",
+        "filename": "exterior-08.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680775/esimmongolia/hotel-placeholders/city/hutx7p07xlpx7p7gkqsb.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/city/hutx7p07xlpx7p7gkqsb",
+        "folder": "esimmongolia/hotel-placeholders/city",
+        "filename": "lobby-04.jpg"
+      }
+    ],
+    "business": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680776/esimmongolia/hotel-placeholders/business/omajmdsymhgd0wscolsn.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/business/omajmdsymhgd0wscolsn",
+        "folder": "esimmongolia/hotel-placeholders/business",
+        "filename": "exterior-04.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680777/esimmongolia/hotel-placeholders/business/fvdcrtod3v53nw5oxhmn.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/business/fvdcrtod3v53nw5oxhmn",
+        "folder": "esimmongolia/hotel-placeholders/business",
+        "filename": "lobby-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680777/esimmongolia/hotel-placeholders/business/dfaovzghv06th8gjeyg6.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/business/dfaovzghv06th8gjeyg6",
+        "folder": "esimmongolia/hotel-placeholders/business",
+        "filename": "lobby-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680778/esimmongolia/hotel-placeholders/business/sthr0idibgttnc5mqff1.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/business/sthr0idibgttnc5mqff1",
+        "folder": "esimmongolia/hotel-placeholders/business",
+        "filename": "lobby-03.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680779/esimmongolia/hotel-placeholders/business/h1iw7ubgvky2ixbr1pbe.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/business/h1iw7ubgvky2ixbr1pbe",
+        "folder": "esimmongolia/hotel-placeholders/business",
+        "filename": "restaurant-01.jpg"
+      }
+    ],
+    "room": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680779/esimmongolia/hotel-placeholders/room/a6mgcldm7mwienxafs23.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/a6mgcldm7mwienxafs23",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680780/esimmongolia/hotel-placeholders/room/juh6rbwcdz2n1eyya33n.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/juh6rbwcdz2n1eyya33n",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680781/esimmongolia/hotel-placeholders/room/tllgks93yf6exd1qjpbz.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/tllgks93yf6exd1qjpbz",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-03.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680781/esimmongolia/hotel-placeholders/room/aq6doivdloafmoxe9o08.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/aq6doivdloafmoxe9o08",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-04.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680782/esimmongolia/hotel-placeholders/room/gbdhetzn646tqqy22wdx.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/gbdhetzn646tqqy22wdx",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680783/esimmongolia/hotel-placeholders/room/pihbsgne1tniikfx3tvh.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/pihbsgne1tniikfx3tvh",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-06.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680783/esimmongolia/hotel-placeholders/room/s3izsxmfh4ykjowdcw2q.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/s3izsxmfh4ykjowdcw2q",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-07.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680784/esimmongolia/hotel-placeholders/room/wm5lprvl18q5t1zs40ni.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/wm5lprvl18q5t1zs40ni",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-08.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680785/esimmongolia/hotel-placeholders/room/xqvgcanoesij88hpriml.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/xqvgcanoesij88hpriml",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-09.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680786/esimmongolia/hotel-placeholders/room/f3uupga4yvisazaq8we6.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/f3uupga4yvisazaq8we6",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-10.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680786/esimmongolia/hotel-placeholders/room/ftivsp1pik8bfjqtsxt7.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/ftivsp1pik8bfjqtsxt7",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-11.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680787/esimmongolia/hotel-placeholders/room/i0s4znfpxtdkfbjavs8j.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/i0s4znfpxtdkfbjavs8j",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "deluxe_room-12.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680788/esimmongolia/hotel-placeholders/room/kzfnbsho5dpumimi1dxw.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/kzfnbsho5dpumimi1dxw",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680788/esimmongolia/hotel-placeholders/room/f2b19mavxczx1bze1qrf.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/f2b19mavxczx1bze1qrf",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680789/esimmongolia/hotel-placeholders/room/f7xtm1huffcmy7wngwxk.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/f7xtm1huffcmy7wngwxk",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-03.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680789/esimmongolia/hotel-placeholders/room/by6krpvifftjygzu7a5e.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/by6krpvifftjygzu7a5e",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-04.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680790/esimmongolia/hotel-placeholders/room/x01gtaoh20dvexwrckdd.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/x01gtaoh20dvexwrckdd",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680791/esimmongolia/hotel-placeholders/room/xhtufr4b1o92buexpd29.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/xhtufr4b1o92buexpd29",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-06.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680792/esimmongolia/hotel-placeholders/room/qeryzzxcb0vcbqlmxonk.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/qeryzzxcb0vcbqlmxonk",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-07.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680792/esimmongolia/hotel-placeholders/room/vmakrcfjf0k71fuxrkel.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/vmakrcfjf0k71fuxrkel",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-08.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680793/esimmongolia/hotel-placeholders/room/ov8wzjimi4ooenuzgbg5.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/ov8wzjimi4ooenuzgbg5",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-09.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680794/esimmongolia/hotel-placeholders/room/xwowkp3ya0iqbp1myzmn.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/xwowkp3ya0iqbp1myzmn",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-10.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680794/esimmongolia/hotel-placeholders/room/ydfisdslvxpiqnyrywyn.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/ydfisdslvxpiqnyrywyn",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-11.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680795/esimmongolia/hotel-placeholders/room/fcakaqrtchbekhtpzpzj.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/room/fcakaqrtchbekhtpzpzj",
+        "folder": "esimmongolia/hotel-placeholders/room",
+        "filename": "standard_room-12.jpg"
+      }
+    ],
+    "lobby": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680796/esimmongolia/hotel-placeholders/lobby/ccc2tchlf8qlntvejyda.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/ccc2tchlf8qlntvejyda",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680797/esimmongolia/hotel-placeholders/lobby/o6oc7osinnuf2y0ucqkt.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/o6oc7osinnuf2y0ucqkt",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680798/esimmongolia/hotel-placeholders/lobby/pwanrnk5jkfry1r06ha7.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/pwanrnk5jkfry1r06ha7",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-03.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680798/esimmongolia/hotel-placeholders/lobby/nanooeai77xzopdnvbvi.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/nanooeai77xzopdnvbvi",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-04.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680799/esimmongolia/hotel-placeholders/lobby/s8jcjhb3bsdmdgpyhy1t.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/s8jcjhb3bsdmdgpyhy1t",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680800/esimmongolia/hotel-placeholders/lobby/qeziunyugh61qvcqewd5.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/qeziunyugh61qvcqewd5",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-06.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680801/esimmongolia/hotel-placeholders/lobby/jxeo2ttqr9wlmiwlzhmj.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/jxeo2ttqr9wlmiwlzhmj",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-07.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680801/esimmongolia/hotel-placeholders/lobby/z4vnhmnwio1pxk4e8glv.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/z4vnhmnwio1pxk4e8glv",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-08.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680802/esimmongolia/hotel-placeholders/lobby/j1koegmdb92smsg9nefn.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/j1koegmdb92smsg9nefn",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-09.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680803/esimmongolia/hotel-placeholders/lobby/tf2ej7ckmwn1cvljfs5g.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/tf2ej7ckmwn1cvljfs5g",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-10.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680804/esimmongolia/hotel-placeholders/lobby/pcn1qvbw67gfkqu4v9dm.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/pcn1qvbw67gfkqu4v9dm",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-11.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680804/esimmongolia/hotel-placeholders/lobby/e5vduenxl6ai8bwt9me1.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/lobby/e5vduenxl6ai8bwt9me1",
+        "folder": "esimmongolia/hotel-placeholders/lobby",
+        "filename": "lobby-12.jpg"
+      }
+    ],
+    "bathroom": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680805/esimmongolia/hotel-placeholders/bathroom/fkmbmt8qyw6pdluochyo.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/fkmbmt8qyw6pdluochyo",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680806/esimmongolia/hotel-placeholders/bathroom/lwupjd1ixmyenbpvhf9l.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/lwupjd1ixmyenbpvhf9l",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680807/esimmongolia/hotel-placeholders/bathroom/m8ozjykctuai8r5eiscm.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/m8ozjykctuai8r5eiscm",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-03.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680807/esimmongolia/hotel-placeholders/bathroom/doqqt8u6ppfbclv9civc.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/doqqt8u6ppfbclv9civc",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-04.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680808/esimmongolia/hotel-placeholders/bathroom/amtrx8f5tcmdrsnsdlm2.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/amtrx8f5tcmdrsnsdlm2",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-05.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680809/esimmongolia/hotel-placeholders/bathroom/z1ucigpstrlatzrosseu.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/z1ucigpstrlatzrosseu",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-06.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680809/esimmongolia/hotel-placeholders/bathroom/yhlvijefuvbwlp7dueny.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/yhlvijefuvbwlp7dueny",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-07.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680810/esimmongolia/hotel-placeholders/bathroom/yvwsv1kta1yb7rm2of63.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/yvwsv1kta1yb7rm2of63",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-08.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680811/esimmongolia/hotel-placeholders/bathroom/jww1espoipdwyelp4dqt.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/jww1espoipdwyelp4dqt",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-09.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680811/esimmongolia/hotel-placeholders/bathroom/v9atl7fknlh6vpbqvuea.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/v9atl7fknlh6vpbqvuea",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-10.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680812/esimmongolia/hotel-placeholders/bathroom/amgzinus16vpk6rz5d2j.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/amgzinus16vpk6rz5d2j",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-11.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680813/esimmongolia/hotel-placeholders/bathroom/wonikfpmwfrdqjwjimda.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/bathroom/wonikfpmwfrdqjwjimda",
+        "folder": "esimmongolia/hotel-placeholders/bathroom",
+        "filename": "bathroom-12.jpg"
+      }
+    ],
+    "restaurant": [
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680813/esimmongolia/hotel-placeholders/restaurant/zr489upthkdanxyc3clk.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/restaurant/zr489upthkdanxyc3clk",
+        "folder": "esimmongolia/hotel-placeholders/restaurant",
+        "filename": "restaurant-01.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680814/esimmongolia/hotel-placeholders/restaurant/vicwdpz31qeyguqvxbsy.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/restaurant/vicwdpz31qeyguqvxbsy",
+        "folder": "esimmongolia/hotel-placeholders/restaurant",
+        "filename": "restaurant-02.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680815/esimmongolia/hotel-placeholders/restaurant/qg0qlu85qlfz4emznpas.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/restaurant/qg0qlu85qlfz4emznpas",
+        "folder": "esimmongolia/hotel-placeholders/restaurant",
+        "filename": "restaurant-03.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680815/esimmongolia/hotel-placeholders/restaurant/x7fkgvptuct48c2msax5.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/restaurant/x7fkgvptuct48c2msax5",
+        "folder": "esimmongolia/hotel-placeholders/restaurant",
+        "filename": "restaurant-04.jpg"
+      },
+      {
+        "secure_url": "https://res.cloudinary.com/dflwo8gmz/image/upload/v1782680816/esimmongolia/hotel-placeholders/restaurant/zekcc5u7wdsjo6tiseac.jpg",
+        "public_id": "esimmongolia/hotel-placeholders/restaurant/zekcc5u7wdsjo6tiseac",
+        "folder": "esimmongolia/hotel-placeholders/restaurant",
+        "filename": "restaurant-05.jpg"
+      }
+    ]
+  }
+}

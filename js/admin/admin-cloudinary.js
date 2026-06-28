@@ -331,6 +331,10 @@
         backdrop.querySelectorAll(`[data-cover-field="${coverName}"] .adm-gallery-item`).forEach((el) => {
           el.classList.toggle("is-cover", el.dataset.url === url);
         });
+        const srcSel = backdrop.querySelector('[name="image_source"]');
+        if (url && /res\.cloudinary\.com/i.test(url) && srcSel?.value === "placeholder") {
+          srcSel.value = "official";
+        }
       };
 
       const doUpload = async (file) => {

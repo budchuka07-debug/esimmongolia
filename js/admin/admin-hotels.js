@@ -46,6 +46,10 @@
         <div class="adm-field"><label>Amenities</label><input name="amenities" value="${AdminCore.esc((h.amenities || []).join(", "))}"></div>
         <div class="adm-field"><label>Nearby metro</label><input name="nearby_metro" value="${AdminCore.esc(h.nearby_metro)}"></div>
         <div class="adm-field"><label>Landmarks</label><input name="nearby_landmarks" value="${AdminCore.esc((h.nearby_landmarks || []).join(", "))}"></div>
+        <div class="adm-field"><label>Image source</label><select name="image_source">
+          <option value="placeholder" ${(h.image_source || "placeholder") === "placeholder" ? "selected" : ""}>placeholder (MVP stock)</option>
+          <option value="official" ${h.image_source === "official" ? "selected" : ""}>official (real hotel)</option>
+        </select><div class="adm-field-hint">Cloudinary upload → official болгоно</div></div>
         <div class="adm-field"><label>Final price (MNT) — customer</label><input name="final_price_mnt" type="number" value="${AdminCore.esc(h.final_price_mnt)}" required></div>
         <div class="adm-field"><label>Active</label><select name="active"><option value="true" ${h.active !== false ? "selected" : ""}>Тийм</option><option value="false" ${h.active === false ? "selected" : ""}>Үгүй</option></select></div>
       </div>
@@ -80,6 +84,7 @@
       nearby_metro: g("nearby_metro"),
       nearby_landmarks: AdminCore.parseCsvList(g("nearby_landmarks")),
       final_price_mnt: parseInt(g("final_price_mnt"), 10) || 0,
+      image_source: g("image_source") || "placeholder",
       active: g("active") === "true",
       supplier_reference: {
         supplier_name: g("supplier_name"),
@@ -108,7 +113,7 @@
         </div>
         <div class="adm-table-wrap">
           <table class="adm-table">
-            <thead><tr><th>Буудал</th><th>Хот</th><th>★</th><th>Үнэ (MNT)</th><th>Supplier</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Буудал</th><th>Хот</th><th>★</th><th>Үнэ (MNT)</th><th>Images</th><th>Supplier</th><th>Status</th><th></th></tr></thead>
             <tbody>
               ${rows.map((h) => `
                 <tr>
@@ -116,6 +121,7 @@
                   <td>${AdminCore.cityName(h.city_id)}</td>
                   <td>${h.stars || "—"}</td>
                   <td>${AdminCore.fmtMnt(h.final_price_mnt)}</td>
+                  <td><small>${AdminCore.esc(h.image_source || "placeholder")}</small></td>
                   <td><small>${AdminCore.esc(h.supplier_reference?.supplier_name || "—")}</small></td>
                   <td>${AdminCore.badge(h.active)}</td>
                   <td>
@@ -123,7 +129,7 @@
                     ${h.supplier_reference?.supplier_url ? `<a class="adm-btn sm" href="${AdminCore.esc(h.supplier_reference.supplier_url)}" target="_blank" rel="noopener">Supplier</a>` : ""}
                     <button type="button" class="adm-btn sm danger" data-del="${h.id}">Устгах</button>
                   </td>
-                </tr>`).join("") || '<tr><td colspan="7" class="adm-empty">Олдсонгүй</td></tr>'}
+                </tr>`).join("") || '<tr><td colspan="8" class="adm-empty">Олдсонгүй</td></tr>'}
             </tbody>
           </table>
         </div>

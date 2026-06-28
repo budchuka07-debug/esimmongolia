@@ -90,6 +90,7 @@ create table if not exists esm_hotels (
   nearby_metro text,
   nearby_landmarks jsonb not null default '[]',
   final_price_mnt int,
+  image_source text not null default 'placeholder' check (image_source in ('placeholder', 'official')),
   supplier_reference jsonb,
   active boolean not null default true,
   created_at timestamptz not null default now(),
