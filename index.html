@@ -421,7 +421,7 @@
 <section class="tp-section tp-ai-section" id="aiAgentSection">
 <h2>🤖 AI аяллын зөвлөх</h2>
 <p class="tp-lead">Жинхэнэ аяллын зөвлөх шиг — маршрут, төсөв, буудал, eSIM. Чат **үнэгүй**, form шаардлагагүй.</p>
-<div class="tp-chat-widget">
+<div class="tp-chat-widget" id="aiChatWidget">
 <div class="tp-chat" id="aiChat" aria-live="polite"></div>
 <form id="aiAgentForm" class="tp-chat-composer">
 <textarea class="tp-ai-box tp-chat-input" id="aiAgentInput" rows="2" placeholder="Асуултаа бичээрэй… Enter = илгээх, Shift+Enter = шинэ мөр"></textarea>
@@ -1821,12 +1821,67 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/china-destinations.js?v=1"></script>
 <script src="/data/hotel-areas.js?v=6"></script>
 <script src="/data/china-hotel-areas.js?v=1"></script>
-<script src="/data/hotels-catalog.js?v=6"></script>
+<script src="/data/hohhot-supplier-hotels.js?v=1"></script>
+<script src="/data/hotels-catalog.js?v=7"></script>
 <script src="/data/travel-data.js?v=8"></script>
 <script src="/data/transport-routes.js?v=7"></script>
 <script src="/data/mock-search-results.js?v=7"></script>
 <script src="/booking.js?v=7"></script>
 <script src="/ai-agent.js?v=2"></script>
+<script src="/travel-assistant.js?v=1"></script>
+
+<button type="button" class="tp-assist-fab" id="travelAssistFab" aria-label="Аяллын зөвлөх нээх">
+<span class="tp-assist-fab-icon" aria-hidden="true">🤖</span>
+<span class="tp-assist-fab-text">Аяллын зөвлөх бэлэн байна</span>
+</button>
+
+<div class="tp-assist-backdrop" id="travelAssistBackdrop" aria-hidden="true"></div>
+<aside class="tp-assist-panel" id="travelAssistPanel" role="dialog" aria-labelledby="assistPanelTitle" aria-modal="true">
+<button type="button" class="tp-assist-close" id="travelAssistClose" aria-label="Хаах">×</button>
+<header class="tp-assist-header">
+<h2 id="assistPanelTitle">Аяллын зөвлөх</h2>
+<p id="assistPanelSubtitle">Та аялал, буудал, нислэг, eSIM, виз, даатгалын талаар асуугаарай.</p>
+</header>
+
+<div class="tp-assist-body" id="assistHomeView">
+<div class="tp-assist-section">
+<h3>Холбоо барих</h3>
+<div class="tp-assist-actions">
+<button type="button" class="tp-assist-action tp-assist-action-primary" id="assistAiStart">
+<span class="tp-assist-action-icon">🤖</span>
+<span class="tp-assist-action-label">AI чат эхлүүлэх</span>
+<span class="tp-assist-action-hint">Үнэгүй · form шаардлагагүй</span>
+</button>
+<button type="button" class="tp-assist-action" id="assistFb">
+<span class="tp-assist-action-icon">💬</span>
+<span class="tp-assist-action-label">Facebook Page чат</span>
+</button>
+<button type="button" class="tp-assist-action" id="assistWa">
+<span class="tp-assist-action-icon">🟢</span>
+<span class="tp-assist-action-label">WhatsApp</span>
+</button>
+<button type="button" class="tp-assist-action" id="assistPhone">
+<span class="tp-assist-action-icon">📞</span>
+<span class="tp-assist-action-label">Утас руу залгах</span>
+</button>
+</div>
+</div>
+<div class="tp-assist-section">
+<h3>Түргэн үйлдэл</h3>
+<div class="tp-assist-quick">
+<button type="button" class="tp-assist-quick-btn" id="assistHotel">🏨 Буудал хайх</button>
+<button type="button" class="tp-assist-quick-btn" id="assistFlight">✈️ Нислэг шалгах</button>
+<button type="button" class="tp-assist-quick-btn" id="assistEsim">📶 eSIM авах</button>
+<button type="button" class="tp-assist-quick-btn" id="assistInsurance">🛡 Даатгал нэмэх</button>
+</div>
+</div>
+</div>
+
+<div class="tp-assist-body tp-assist-ai" id="assistAiView" hidden>
+<button type="button" class="tp-assist-back" id="assistAiBack">← Буцах</button>
+<div class="tp-assist-ai-host" id="assistAiHost"></div>
+</div>
+</aside>
 
 <div class="tp-modal-bd" id="inquiryModalBd"></div>
 <div class="tp-modal" id="inquiryModal" style="position:fixed">
@@ -1848,7 +1903,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="tp-field"><label>Утас / WhatsApp *</label><input name="customer_phone" id="inqPhone" required></div>
 <div class="tp-field"><label>Email</label><input name="customer_email" id="inqEmail" type="email"></div>
 <div class="tp-field"><label>Огноо</label><input name="travel_date" id="inqTravelDate" type="date"></div>
+<div class="tp-field tp-hotel-only" style="display:none"><label>Check-in</label><input name="check_in" id="inqCheckIn" type="date"></div>
+<div class="tp-field tp-hotel-only" style="display:none"><label>Check-out</label><input name="check_out" id="inqCheckOut" type="date"></div>
 <div class="tp-field"><label>Хүний тоо</label><input name="people_count" id="inqPeople" type="number" value="2" min="1"></div>
+<div class="tp-field tp-hotel-only" style="display:none"><label>Өрөөний төрөл</label><input name="room_type" id="inqRoomType" placeholder="Deluxe King Room"></div>
+<input type="hidden" name="hotel_id" id="inqHotelId" value="">
+<input type="hidden" name="hotel_official_name" id="inqHotelOfficial" value="">
+<input type="hidden" name="city_id" id="inqCityId" value="">
 </div>
 <div class="tp-field" style="margin-top:12px"><label>Сонгосон зүйл</label><input name="selected_item" id="inqSelectedItem" readonly placeholder="Хайлтаас сонгоно"></div>
 <div class="tp-field" style="margin-top:12px"><label>Нэмэлт тэмдэглэл</label><textarea name="extra_notes" id="inqNotes" rows="3" placeholder="Нэмэлт хүсэлт…"></textarea></div>

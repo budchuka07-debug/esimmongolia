@@ -276,8 +276,13 @@
   }
 
   function goToChatAndAsk(text) {
+    const q = text || heroInput()?.value || inputEl()?.value;
+    if (window.TravelAssistant?.openAiChat) {
+      window.TravelAssistant.openAiChat(q || "");
+      return;
+    }
     document.getElementById("aiAgentSection")?.scrollIntoView({ behavior: "smooth" });
-    setTimeout(() => ask(text || heroInput()?.value || inputEl()?.value), 300);
+    setTimeout(() => ask(q), 300);
   }
 
   function init() {

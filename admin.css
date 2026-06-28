@@ -1,0 +1,164 @@
+/* Admin booking channel */
+:root {
+  --adm-bg: #0f172a;
+  --adm-panel: #1e293b;
+  --adm-border: #334155;
+  --adm-text: #f1f5f9;
+  --adm-muted: #94a3b8;
+  --adm-accent: #3b82f6;
+  --adm-ok: #22c55e;
+  --adm-warn: #f59e0b;
+  --adm-danger: #ef4444;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--adm-bg);
+  color: var(--adm-text);
+  line-height: 1.5;
+}
+.adm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--adm-border);
+  background: var(--adm-panel);
+}
+.adm-header h1 { margin: 0; font-size: 1.25rem; }
+.adm-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: calc(100vh - 60px);
+}
+@media (max-width: 900px) {
+  .adm-layout { grid-template-columns: 1fr; }
+}
+.adm-sidebar {
+  border-right: 1px solid var(--adm-border);
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+}
+.adm-main { padding: 20px 24px; overflow-y: auto; }
+.adm-login {
+  max-width: 360px;
+  margin: 80px auto;
+  padding: 24px;
+  background: var(--adm-panel);
+  border-radius: 12px;
+  border: 1px solid var(--adm-border);
+}
+.adm-field { margin-bottom: 12px; }
+.adm-field label { display: block; font-size: 12px; color: var(--adm-muted); margin-bottom: 4px; }
+.adm-field input, .adm-field select, .adm-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--adm-border);
+  background: #0f172a;
+  color: var(--adm-text);
+  font: inherit;
+}
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-panel);
+  color: var(--adm-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.adm-btn:hover { border-color: var(--adm-accent); }
+.adm-btn.primary { background: var(--adm-accent); border-color: var(--adm-accent); color: #fff; }
+.adm-btn.ok { background: #166534; border-color: #166534; }
+.adm-btn.warn { background: #92400e; border-color: #92400e; }
+.adm-btn.danger { background: #991b1b; border-color: #991b1b; }
+.adm-btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.adm-order-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--adm-border);
+  background: #0f172a;
+  color: var(--adm-text);
+  cursor: pointer;
+  font: inherit;
+}
+.adm-order-item:hover, .adm-order-item.active {
+  border-color: var(--adm-accent);
+  background: #172554;
+}
+.adm-order-item strong { display: block; font-size: 13px; }
+.adm-order-item small { color: var(--adm-muted); font-size: 11px; }
+.adm-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.adm-badge.new { background: #1e3a8a; }
+.adm-badge.awaiting_payment { background: #92400e; }
+.adm-badge.paid { background: #166534; }
+.adm-badge.sold_out { background: #991b1b; }
+.adm-badge.completed { background: #065f46; }
+.adm-section {
+  background: var(--adm-panel);
+  border: 1px solid var(--adm-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.adm-section h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--adm-muted);
+}
+.adm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.adm-kv label { font-size: 11px; color: var(--adm-muted); display: block; }
+.adm-kv span { font-size: 14px; font-weight: 600; }
+.adm-supplier {
+  background: #0f172a;
+  border: 1px dashed #f59e0b;
+  border-radius: 10px;
+  padding: 14px;
+}
+.adm-supplier h3 { margin: 0 0 8px; color: #fbbf24; font-size: 13px; }
+.adm-alt-card {
+  border: 1px solid var(--adm-border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.adm-empty { color: var(--adm-muted); padding: 40px; text-align: center; }
+.adm-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #166534;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 100;
+  display: none;
+}

@@ -88,6 +88,28 @@
     return data?.invoice_id || data?.invoiceId || data?.result?.invoice_id || null;
   }
 
+  function buildHotelBookingPreset(hotel) {
+    const room = hotel.rooms?.[0]?.name || "";
+    return {
+      selectedItem: itemLabel(hotel),
+      city: cityLabel(hotel.city_id),
+      country: hotel.country_id || "",
+      city_id: hotel.city_id,
+      hotel_id: hotel.id,
+      hotel_official_name: hotel.official_name || hotel.name_en,
+      room_type: room,
+      bookingItem: {
+        final_price_mnt: hotel.final_price_mnt,
+        selected_item: itemLabel(hotel),
+        supplier_internal: hotel.supplier_reference || hotel.internal_supplier_reference,
+        hotel_id: hotel.id,
+        hotel_official_name: hotel.official_name || hotel.name_en,
+        city_id: hotel.city_id,
+        room_type: room
+      }
+    };
+  }
+
   function openBookingForm(serviceType, preset, title) {
     resetBookingModal();
     const modal = $("inquiryModal");
@@ -104,9 +126,20 @@
         serviceType: type,
         final_price_mnt: preset.final_price_mnt,
         selected_item: preset.selectedItem || "",
-        supplier_internal: preset.supplier_internal || null
+        supplier_internal: preset.supplier_internal || preset.supplier_reference || null,
+        hotel_id: preset.hotel_id || null,
+        hotel_official_name: preset.hotel_official_name || preset.selectedItem || "",
+        city_id: preset.city_id || null,
+        room_type: preset.room_type || null,
+        check_in: preset.check_in || null,
+        check_out: preset.check_out || null
       };
     }
+
+    const isHotel = type === "hotel";
+    document.querySelectorAll(".tp-hotel-only").forEach((el) => {
+      el.style.display = isHotel ? "" : "none";
+    });
 
     const titleEl = $("inquiryModalTitle");
     if (titleEl) titleEl.textContent = title || BOOKING_TITLES[type] || "Захиалах";
@@ -125,7 +158,13 @@
       travelDate: "inqTravelDate",
       people: "inqPeople",
       notes: "inqNotes",
-      selectedItem: "inqSelectedItem"
+      selectedItem: "inqSelectedItem",
+      hotelId: "inqHotelId",
+      hotelOfficial: "inqHotelOfficial",
+      cityId: "inqCityId",
+      roomType: "inqRoomType",
+      checkIn: "inqCheckIn",
+      checkOut: "inqCheckOut"
     };
     if (preset) {
       Object.keys(fieldMap).forEach((k) => {
@@ -141,6 +180,10 @@
       const bud = $("inqBudget");
       if (bud) bud.value = String(pendingBooking.final_price_mnt);
     }
+    if (preset?.hotel_id && $("inqHotelId")) $("inqHotelId").value = preset.hotel_id;
+    if (preset?.hotel_official_name && $("inqHotelOfficial")) $("inqHotelOfficial").value = preset.hotel_official_name;
+    if (preset?.city_id && $("inqCityId")) $("inqCityId").value = preset.city_id;
+    if (preset?.room_type && $("inqRoomType")) $("inqRoomType").value = preset.room_type;
 
     modal.style.display = "block";
     bd.style.display = "block";
@@ -610,16 +653,7 @@
 
     body.querySelector(".tp-hotel-detail-book")?.addEventListener("click", () => {
       closeHotelDetail();
-      openBookingForm("hotel", {
-        selectedItem: itemLabel(hotel),
-        city: cityLabel(hotel.city_id),
-        country: hotel.country_id || "",
-        bookingItem: {
-          final_price_mnt: hotel.final_price_mnt,
-          selected_item: itemLabel(hotel),
-          supplier_internal: hotel.internal_supplier_reference
-        }
-      }, BOOKING_TITLES.hotel);
+      openBookingForm("hotel", buildHotelBookingPreset(hotel), BOOKING_TITLES.hotel);
     });
 
     modal.style.display = "block";
@@ -914,16 +948,7 @@
         const item = results.find((r) => r.id === btn.dataset.itemId);
         if (!item) return;
         const bookType = btn.dataset.bookType || type;
-        openBookingForm(bookType, {
-          selectedItem: itemLabel(item),
-          city: cityLabel(item.city_id || item.to_city_id),
-          country: item.country_id || "china",
-          bookingItem: {
-            final_price_mnt: item.final_price_mnt,
-            selected_item: itemLabel(item),
-            supplier_internal: item.internal_supplier_reference || null
-          }
-        }, BOOKING_TITLES[bookType]);
+        openBookingForm(bookType, buildHotelBookingPreset(item), BOOKING_TITLES[bookType]);
       });
     });
 
@@ -1001,6 +1026,13 @@
     payload.final_price_mnt = amount;
     payload.selected_item = payload.selected_item || pendingBooking?.selected_item || "";
     payload.supplier_internal = pendingBooking?.supplier_internal || null;
+    payload.hotel_id = pendingBooking?.hotel_id || payload.hotel_id || "";
+    payload.hotel_official_name = pendingBooking?.hotel_official_name || payload.hotel_official_name || "";
+    payload.city_id = pendingBooking?.city_id || payload.city_id || "";
+    payload.room_type = payload.room_type || pendingBooking?.room_type || "";
+    payload.check_in = payload.check_in || pendingBooking?.check_in || payload.travel_date || "";
+    payload.check_out = payload.check_out || pendingBooking?.check_out || "";
+    payload.guest_count = payload.people_count || pendingBooking?.guest_count || 2;
 
     if (statusEl) statusEl.textContent = "Бэлтгэж байна…";
     const submitBtn = form.querySelector('button[type="submit"]');

@@ -170,7 +170,35 @@
   const CITY_HOTELS = {};
   function ensureCityHotels(cityId) {
     const id = window.TRAVEL_CITIES?.normalizeCity(cityId) || cityId;
-    if (!CITY_HOTELS[id]) CITY_HOTELS[id] = generateCitySpecs(id);
+    if (!CITY_HOTELS[id]) {
+      if (id === "hohhot" && window.HOHHOT_SUPPLIER_HOTELS?.getAll) {
+        CITY_HOTELS[id] = window.HOHHOT_SUPPLIER_HOTELS.getAll().map((h, idx) => ({
+          name_en: h.official_name || h.name_en,
+          description_mn: h.description_mn,
+          district: h.district,
+          area_name: h.area_name,
+          stars: h.stars,
+          price_per_night: h.price_per_night,
+          nearby_landmarks: [h.area_name],
+          nearby_metro: "",
+          distance_to_metro_m: 9999,
+          distance_to_airport_km: h.distance_to_airport_km,
+          distance_to_center_km: h.distance_to_center_km,
+          distance_to_attraction_km: 1.5,
+          latitude: h.latitude,
+          longitude: h.longitude,
+          breakfast: h.breakfast,
+          free_cancellation: h.free_cancellation,
+          family_friendly: h.family_friendly,
+          amenities: h.amenities,
+          rooms: h.rooms,
+          _coverKey: "exterior",
+          _supplierHotel: h
+        }));
+      } else {
+        CITY_HOTELS[id] = generateCitySpecs(id);
+      }
+    }
     return CITY_HOTELS[id];
   }
 
@@ -188,8 +216,25 @@
       image: roomIdx % 2 === 0 ? images.standard_room : images.deluxe_room,
       amenities: [...new Set([...(room.amenities || []), ...baseAmenities.slice(0, 4)])]
     }));
-    const images_list = IMAGE_KEYS.map((k) => images[k]);
-    const supplierRef = `SUP-${city.country_id.toUpperCase()}-${cityId.toUpperCase()}-${String(idx + 1).padStart(3, "0")}`;
+    const images_list = spec._supplierHotel?.images_list || IMAGE_KEYS.map((k) => images[k]);
+    const supplierRefObj = spec._supplierHotel?.supplier_reference || null;
+    const supplierRef = supplierRefObj || `SUP-${city.country_id.toUpperCase()}-${cityId.toUpperCase()}-${String(idx + 1).padStart(3, "0")}`;
+    const hotelId = spec._supplierHotel?.id || `${cityId}_hotel_${idx + 1}`;
+    const officialName = spec._supplierHotel?.official_name || spec.name_en;
+    const hotelImages = (() => {
+      const src = spec._supplierHotel?.images;
+      if (src && !Array.isArray(src)) return src;
+      if (spec._supplierHotel?.images_list?.length) {
+        const list = spec._supplierHotel.images_list;
+        return {
+          exterior: list[0],
+          lobby: list[1] || list[0],
+          standard_room: list[2] || list[0],
+          deluxe_room: list[3] || list[1] || list[0]
+        };
+      }
+      return images;
+    })();
 
     const metroDist = spec.distance_to_metro_m
       ? `${spec.distance_to_metro_m} м`
@@ -199,10 +244,11 @@
       : "";
 
     return {
-      id: `${cityId}_hotel_${idx + 1}`,
+      id: hotelId,
       type: "hotel",
       country_id: city.country_id,
       city_id: cityId,
+      official_name: officialName,
       name_en: spec.name_en,
       description_mn: spec.description_mn,
       district: spec.district,
@@ -222,7 +268,7 @@
       breakfast: Boolean(spec.breakfast),
       free_cancellation: Boolean(spec.free_cancellation),
       family_friendly: Boolean(spec.family_friendly),
-      images,
+      images: hotelImages,
       images_list,
       cover_key: coverKey,
       rooms,
@@ -231,7 +277,8 @@
       nights: nightsNum,
       original_price: Math.round((Number(spec.price_per_night) || 0) * nightsNum),
       currency: country.currency || "USD",
-      internal_supplier_reference: supplierRef,
+      internal_supplier_reference: supplierRefObj || supplierRef,
+      supplier_reference: supplierRefObj,
       tier: isChinaCatalogCity(cityId) && window.CHINA_DESTINATIONS?.tierLabelForIndex
         ? window.CHINA_DESTINATIONS.tierLabelForIndex(idx)
         : null

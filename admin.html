@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Hotel Booking | eSIM Mongolia</title>
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+
+<div id="admLogin" class="adm-login">
+  <h1>🏨 Admin Booking</h1>
+  <p style="color:#94a3b8;font-size:14px">Hotel захиалга — supplier channel (Hohhot)</p>
+  <form id="admLoginForm">
+    <div class="adm-field">
+      <label>Admin key</label>
+      <input type="password" id="admKeyInput" placeholder="ADMIN_SECRET" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="adm-btn primary" style="width:100%">Нэвтрэх</button>
+  </form>
+  <p style="font-size:11px;color:#64748b;margin-top:12px">Netlify: ADMIN_SECRET env тохируулна</p>
+</div>
+
+<div id="admApp" style="display:none">
+  <header class="adm-header">
+    <h1>🏨 Hotel Booking Admin</h1>
+    <div>
+      <button type="button" class="adm-btn" id="admRefresh">↻ Refresh</button>
+      <button type="button" class="adm-btn" id="admLogout">Гарах</button>
+    </div>
+  </header>
+  <div class="adm-layout">
+    <aside class="adm-sidebar">
+      <h2 style="font-size:13px;color:#94a3b8;margin:0 0 12px">Захиалгууд</h2>
+      <div id="admOrderList"></div>
+    </aside>
+    <main class="adm-main" id="admDetail">
+      <p class="adm-empty">Захиалга сонгоно уу</p>
+    </main>
+  </div>
+</div>
+
+<div class="adm-toast" id="admToast"></div>
+<script src="/admin.js"></script>
+</body>
+</html>
