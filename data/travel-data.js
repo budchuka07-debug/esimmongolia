@@ -15,7 +15,7 @@ window.TRAVEL_DATA = {
   services: [
     { id: "flight", icon: "✈️", title: "Нислэг шалгах", desc: "Хямд нислэг хайх, захиалгын хүсэлт", href: "/flights.html" },
     { id: "hotel", icon: "🏨", title: "Буудал хайх", desc: "Буудал, байршил, үнэ", href: "/hotels.html" },
-    { id: "train", icon: "🚄", title: "Галт тэрэгний тасалбар", desc: "12306, өндөр хурдны галт тэрэг", tab: "train" },
+    { id: "train", icon: "🚄", title: "Галт тэрэг / Автобус", desc: "12306, автобус — эх сурвалжид тулгуурласан", tab: "train" },
     { id: "attraction", icon: "🎫", title: "Үзвэр үйлчилгээ", desc: "Disneyland, музей, тур", href: "/aylal.html" },
     { id: "esim", icon: "📶", title: "eSIM", desc: "Хятад, Ази, Global дата", anchor: "#esim" },
     { id: "visa", icon: "🛂", title: "Визийн мэдээлэл", desc: "Материал, элчин сайд", href: "/china/#visa" },
@@ -28,11 +28,13 @@ window.TRAVEL_DATA = {
     defaultMarkupPercent: 15,
     minMarkupPercent: 10,
     maxMarkupPercent: 20,
-    exchangeRateCny: 520,
+    rateDate: null,
+    rateSource: null,
+    exchangeRateCny: 540,
     exchangeRateUsd: 3680,
     serviceFeeMnt: 5000,
     exchangeRates: {
-      CNY: 520,
+      CNY: 540,
       THB: 110,
       VND: 0.21,
       JPY: 24,
@@ -149,7 +151,7 @@ window.TRAVEL_DATA = {
     }
   ],
 
-  /** Supplier price + markup → final MNT (admin can change markupPercent) */
+  /** Supplier price + 15% markup → final MNT (customer sees final only) */
   calcFinalPriceMnt(item) {
     const p = window.TRAVEL_DATA?.pricing || {};
     const currency = item.currency || "CNY";
@@ -157,31 +159,82 @@ window.TRAVEL_DATA = {
       item.exchange_rate ||
       p.exchangeRates?.[currency] ||
       p.exchangeRateCny ||
-      520
+      540
     );
-    const orig = Number(item.original_price || 0);
+    const orig = Number(item.original_price || item.supplier_price || 0);
     const markupPct = item.markup_percent ?? p.defaultMarkupPercent ?? 15;
     const markup = Number(markupPct) / 100;
     const fee = Number(item.service_fee_mnt ?? p.serviceFeeMnt ?? 0);
     const baseMnt = orig * rate * (1 + markup);
     return {
-      original_price: orig,
-      currency: item.currency || "CNY",
+      supplier_price: orig,
+      supplier_currency: currency,
       exchange_rate: rate,
+      exchange_rate_date: p.rateDate || null,
+      exchange_rate_source: p.rateSource || null,
       markup_percent: markupPct,
       service_fee_mnt: fee,
       final_price_mnt: Math.round((baseMnt + fee) / 100) * 100
     };
   },
 
-  /** Apply pricing to a search result item */
+  /** Customer-facing price — supplier/markup/FX stay in internal_supplier_reference only */
   priceItem(item, markupPercent) {
-    return {
+    const calc = this.calcFinalPriceMnt({
       ...item,
-      ...this.calcFinalPriceMnt({
-        ...item,
-        markup_percent: markupPercent ?? this.pricing.defaultMarkupPercent
-      })
+      markup_percent: markupPercent ?? this.pricing.defaultMarkupPercent
+    });
+    const internal = {
+      ...(typeof item.internal_supplier_reference === "object"
+        ? item.internal_supplier_reference
+        : { ref: item.internal_supplier_reference }),
+      supplier_price: calc.supplier_price,
+      supplier_currency: calc.supplier_currency,
+      exchange_rate: calc.exchange_rate,
+      exchange_rate_date: calc.exchange_rate_date,
+      exchange_rate_source: calc.exchange_rate_source,
+      markup_percent: calc.markup_percent,
+      service_fee_mnt: calc.service_fee_mnt,
+      final_price_mnt: calc.final_price_mnt
     };
+    const result = {
+      ...item,
+      final_price_mnt: calc.final_price_mnt,
+      internal_supplier_reference: internal
+    };
+    delete result.original_price;
+    delete result.exchange_rate;
+    delete result.markup_percent;
+    delete result.price_cny_min;
+    delete result.price_cny_max;
+    return result;
+  },
+
+  applyDailyRates(payload) {
+    if (!payload?.rates) return false;
+    const p = this.pricing;
+    Object.assign(p.exchangeRates, payload.rates);
+    if (payload.rates.CNY) p.exchangeRateCny = payload.rates.CNY;
+    if (payload.rates.USD) p.exchangeRateUsd = payload.rates.USD;
+    p.rateDate = payload.date || null;
+    p.rateSource = payload.source || null;
+    return true;
+  },
+
+  async loadDailyRates() {
+    try {
+      const res = await fetch("/.netlify/functions/exchange-rates");
+      const data = await res.json();
+      if (data.ok) this.applyDailyRates(data);
+      return data;
+    } catch {
+      return null;
+    }
+  },
+
+  rateFootnote() {
+    const p = this.pricing || {};
+    if (!p.rateDate) return "Төлөх эцсийн үнэ";
+    return `Төлөх үнэ — ${p.rateDate} өдрийн ханшаар`;
   }
 };

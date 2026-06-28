@@ -17,7 +17,7 @@
     ai: "AI аяллын зөвлөгөө",
     flight: "Нислэг",
     hotel: "Буудал",
-    train: "Галт тэрэг",
+    train: "Галт тэрэг / Автобус",
     attraction: "Үзвэр",
     esim: "eSIM",
     visa: "Виз",
@@ -35,7 +35,8 @@
     full: "Бүтэн аяллын захиалга",
     flight: "Нислэг захиалах",
     hotel: "Буудал захиалах",
-    train: "Галт тэрэгний тасалбар захиалах",
+    train: "Тээврийн тасалбар захиалах",
+    transport: "Тээврийн тасалбар захиалах",
     attraction: "Үзвэр захиалах",
     esim: "eSIM авах",
     visa: "Визийн зөвлөгөө",
@@ -430,6 +431,55 @@
     return "★".repeat(n) + "☆".repeat(Math.max(0, 5 - n));
   }
 
+  function priceTransportItem(item) {
+    const priced = { ...item, original_price: item.price_cny_min ?? item.original_price };
+    const base = priceItem(priced);
+    const max = Number(item.price_cny_max || item.price_cny_min || 0);
+    const min = Number(item.price_cny_min || item.original_price || 0);
+    const out = { ...base };
+    if (max > min) {
+      const maxPriced = priceItem({ ...item, original_price: max });
+      out.final_price_mnt_max = maxPriced.final_price_mnt;
+      out.internal_supplier_reference = {
+        ...out.internal_supplier_reference,
+        supplier_price_cny_min: min,
+        supplier_price_cny_max: max,
+        final_price_mnt_max: maxPriced.final_price_mnt
+      };
+    }
+    return out;
+  }
+
+  function customerPriceNote() {
+    return window.TRAVEL_DATA?.rateFootnote?.() || "Төлөх эцсийн үнэ (₮)";
+  }
+
+  function formatTransportPrice(t) {
+    if (t.final_price_mnt_max && t.final_price_mnt_max > t.final_price_mnt) {
+      return `${fmtMnt(t.final_price_mnt)} – ${fmtMnt(t.final_price_mnt_max)}`;
+    }
+    return fmtMnt(t.final_price_mnt);
+  }
+
+  function transportCategoryLabel(t) {
+    if (t.transport_type === "bus") return "🚌 Автобус";
+    if (t.route_category === "transfer") return "🔀 Дамжих";
+    if (t.route_category === "direct") return "🚄 Шууд";
+    return t.transport_type === "train" ? "🚄 Галт тэрэг" : "🚌 Автобус";
+  }
+
+  function transportTypeBadge(t) {
+    return t.transport_type === "bus"
+      ? '<span class="tp-badge tp-badge-bus">🚌 Автобус</span>'
+      : '<span class="tp-badge tp-badge-train">🚄 Галт тэрэг</span>';
+  }
+
+  function transportRouteBadge(t) {
+    if (t.transport_type === "bus") return "";
+    if (t.transfer_required) return '<span class="tp-badge tp-badge-transfer">🔀 Дамжих</span>';
+    return '<span class="tp-badge tp-badge-direct">Шууд</span>';
+  }
+
   function priceItem(item) {
     const td = window.TRAVEL_DATA;
     if (td && td.priceItem) return td.priceItem(item);
@@ -443,7 +493,12 @@
       const dist = item.district || "";
       return `${nm} — ${cityLabel(item.city_id)}${dist ? `, ${dist}` : ""}`;
     }
-    if (item.type === "train") return `${item.train_number} ${item.from_city}→${item.to_city} ${item.depart_time}`;
+    if (item.type === "transport") {
+      const mode = item.transport_type === "bus" ? "Автобус" : "Галт тэрэг";
+      const dep = item.departure_time || item.departure_note || "";
+      return `${mode}: ${item.from_city}→${item.to_city}${dep ? ` (${dep})` : ""}`;
+    }
+    if (item.type === "train") return `${item.from_city}→${item.to_city} ${item.depart_time || ""}`.trim();
     if (item.type === "flight") return `${item.airline} ${item.from_city}→${item.to_city} ${item.depart_time}`;
     return item.title || item.name_mn || item.name || "Сонголт";
   }
@@ -476,8 +531,9 @@
       return { results, meta: { cityId, cityInput, countryId: city?.country_id, nights, filters, formData } };
     }
     if (type === "train") {
-      const route = mock.trains(formData.from || "Хөх хот", formData.city || "Бээжин");
-      const results = (route.trains || []).map(priceItem);
+      const route = mock.transport?.(formData.from || "Эрээн", formData.city || "Бээжин")
+        || mock.trains(formData.from || "Эрээн", formData.city || "Бээжин");
+      const results = (route.results || route.trains || []).map(priceTransportItem);
       return { results, meta: { fromId: route.fromId, toId: route.toId, routeKey: route.routeKey } };
     }
     if (type === "flight") {
@@ -605,7 +661,7 @@
           <div class="tp-card-price-row">
             <div>
               <div class="tp-price-final">${fmtMnt(h.final_price_mnt)}</div>
-              ${h.nights ? `<div class="tp-price-note">${h.nights} шөнө</div>` : ""}
+              ${h.nights ? `<div class="tp-price-note">${h.nights} шөнө · ${customerPriceNote()}</div>` : `<div class="tp-price-note">${customerPriceNote()}</div>`}
             </div>
             <div class="tp-card-actions">
               <button type="button" class="tp-btn tp-btn-detail" data-detail-type="hotel" data-item-id="${h.id}">Дэлгэрэнгүй</button>
@@ -616,34 +672,84 @@
       </article>`;
   }
 
-  function renderTrainCard(t) {
+  function renderTransportCard(t) {
+    const dep = t.departure_time
+      ? `<div class="tp-train-time">${t.departure_time}</div>`
+      : `<div class="tp-train-time tp-train-time-muted">${t.departure_note || "—"}</div>`;
+    const arr = t.arrival_time
+      ? `<div class="tp-train-time">${t.arrival_time}</div>`
+      : `<div class="tp-train-time tp-train-time-muted">—</div>`;
+    const dur = t.duration_note ? `${t.duration} (${t.duration_note})` : t.duration;
+    const transfer = t.transfer_required && t.transfer_city
+      ? `<div class="tp-transport-transfer">🔀 Дамжих: <strong>${t.transfer_city}</strong></div>`
+      : "";
+    const warn = t.confidence !== "verified" && t.needs_check_message
+      ? `<p class="tp-transport-warn">⚠️ ${t.needs_check_message}</p>`
+      : "";
+    const source = t.source_url
+      ? `<a class="tp-transport-source" href="${t.source_url}" target="_blank" rel="noopener noreferrer">📎 Цагийн эх сурвалж: ${t.source_name}</a>`
+      : (t.source_name ? `<span class="tp-transport-source">📎 Цагийн эх сурвалж: ${t.source_name}</span>` : "");
+    const checked = t.last_checked_at ? `<span class="tp-muted">Шалгасан: ${t.last_checked_at}</span>` : "";
+    const bookType = "train";
+
     return `
-      <article class="tp-train-card" data-item-id="${t.id}">
+      <article class="tp-train-card tp-transport-card" data-item-id="${t.id}">
+        <div class="tp-transport-badges">${transportTypeBadge(t)}${transportRouteBadge(t)}</div>
         <div class="tp-train-route">
           <div class="tp-train-city">
-            <div class="tp-train-time">${t.depart_time}</div>
+            ${dep}
             <div class="tp-train-place">${t.from_city}</div>
           </div>
           <div class="tp-train-mid">
-            <div class="tp-train-dur">${t.duration}</div>
+            <div class="tp-train-dur">${dur}</div>
             <div class="tp-train-line"></div>
-            <div class="tp-train-num">${t.train_number}</div>
           </div>
           <div class="tp-train-city align-right">
-            <div class="tp-train-time">${t.arrive_time}</div>
+            ${arr}
             <div class="tp-train-place">${t.to_city}</div>
           </div>
         </div>
+        ${transfer}
         <div class="tp-train-meta">
-          <span class="tp-badge">${t.seat_type}</span>
+          ${t.seat_class_note ? `<span class="tp-badge muted">${t.seat_class_note}</span>` : ""}
+          ${t.confidence === "verified" ? '<span class="tp-badge tp-badge-verified">✓ Баталгаажсан</span>' : '<span class="tp-badge tp-badge-check">Шалгах шаардлагатай</span>'}
         </div>
+        ${t.notes_mn ? `<p class="tp-transport-note">${t.notes_mn}</p>` : ""}
+        ${warn}
+        <div class="tp-transport-footer">${source} ${checked}</div>
         <div class="tp-card-price-row">
           <div>
-            <div class="tp-price-final">${fmtMnt(t.final_price_mnt)}</div>
+            <div class="tp-price-final">${formatTransportPrice(t)}</div>
+            <div class="tp-price-note">${customerPriceNote()}</div>
           </div>
-          <button type="button" class="tp-btn-book" data-book-type="train" data-item-id="${t.id}">Захиалах</button>
+          <button type="button" class="tp-btn-book" data-book-type="${bookType}" data-item-id="${t.id}">Захиалах</button>
         </div>
       </article>`;
+  }
+
+  function renderTransportSections(results) {
+    const sections = [
+      { id: "direct", title: "🚄 Шууд галт тэрэг", match: (r) => r.transport_type === "train" && r.route_category === "direct" },
+      { id: "transfer", title: "🔀 Дамжих галт тэрэг", match: (r) => r.transport_type === "train" && r.route_category === "transfer" },
+      { id: "bus", title: "🚌 Автобус", match: (r) => r.transport_type === "bus" }
+    ];
+    return sections
+      .map((sec) => {
+        const items = results.filter(sec.match);
+        if (!items.length) return "";
+        return `
+          <section class="tp-transport-section" data-section="${sec.id}">
+            <h4 class="tp-transport-section-title">${sec.title} <span class="tp-muted">(${items.length})</span></h4>
+            <div class="tp-train-grid">${items.map(renderTransportCard).join("")}</div>
+          </section>`;
+      })
+      .filter(Boolean)
+      .join("");
+  }
+
+  /** @deprecated use renderTransportCard */
+  function renderTrainCard(t) {
+    return renderTransportCard(t);
   }
 
   function renderFlightCard(f) {
@@ -741,8 +847,8 @@
       cards = results.map(renderHotelCard).join("");
       renderMapPins(results);
     } else if (type === "train") {
-      gridClass = "tp-train-grid";
-      cards = results.map(renderTrainCard).join("");
+      gridClass = "tp-transport-results";
+      cards = renderTransportSections(results) || "";
     } else if (type === "flight") {
       gridClass = "tp-flight-grid";
       cards = results.map(renderFlightCard).join("");
@@ -759,6 +865,8 @@
       else if (f.district) parts.push(f.district);
       sub = `<p class="tp-lead">${parts.filter(Boolean).join(" → ")} · <strong>${results.length}</strong> буудал</p>`;
       if (f.keyword) sub += `<p class="tp-lead tp-filter-tag">🔎 «${f.keyword}»</p>`;
+      const rateNote = customerPriceNote();
+      if (rateNote) sub += `<p class="tp-lead tp-muted">${rateNote}</p>`;
     }
     if (isHotel && meta?.error === "city_not_found") {
       sub = `<p class="tp-lead tp-warn">Хот олдсонгүй. Монгол, Англи эсвэл орон нутгийн нэрээр бичнэ үү.</p>`;
@@ -771,10 +879,16 @@
     }
     if (type === "train") {
       if (meta?.fromId && meta?.toId) {
-        sub = `<p class="tp-lead">${cityLabel(meta.fromId)} → ${cityLabel(meta.toId)}</p>`;
+        sub = `<p class="tp-lead">${cityLabel(meta.fromId)} → ${cityLabel(meta.toId)} · эх сурвалжид тулгуурласан мэдээлэл</p>`;
+        const rateNote = customerPriceNote();
+        if (rateNote) sub += `<p class="tp-lead tp-muted">${rateNote}</p>`;
       }
       if (!results.length) {
-        sub += `<p class="tp-lead tp-warn">Энэ чиглэлд одоогоор тасалбар олдсонгүй. Жишээ: Хөх хот→Бээжин, Эрээн→Бээжин, Бээжин→Шанхай.</p>`;
+        const samples = (window.TRANSPORT_ROUTES?.listRoutes?.() || []).slice(0, 4).map((k) => {
+          const [f, t] = k.split("-");
+          return `${cityLabel(f)}→${cityLabel(t)}`;
+        }).join(", ");
+        sub += `<p class="tp-lead tp-warn">Энэ чиглэлд одоогоор бүртгэл байхгүй. Жишээ: ${samples || "Эрээн→Бээжин, Хөх хот→Бээжин"}.</p>`;
       }
     }
 
@@ -783,7 +897,7 @@
         <h3>🔍 ${label} — ${results.length} сонголт</h3>
         ${sub}
       </div>
-      <div class="${gridClass}">${cards || "<p class='tp-lead'>Үр дүн олдсонгүй.</p>"}</div>
+      <div class="${gridClass}">${cards || (type === "train" ? "" : "<p class='tp-lead'>Үр дүн олдсонгүй.</p>")}${type === "train" && !cards ? "<p class='tp-lead'>Үр дүн олдсонгүй.</p>" : ""}</div>
     `;
 
     (container || box).scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -802,8 +916,8 @@
         const bookType = btn.dataset.bookType || type;
         openBookingForm(bookType, {
           selectedItem: itemLabel(item),
-          city: cityLabel(item.city_id),
-          country: item.country_id || "",
+          city: cityLabel(item.city_id || item.to_city_id),
+          country: item.country_id || "china",
           bookingItem: {
             final_price_mnt: item.final_price_mnt,
             selected_item: itemLabel(item),
@@ -1057,7 +1171,12 @@
     BOOKING_TITLES
   };
 
-  document.addEventListener("DOMContentLoaded", () => {
+  async function initDailyRates() {
+    await window.TRAVEL_DATA?.loadDailyRates?.();
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await initDailyRates();
     renderDestinations();
     renderChinaCities();
     bindServices();

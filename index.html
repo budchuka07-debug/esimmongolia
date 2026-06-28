@@ -244,7 +244,7 @@
 <button type="button" class="tp-tab active" data-tab="ai">🤖 AI зөвлөх</button>
 <button type="button" class="tp-tab" data-tab="flight">✈️ Нислэг</button>
 <button type="button" class="tp-tab" data-tab="hotel">🏨 Буудал</button>
-<button type="button" class="tp-tab" data-tab="train">🚄 Галт тэрэг</button>
+<button type="button" class="tp-tab" data-tab="train">🚄 Тээвэр</button>
 <button type="button" class="tp-tab" data-tab="attraction">🎫 Үзвэр</button>
 <button type="button" class="tp-tab" data-tab="esim-tab">📶 eSIM</button>
 <button type="button" class="tp-tab" data-tab="visa">🛂 Виз</button>
@@ -303,14 +303,15 @@
 </div>
 
 <div class="tp-panel" data-panel="train">
+<p class="tp-lead" style="margin:0 0 10px">Галт тэрэг болон автобус — эх сурвалжид тулгуурласан мэдээлэл. Баталгаажаагүй цаг, үнэ өөрчлөгдөж болно.</p>
 <div class="tp-form-grid">
-<div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Хөх хот" list="chinaCitiesList"></div>
+<div class="tp-field"><label>Хаанаас</label><input data-field="from" value="Эрээн" list="chinaCitiesList"></div>
 <div class="tp-field"><label>Хаашаа</label><input data-field="city" value="Бээжин" list="chinaCitiesList"></div>
 <div class="tp-field"><label>Огноо</label><input data-field="date" type="date"></div>
 <div class="tp-field"><label>Хүн</label><input data-field="people" value="2"></div>
 </div>
 <div class="tp-search-actions">
-<button type="button" class="tp-btn primary" data-search-run="train">Галт тэрэг хайх</button>
+<button type="button" class="tp-btn primary" data-search-run="train">🔍 Тээвэр хайх</button>
 </div>
 </div>
 
@@ -1819,9 +1820,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/cities.js"></script>
 <script src="/data/hotel-areas.js?v=5"></script>
 <script src="/data/hotels-catalog.js?v=5"></script>
-<script src="/data/travel-data.js"></script>
-<script src="/data/mock-search-results.js"></script>
-<script src="/booking.js?v=5"></script>
+<script src="/data/travel-data.js?v=7"></script>
+<script src="/data/transport-routes.js?v=7"></script>
+<script src="/data/mock-search-results.js?v=7"></script>
+<script src="/booking.js?v=7"></script>
 <script src="/ai-agent.js"></script>
 
 <div class="tp-modal-bd" id="inquiryModalBd"></div>

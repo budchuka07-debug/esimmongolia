@@ -688,6 +688,51 @@
 }
 .tp-train-num { font-size: 11px; color: var(--tp-muted); font-weight: 700; }
 .tp-train-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+
+/* Transport — source-based train/bus */
+.tp-transport-results { display: grid; gap: 20px; }
+.tp-transport-section-title {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--tp-border);
+}
+.tp-transport-card { gap: 10px; }
+.tp-transport-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.tp-badge-bus { background: #ecfdf5; color: #047857; }
+.tp-badge-train { background: #eff6ff; color: #1d4ed8; }
+.tp-badge-direct { background: #f0fdf4; color: #15803d; }
+.tp-badge-transfer { background: #fff7ed; color: #c2410c; }
+.tp-badge-verified { background: #dcfce7; color: #166534; }
+.tp-badge-check { background: #fef3c7; color: #92400e; }
+.tp-train-time-muted { font-size: 0.85rem; font-weight: 700; color: var(--tp-muted); line-height: 1.3; }
+.tp-transport-transfer { font-size: 13px; color: #475569; margin: 4px 0 8px; }
+.tp-transport-note { font-size: 13px; color: #475569; margin: 8px 0; line-height: 1.45; }
+.tp-transport-warn {
+  font-size: 12px;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 8px 0;
+  line-height: 1.4;
+}
+.tp-transport-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.tp-transport-source {
+  color: #0369a1;
+  font-weight: 600;
+  text-decoration: none;
+}
+.tp-transport-source:hover { text-decoration: underline; }
 .tp-flight-airline { font-weight: 800; font-size: 14px; margin-bottom: 10px; }
 .tp-flight-sub { font-size: 11px; color: var(--tp-muted); }
 .tp-train-card,
