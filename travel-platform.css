@@ -880,6 +880,8 @@
 .tp-transport-source:hover { text-decoration: underline; }
 .tp-flight-airline { font-weight: 800; font-size: 14px; margin-bottom: 10px; }
 .tp-flight-sub { font-size: 11px; color: var(--tp-muted); }
+.tp-flight-route-summary { font-size: 12px; color: var(--tp-muted); margin: 0 0 8px; font-weight: 600; }
+.tp-flight-section-title { margin: 12px 0 4px; font-size: 1rem; font-weight: 800; color: var(--tp-text); }
 .tp-train-card,
 .tp-flight-card {
   padding: 14px;

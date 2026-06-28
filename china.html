@@ -265,10 +265,10 @@
           <thead>
             <tr>
               <th>Хугацаа</th>
-              <th>1GB / өдөр</th>
-              <th>2GB / өдөр</th>
-              <th>3GB / өдөр</th>
-              <th>Unlimited</th>
+              <th>Өдөр бүр 1GB</th>
+              <th>Өдөр бүр 2GB</th>
+              <th>Өдөр бүр 3GB</th>
+              <th>Өдөр бүр хязгааргүй</th>
             </tr>
           </thead>
           <tbody id="priceTable"></tbody>
@@ -289,11 +289,12 @@
         <div class="field">
           <label for="dataSelect">Дата</label>
           <select id="dataSelect">
-            <option value="gb1">1GB / өдөр</option>
-            <option value="gb2">2GB / өдөр</option>
-            <option value="gb3">3GB / өдөр</option>
-            <option value="unlimited">Unlimited</option>
+            <option value="gb1">Өдөр бүр 1GB</option>
+            <option value="gb2">Өдөр бүр 2GB</option>
+            <option value="gb3">Өдөр бүр 3GB</option>
+            <option value="unlimited">Өдөр бүр хязгааргүй</option>
           </select>
+          <p class="helper" id="dailyDataNote">Өдөр бүрийн дата тухайн өдөртөө ашиглагдаж, дараагийн өдөр дахин шинэчлэгдэнэ.</p>
         </div>
 
         <div class="field">
@@ -355,7 +356,7 @@
         <div class="summary-box">
           <div class="summary-row"><span>Улс</span><strong>🇨🇳 China eSIM</strong></div>
           <div class="summary-row"><span>Хугацаа</span><strong id="summaryDays">7 хоног</strong></div>
-          <div class="summary-row"><span>Дата</span><strong id="summaryData">2GB / өдөр</strong></div>
+          <div class="summary-row"><span>Дата</span><strong id="summaryData">Өдөр бүр 2GB</strong></div>
           <div class="summary-row"><span>Дүн</span><strong id="summaryPriceText">30,300₮</strong></div>
           <div class="summary-price" id="summaryPriceBig">30,300₮</div>
         </div>
@@ -398,7 +399,7 @@
 
   <script>
     const usdToMnt = 3600;
-    const marginMultiplier = 1.35;
+    const marginMultiplier = 1.30;
     const whatsappNumber = "97690283039";
     const messengerUrl = "https://m.me/esimmongolia";
 
@@ -411,10 +412,10 @@
     ];
 
     const dataLabels = {
-      gb1: "1GB / өдөр",
-      gb2: "2GB / өдөр",
-      gb3: "3GB / өдөр",
-      unlimited: "Unlimited"
+      gb1: "Өдөр бүр 1GB",
+      gb2: "Өдөр бүр 2GB",
+      gb3: "Өдөр бүр 3GB",
+      unlimited: "Өдөр бүр хязгааргүй"
     };
 
     const priceTable = document.getElementById("priceTable");
@@ -490,9 +491,9 @@
 
     function renderTopPackages() {
       const topPackages = [
-        { title: "7 хоног – 2GB", desc: "Богино аялалд хамгийн тохиромжтой", price: formatMntFromUsd(supplierPrices[0].gb2), day: "7 хоног", data: "gb2" },
-        { title: "14 хоног – 3GB", desc: "Ихэнх хэрэглэгчдийн сонголт", price: formatMntFromUsd(supplierPrices[1].gb3), day: "14 хоног", data: "gb3" },
-        { title: "30 хоног – Unlimited", desc: "Урт хугацааны аялалд", price: formatMntFromUsd(supplierPrices[3].unlimited), day: "30 хоног", data: "unlimited" }
+        { title: "7 хоног – Өдөр бүр 2GB", desc: "Богино аялалд хамгийн тохиромжтой", price: formatMntFromUsd(supplierPrices[0].gb2), day: "7 хоног", data: "gb2" },
+        { title: "14 хоног – Өдөр бүр 3GB", desc: "Ихэнх хэрэглэгчдийн сонголт", price: formatMntFromUsd(supplierPrices[1].gb3), day: "14 хоног", data: "gb3" },
+        { title: "30 хоног – Өдөр бүр хязгааргүй", desc: "Урт хугацааны аялалд", price: formatMntFromUsd(supplierPrices[3].unlimited), day: "30 хоног", data: "unlimited" }
       ];
 
       topPackagesBox.innerHTML = topPackages.map(item => `

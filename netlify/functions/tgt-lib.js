@@ -4,7 +4,7 @@ const { getCountryName, buildStaticNameMap } = require("./country-names");
 
 const USD_RATE = 3680;
 const MARKUP = 1.4;
-const MARKUP_CHINA = 1.35;
+const MARKUP_CHINA = 1.30;
 
 const RESTCOUNTRIES_ALL =
   "https://restcountries.com/v3.1/all?fields=cca2,name,altSpellings";
@@ -218,13 +218,14 @@ function parseDataCapacity(p) {
     const hs = pick(p, ["highSpeed", "showGradeContent"]) || "";
     const gbFromName = name.match(/(\d+(?:\.\d+)?)\s*gb/i);
     if (name.includes("unlimited") && !hs.match(/\d/) && !gbFromName) {
-      return { capacity: "Өдөр бүр", capacityUnit: "Unlimited", dataLabel: "Өдөр бүр Unlimited" };
+      return { capacity: "Өдөр бүр", capacityUnit: "хязгааргүй", dataLabel: "Өдөр бүр хязгааргүй" };
     }
     if (hs && /\d/.test(String(hs))) {
-      return { capacity: String(hs), capacityUnit: "/өдөр", dataLabel: `${hs}/өдөр` };
+      const gb = String(hs).replace(/gb/i, "").trim();
+      return { capacity: gb, capacityUnit: "GB", dataLabel: `Өдөр бүр ${gb}GB` };
     }
     if (gbFromName) {
-      return { capacity: gbFromName[1], capacityUnit: "GB/өдөр", dataLabel: `${gbFromName[1]}GB/өдөр` };
+      return { capacity: gbFromName[1], capacityUnit: "GB", dataLabel: `Өдөр бүр ${gbFromName[1]}GB` };
     }
   }
 

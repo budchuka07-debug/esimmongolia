@@ -56,6 +56,7 @@
     kyoto: { id: "kyoto", country_id: "japan", name_mn: "Киото", name_en: "Kyoto", local: "京都", aliases: ["Киото", "Kyoto"] },
     fukuoka: { id: "fukuoka", country_id: "japan", name_mn: "Фукуока", name_en: "Fukuoka", local: "福岡", aliases: ["Фукуока", "Fukuoka", "FUK"] },
     seoul: { id: "seoul", country_id: "korea", name_mn: "Сөүл", name_en: "Seoul", local: "서울", aliases: ["Сөүл", "Seoul", "ICN", "GMP"] },
+    hong_kong: { id: "hong_kong", country_id: "china", name_mn: "Хонконг", name_en: "Hong Kong", local: "香港", aliases: ["Хонконг", "Hong Kong", "HKG", "香港"] },
     busan: { id: "busan", country_id: "korea", name_mn: "Пусан", name_en: "Busan", local: "부산", aliases: ["Пусан", "Busan", "PUS"] },
     jeju: { id: "jeju", country_id: "korea", name_mn: "Жэжү", name_en: "Jeju", local: "제주", aliases: ["Жэжү", "Jeju", "CJU"] },
     singapore: { id: "singapore", country_id: "singapore", name_mn: "Сингапур", name_en: "Singapore", local: "Singapore", aliases: ["Сингапур", "Singapore", "SIN"] },

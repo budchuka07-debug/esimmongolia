@@ -8,6 +8,13 @@ const {
   PRICE_FOOTNOTE
 } = require("./customer-pricing.js");
 
+let FLIGHT_ROUTES;
+try {
+  FLIGHT_ROUTES = require("../../../data/flight-routes.js");
+} catch {
+  FLIGHT_ROUTES = null;
+}
+
 let CHINA_DEST;
 try {
   CHINA_DEST = require("../../../data/china-destinations.js");
@@ -53,8 +60,8 @@ const CITY_PLANS = {
       ]
     },
     flights: [
-      { airline: "MIAT Mongolian Airlines", dep: "09:40", arr: "12:35", dur: "2ц 55мин", price_cny: 1850 },
-      { airline: "Air China", dep: "11:20", arr: "13:10", dur: "2ц 50мин", price_cny: 1720 }
+      { airline: "Air China", dep: "11:20", arr: "13:10", dur: "2ц 50мин", price_cny: 1720, is_direct: true, data_confidence: "estimated" },
+      { airline: "China Southern", dep: "14:05", arr: "17:00", dur: "2ц 55мин", price_cny: 1680, is_direct: true, data_confidence: "needs_check" }
     ],
     esim: { name: "China eSIM 7 хоног", data: "5–10 GB", price: "QPay-ээр", note: "WeChat, Alipay VPN-гүй ажиллана" }
   },
@@ -74,8 +81,7 @@ const CITY_PLANS = {
       ]
     },
     flights: [
-      { airline: "Air China", dep: "08:30", arr: "10:45", dur: "2ц 15мин", price_cny: 1680 },
-      { airline: "MIAT", dep: "14:20", arr: "16:30", dur: "2ц 10мин", price_cny: 1750 }
+      { airline: "Air China", dep: "08:30", arr: "10:45", dur: "2ц 15мин", price_cny: 1680, is_direct: true, data_confidence: "estimated" }
     ],
     esim: { name: "China eSIM 7 хоног", data: "5–10 GB", price: "QPay-ээр", note: "Maps + WeChat-д хангалттай" }
   },
@@ -194,20 +200,35 @@ function buildHotelCards(cityId, intent) {
 }
 
 function buildFlightCards(cityId, intent) {
-  const plan = CITY_PLANS[cityId];
   const profile = getProfile(cityId);
-  const ap = profile?.airport?.primary || "PVG";
   const city = profile?.name_mn || intent.city;
-  const flights = plan?.flights || [
-    { airline: "MIAT / Air China", dep: "09:00–14:00", arr: "12:00–17:00", dur: "2–3 цаг", price_cny: 1700 }
-  ];
+
+  if (FLIGHT_ROUTES?.search) {
+    const { results, meta } = FLIGHT_ROUTES.search("Улаанбаатар", city || cityId, {
+      from_city_id: "ulanbaatar",
+      city_id: cityId
+    });
+    return results.map((f) => ({
+      type: "flight",
+      title: f.airline,
+      subtitle: f.is_direct ? `Шууд · ${f.from_city} → ${f.to_city}` : `Дамжин · ${f.transfer_city || ""}`,
+      detail: `${f.depart_time} – ${f.arrive_time} · ${f.duration} · 🧳 ${f.baggage}`,
+      price: f.original_price ? formatCnyApproxMnt(f.original_price) : "",
+      badge: f.is_direct ? "Шууд нислэг" : "Дамжин нислэг",
+      data_confidence: f.data_confidence,
+      no_direct_note: meta.no_direct_message || ""
+    }));
+  }
+
+  const plan = CITY_PLANS[cityId];
+  const flights = plan?.flights || [];
   return flights.map((f) => ({
     type: "flight",
     title: `${f.airline}`,
-    subtitle: `УБ (${ap}) → ${city}`,
+    subtitle: `УБ → ${city}`,
     detail: `${f.dep} – ${f.arr} · ${f.dur}`,
     price: f.price_cny ? formatCnyApproxMnt(f.price_cny) : f.price,
-    badge: "Шууд нислэг"
+    badge: f.is_direct === false ? "Дамжин нислэг" : "Шууд нислэг"
   }));
 }
 
@@ -406,8 +427,24 @@ function buildTopicReply(intent, message) {
   const parts = [`${city}-тай холбоотой асуулагдлаа — дэлгэрэнгүй тайлбарлая.\n`];
 
   if (intent.wantsFlight || /нислэг/i.test(t)) {
-    parts.push("✈️ **Нислэг:** Улаанбаатар–" + city + " шууд ~2–3 цаг. MIAT, Air China, China Southern ихэвчлэн. 7–14 хоногийн өмнө захиалбал 15–25% хямд байдаг — учир нь сезон, багтаамж ихээр нөлөөлдөг.");
-    parts.push("• Өглөөний нислэг: ирмэгц 1 өдөр ашиглах\n• Оройны нислэг: ажлын өдөр алдахгүй");
+    const cityId = intent.city_id || "shanghai";
+    const profile = getProfile(cityId);
+    const destName = profile?.name_mn || city;
+    const countryId = profile?.country_id ||
+      (["bangkok", "phuket", "pattaya", "chiang_mai", "krabi"].includes(cityId) ? "thailand" : null);
+
+    if (FLIGHT_ROUTES?.needsConnecting?.("ulanbaatar", cityId, countryId)) {
+      parts.push(FLIGHT_ROUTES.aiConsultantMessage(cityId, countryId));
+      parts.push("\n**Боломжит дамжин нислэгүүд:**");
+      parts.push("• Улаанбаатар → Бээжин → " + destName);
+      parts.push("• Улаанбаатар → Сөүл → " + destName);
+      parts.push("• Улаанбаатар → Хонконг → " + destName);
+      parts.push("• Улаанбаатар → Гуанжоу → " + destName);
+    } else {
+      parts.push("✈️ **Нислэг:** Улаанбаатар–" + destName + " чиглэлд шууд нислэгийн боломж байж болно. Air China, China Southern ихэвчлэн. 7–14 хоногийн өмнө захиалбал илүү хямд байдаг.");
+      parts.push("• Өглөөний нислэг: ирмэгц 1 өдөр ашиглах\n• Оройны нислэг: ажлын өдөр алдахгүй");
+      parts.push("• Үнэ, суудал захиалга хийх үед дахин шалгагдана.");
+    }
     return wrapTopic(parts, intent, "flight");
   }
   if (intent.wantsHotel || /буудал/i.test(t)) {
@@ -418,7 +455,8 @@ function buildTopicReply(intent, message) {
     return wrapTopic(parts, intent, "hotel");
   }
   if (intent.wantsEsim || /esim/i.test(t)) {
-    parts.push("📶 **eSIM:** Хятад eSIM 7/14/30 хоног — WeChat, Alipay VPN-гүй. Google, Instagram-д VPN тусад.");
+    parts.push("📶 **eSIM:** Хятад eSIM 7/14/30 хоног — Өдөр бүр 1/2/3GB эсвэл хязгааргүй. Өдөр бүрийн дата тухайн өдөртөө ашиглагдаж, дараагийн өдөр дахин шинэчлэгдэнэ.");
+    parts.push("WeChat, Alipay VPN-гүй. Google, Instagram-д VPN тусад.");
     parts.push("Maps + WeChat-д 5–10 GB ихэнх 5–7 хоногт хангалттай. Видео их бол 15 GB+ сонго.");
     return wrapTopic(parts, intent, "esim");
   }

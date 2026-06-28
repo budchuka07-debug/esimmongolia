@@ -591,8 +591,13 @@
     if (type === "flight") {
       const fromId = formData.from_city_id || window.TRAVEL_CITIES?.normalizeCity(formData.from || "Улаанбаатар");
       const toId = formData.city_id || window.TRAVEL_CITIES?.normalizeCity(formData.city || "Шанхай");
-      const results = mock.flights(formData.from || "Улаанбаатар", formData.city || "Шанхай").map(priceItem);
-      return { results, meta: { fromId, toId } };
+      const flightData = mock.flights(formData.from || "Улаанбаатар", formData.city || "Шанхай", {
+        from_city_id: fromId,
+        city_id: toId,
+        date: formData.date || null
+      });
+      const results = (flightData.results || []).map(priceItem);
+      return { results, meta: { fromId, toId, ...(flightData.meta || {}) } };
     }
     if (type === "attraction") {
       const cityId = formData.city_id || window.TRAVEL_CITIES?.normalizeCity(formData.city || "Шанхай") || "shanghai";
@@ -604,8 +609,12 @@
       ].map(priceItem);
       return { results, meta: { cityId } };
     }
-    const results = mock.flights("Улаанбаатар", formData.city || "Шанхай").map(priceItem);
-    return { results, meta: {} };
+    const flightData = mock.flights("Улаанбаатар", formData.city || "Шанхай", {
+      city_id: formData.city_id,
+      date: formData.date
+    });
+    const results = (flightData.results || []).map(priceItem);
+    return { results, meta: flightData.meta || {} };
   }
 
   function openHotelDetail(hotel) {
@@ -796,9 +805,27 @@
     return renderTransportCard(t);
   }
 
+  function flightRouteBadge(f) {
+    if (f.is_direct) return '<span class="tp-badge tp-badge-direct">Шууд</span>';
+    return '<span class="tp-badge tp-badge-transfer">Дамжин</span>';
+  }
+
   function renderFlightCard(f) {
+    const transfer = !f.is_direct && f.transfer_city
+      ? `<div class="tp-transport-transfer">🔀 Дамжих: <strong>${f.transfer_city}</strong>${f.route_summary ? ` · ${f.route_summary}` : ""}</div>`
+      : (f.route_summary ? `<div class="tp-flight-route-summary">${f.route_summary}</div>` : "");
+    const warn = f.data_confidence === "needs_check" && f.needs_check_message
+      ? `<p class="tp-transport-warn">⚠️ ${f.needs_check_message}</p>`
+      : "";
+    const confBadge = f.data_confidence === "verified"
+      ? '<span class="tp-badge tp-badge-verified">✓ Баталгаажсан</span>'
+      : (f.data_confidence === "estimated"
+        ? '<span class="tp-badge muted">Тооцоолсон</span>'
+        : '<span class="tp-badge tp-badge-check">Дахин шалгах</span>');
+
     return `
       <article class="tp-flight-card" data-item-id="${f.id}">
+        <div class="tp-transport-badges">${flightRouteBadge(f)}${confBadge}</div>
         <div class="tp-flight-airline">✈️ ${f.airline}</div>
         <div class="tp-train-route">
           <div class="tp-train-city">
@@ -816,12 +843,15 @@
             <div class="tp-flight-sub">${f.to_city}</div>
           </div>
         </div>
+        ${transfer}
         <div class="tp-train-meta">
           <span class="tp-badge">🧳 ${f.baggage}</span>
         </div>
+        ${warn}
         <div class="tp-card-price-row">
           <div>
             <div class="tp-price-final">${fmtMnt(f.final_price_mnt)}</div>
+            <div class="tp-price-note">${customerPriceNote()}</div>
           </div>
           <button type="button" class="tp-btn-book" data-book-type="flight" data-item-id="${f.id}">Захиалах</button>
         </div>
@@ -904,6 +934,16 @@
       cards = renderTransportSections(results) || "";
     } else if (type === "flight") {
       gridClass = "tp-flight-grid";
+      if (meta?.no_direct_message) {
+        sub = `<p class="tp-lead tp-warn">${meta.no_direct_message}</p>`;
+      } else if (meta?.has_direct && meta?.fromId && meta?.toId) {
+        sub = `<p class="tp-lead">${cityLabel(meta.fromId)} → ${cityLabel(meta.toId)} · шууд нислэгийн боломжтой чиглэл</p>`;
+      }
+      if (meta?.section_title && results.length) {
+        sub += `<h4 class="tp-flight-section-title">${meta.section_title}</h4>`;
+      }
+      const rateNote = customerPriceNote();
+      if (rateNote) sub += `<p class="tp-lead tp-muted">${rateNote}</p>`;
       cards = results.map(renderFlightCard).join("");
     } else {
       cards = results.map(renderAttractionCard).join("");

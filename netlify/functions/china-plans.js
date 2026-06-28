@@ -1,7 +1,7 @@
 // Хятад eSIM — china.html-тэй ижил supplier үнэ (TGT-д China-only багц байхгүй)
 
 const USD_RATE = 3680;
-const MARKUP_CHINA = 1.35;
+const MARKUP_CHINA = 1.30;
 
 const SUPPLIER_PRICES = [
   { days: "7 хоног", daysNum: 7, gb1: 3.8, gb2: 6.23, gb3: 9.42, unlimited: 13.83 },
@@ -11,10 +11,10 @@ const SUPPLIER_PRICES = [
 ];
 
 const DATA_LABELS = {
-  gb1: "1GB / өдөр",
-  gb2: "2GB / өдөр",
-  gb3: "3GB / өдөр",
-  unlimited: "Unlimited",
+  gb1: "Өдөр бүр 1GB",
+  gb2: "Өдөр бүр 2GB",
+  gb3: "Өдөр бүр 3GB",
+  unlimited: "Өдөр бүр хязгааргүй",
 };
 
 function sellPriceMnt(usd) {
@@ -38,8 +38,8 @@ function getChinaPlans() {
         planName: `🇨🇳 China eSIM — ${row.days} — ${DATA_LABELS[key]}`,
         price: usd,
         sellPriceMnt: sellPriceMnt(usd),
-        capacity: isUnl ? "Unlimited" : key.replace("gb", ""),
-        capacityUnit: isUnl ? "" : "GB/өдөр",
+        capacity: isUnl ? "Өдөр бүр" : key.replace("gb", ""),
+        capacityUnit: isUnl ? "хязгааргүй" : "GB",
         dataLabel: DATA_LABELS[key],
         vaildity: String(row.daysNum),
         validityType: "хоног",
