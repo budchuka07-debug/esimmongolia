@@ -422,14 +422,8 @@
 
 <section class="tp-section tp-ai-section" id="aiAgentSection">
 <h2>🤖 AI аяллын зөвлөх</h2>
-<p class="tp-lead">Жинхэнэ аяллын зөвлөх шиг — маршрут, төсөв, буудал, eSIM. Чат **үнэгүй**, form шаардлагагүй.</p>
-<div class="tp-chat-widget" id="aiChatWidget">
-<div class="tp-chat" id="aiChat" aria-live="polite"></div>
-<form id="aiAgentForm" class="tp-chat-composer">
-<textarea class="tp-ai-box tp-chat-input" id="aiAgentInput" rows="2" placeholder="Асуултаа бичээрэй… Enter = илгээх, Shift+Enter = шинэ мөр"></textarea>
-<button type="submit" class="tp-btn primary tp-chat-send" aria-label="Илгээх">➤</button>
-</form>
-</div>
+<p class="tp-lead">Жинхэнэ аяллын зөвлөх шиг — маршрут, төсөв, буудал, eSIM. Чат **үнэгүй**, form шаардлагагүй. Доод баруун буланд чат үргэлж харагдана.</p>
+<button type="button" class="tp-btn primary" id="aiSectionOpenChat">💬 AI чат нээх</button>
 </section>
 
 <div class="tp-trust">
@@ -1852,12 +1846,21 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/mock-search-results.js?v=8"></script>
 <script src="/booking.js?v=11"></script>
 <script src="/ai-agent.js?v=2"></script>
-<script src="/travel-assistant.js?v=1"></script>
+<script src="/travel-assistant.js?v=2"></script>
 
+<div class="tp-assist-dock" id="tpAssistDock">
+<div class="tp-chat-widget tp-chat-dock" id="aiChatWidget">
+<div class="tp-chat" id="aiChat" aria-live="polite"></div>
+<form id="aiAgentForm" class="tp-chat-composer">
+<textarea class="tp-ai-box tp-chat-input" id="aiAgentInput" rows="2" placeholder="Асуултаа бичээрэй… Enter = илгээх, Shift+Enter = шинэ мөр"></textarea>
+<button type="submit" class="tp-btn primary tp-chat-send" aria-label="Илгээх">➤</button>
+</form>
+</div>
 <button type="button" class="tp-assist-fab" id="travelAssistFab" aria-label="Аяллын зөвлөх нээх">
 <span class="tp-assist-fab-icon" aria-hidden="true">🤖</span>
 <span class="tp-assist-fab-text">Аяллын зөвлөх бэлэн байна</span>
 </button>
+</div>
 
 <div class="tp-assist-backdrop" id="travelAssistBackdrop" aria-hidden="true"></div>
 <aside class="tp-assist-panel" id="travelAssistPanel" role="dialog" aria-labelledby="assistPanelTitle" aria-modal="true">

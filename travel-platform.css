@@ -1042,10 +1042,60 @@
 }
 
 /* Floating travel assistant */
-.tp-assist-fab {
+:root {
+  --tp-dock-scale: 1;
+}
+
+.tp-assist-dock {
   position: fixed;
-  right: 20px;
-  bottom: 24px;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  z-index: 10048;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  transform: scale(var(--tp-dock-scale, 1));
+  transform-origin: bottom right;
+  pointer-events: none;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+}
+.tp-assist-dock > * {
+  pointer-events: auto;
+}
+
+.tp-chat-dock {
+  width: min(400px, calc(100vw - 24px));
+  max-height: min(520px, calc(100vh - 100px));
+  display: flex;
+  flex-direction: column;
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
+}
+.tp-chat-dock .tp-chat {
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: min(380px, calc(100vh - 240px));
+  overflow-y: auto;
+}
+body.tp-assist-open .tp-assist-dock .tp-chat-dock {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.tp-assist-fab {
+  position: relative;
+  right: auto;
+  bottom: auto;
   z-index: 10050;
   display: inline-flex;
   align-items: center;
@@ -1107,16 +1157,27 @@
 }
 
 @media (max-width: 768px) {
+  .tp-assist-dock {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+  }
   .tp-assist-fab {
-    right: 16px;
-    bottom: 82px;
-    width: 56px; height: 56px;
+    width: 56px;
+    height: 56px;
     padding: 0;
     justify-content: center;
     border-radius: 50%;
   }
   .tp-assist-fab-text { display: none; }
   .tp-assist-fab-icon { font-size: 24px; }
+  .tp-chat-dock {
+    width: min(360px, calc(100vw - 20px));
+    max-height: min(460px, calc(100vh - 150px));
+  }
+  .tp-chat-dock .tp-chat {
+    min-height: 160px;
+    max-height: min(300px, calc(100vh - 260px));
+  }
   .tp-assist-panel {
     inset: 0;
     border-radius: 0;
@@ -1249,10 +1310,13 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  width: 100%;
+  max-height: none;
   border: 1px solid var(--tp-border);
   border-radius: 14px;
   overflow: hidden;
   background: #fff;
+  box-shadow: none;
 }
 .tp-assist-ai-host .tp-chat {
   flex: 1;
