@@ -40,6 +40,11 @@
     "indonesia", "uae", "turkey", "hongkong"
   ]);
 
+  /** Cities with plausible direct service from Ulaanbaatar (MIAT / partners). */
+  const DIRECT_UB_CITIES = new Set([
+    "seoul", "busan", "tokyo", "osaka", "hong_kong", "bangkok", "singapore"
+  ]);
+
   const CITY_LABELS_FALLBACK = {
     ulanbaatar: "Улаанбаатар",
     beijing: "Бээжин",
@@ -94,6 +99,7 @@
 
   function needsConnecting(fromId, destId, countryId) {
     if (fromId !== "ulanbaatar") return true;
+    if (DIRECT_UB_CITIES.has(destId)) return false;
     if (THAILAND_CITIES.has(destId) || countryId === "thailand") return true;
     if (countryId && NO_DIRECT_COUNTRIES.has(countryId)) return true;
     if (destId === "hong_kong") return true;
@@ -117,12 +123,42 @@
     ],
     hohhot: [
       { airline: "Air China", dep: "10:15", arr: "11:05", dur: "50мин", bag: "20kg", price: 980, data_confidence: "estimated" }
+    ],
+    seoul: [
+      { airline: "MIAT Mongolian Airlines", dep: "08:20", arr: "12:20", dur: "3ц 00мин", bag: "23kg", price: 2100, data_confidence: "estimated" },
+      { airline: "Korean Air", dep: "13:40", arr: "17:40", dur: "3ц 00мин", bag: "23kg", price: 2250, data_confidence: "needs_check" },
+      { airline: "Aero Mongolia", dep: "22:10", arr: "02:05", dur: "3ц 05мин", bag: "20kg", price: 1980, data_confidence: "needs_check" }
+    ],
+    busan: [
+      { airline: "MIAT Mongolian Airlines", dep: "09:10", arr: "13:20", dur: "3ц 10мин", bag: "23kg", price: 2180, data_confidence: "needs_check" }
+    ],
+    tokyo: [
+      { airline: "MIAT Mongolian Airlines", dep: "07:50", arr: "13:30", dur: "4ц 40мин", bag: "23kg", price: 2650, data_confidence: "estimated" },
+      { airline: "Aero Mongolia", dep: "12:30", arr: "18:20", dur: "4ц 50мин", bag: "20kg", price: 2480, data_confidence: "needs_check" }
+    ],
+    osaka: [
+      { airline: "MIAT Mongolian Airlines", dep: "08:40", arr: "14:10", dur: "4ц 30мин", bag: "23kg", price: 2550, data_confidence: "needs_check" }
+    ],
+    hong_kong: [
+      { airline: "MIAT Mongolian Airlines", dep: "10:20", arr: "15:30", dur: "5ц 10мин", bag: "23kg", price: 2600, data_confidence: "needs_check" }
+    ],
+    bangkok: [
+      { airline: "MIAT Mongolian Airlines", dep: "08:00", arr: "13:30", dur: "6ц 30мин", bag: "23kg", price: 2450, data_confidence: "estimated" },
+      { airline: "Aero Mongolia", dep: "21:40", arr: "03:10", dur: "6ц 30мин", bag: "20kg", price: 2280, data_confidence: "needs_check" }
+    ],
+    singapore: [
+      { airline: "MIAT Mongolian Airlines", dep: "09:30", arr: "16:40", dur: "8ц 10мин", bag: "23kg", price: 3100, data_confidence: "needs_check" }
     ]
   };
 
   const DEFAULT_CHINA_DIRECT = [
     { airline: "Air China", dep: "09:00", arr: "12:30", dur: "3ц 30мин", bag: "23kg", price: 1750, data_confidence: "needs_check" },
     { airline: "China Southern", dep: "13:40", arr: "17:10", dur: "3ц 30мин", bag: "20kg", price: 1680, data_confidence: "needs_check" }
+  ];
+
+  const DEFAULT_INTL_DIRECT = [
+    { airline: "MIAT Mongolian Airlines", dep: "09:00", arr: "13:30", dur: "4ц 30мин", bag: "23kg", price: 2400, data_confidence: "needs_check" },
+    { airline: "Aero Mongolia", dep: "14:20", arr: "18:50", dur: "4ц 30мин", bag: "20kg", price: 2250, data_confidence: "needs_check" }
   ];
 
   function connectingHubs(destId) {
@@ -218,7 +254,8 @@
       return { results, meta };
     }
 
-    const templates = DIRECT_TEMPLATES[destId] || DEFAULT_CHINA_DIRECT;
+    const isChina = countryId === "china" || CHINA_DIRECT_DESTINATIONS.has(destId);
+    const templates = DIRECT_TEMPLATES[destId] || (isChina ? DEFAULT_CHINA_DIRECT : DEFAULT_INTL_DIRECT);
     meta.has_direct = true;
     meta.section_title = "Шууд нислэгүүд";
     const ctx = { fromId, destId, fromMn, destMn };

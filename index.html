@@ -261,11 +261,22 @@
 </div>
 
 <div class="tp-panel active" data-panel="flight">
+<div class="tp-trip-type" id="flightTripType" role="tablist" aria-label="Аяллын төрөл">
+<button type="button" class="tp-trip-opt active" data-trip="oneway" aria-selected="true">Нэг талдаа</button>
+<button type="button" class="tp-trip-opt" data-trip="return" aria-selected="false">Хоёр талдаа</button>
+</div>
+<input type="hidden" data-field="trip_type" id="flightTripInput" value="oneway">
 <div class="tp-form-grid">
 <div class="tp-field"><label>Хаанаас</label><input type="text" data-loc="from" data-field="from" data-loc-types="city,airport" data-loc-hidden="from_city_id" data-loc-default="ulanbaatar" value="Улаанбаатар" placeholder="Хот, нисэх буудал, PEK…" autocomplete="off"></div>
-<div class="tp-field"><label>Хаашаа</label><input type="text" data-loc="to" data-field="city" data-loc-types="city,airport,country" data-loc-hidden="city_id" value="Шанхай" placeholder="Beijing, 北京, BKK…" autocomplete="off"></div>
-<div class="tp-field"><label>Огноо</label><input data-field="date" type="date"></div>
-<div class="tp-field"><label>Хүн</label><input data-field="people" type="number" value="2" min="1"></div>
+<div class="tp-field"><label>Хаашаа</label><input type="text" data-loc="to" data-field="city" data-loc-types="city,airport,country" data-loc-hidden="city_id" value="Сөүл" placeholder="Seoul, 北京, BKK…" autocomplete="off"></div>
+<div class="tp-field"><label>Явах огноо</label><input data-field="date" type="date"></div>
+<div class="tp-field tp-field-return" id="flightReturnField" style="display:none"><label>Ирэх огноо</label><input data-field="return_date" type="date"></div>
+<div class="tp-field"><label>Зорчигч</label><input data-field="people" type="number" value="2" min="1"></div>
+<div class="tp-field"><label>Ангилал</label><select data-field="cabin">
+<option value="economy" selected>Энгийн (Economy)</option>
+<option value="premium_economy">Дунд (Premium)</option>
+<option value="business">Бизнес</option>
+</select></div>
 </div>
 <div class="tp-search-actions">
 <button type="button" class="tp-btn primary" data-search-run="flight">Нислэг хайх</button>
@@ -1832,11 +1843,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/train-car-classes.js?v=1"></script>
 <script src="/data/flight-routes.js?v=1"></script>
 <script src="/data/transport-routes.js?v=1"></script>
-<script src="/data/mock-search-results.js?v=1"></script>
+<script src="/data/hotel-fallback.js?v=1"></script>
+<script src="/data/mock-search-results.js?v=2"></script>
 <script src="/js/travel-images.js?v=2"></script>
 <script src="/js/travel-data-loader.js?v=2"></script>
 <script src="/location-autocomplete.js"></script>
-<script src="/booking.js?v=16"></script>
+<script src="/booking.js?v=17"></script>
 <script src="/js/ai-local-responses.js"></script>
 <script src="/ai-agent.js?v=7"></script>
 <script src="/travel-assistant.js?v=2"></script>
@@ -1914,10 +1926,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <input type="hidden" name="destination_country" id="inqCountry" value="">
 <input type="hidden" name="destination_city" id="inqCity" value="">
 <input type="hidden" name="budget_mnt" id="inqBudget" value="">
-<div class="tp-booking-price-row">
-  <span class="tp-booking-price-label">Төлөх дүн</span>
+<div class="tp-booking-price-row" id="inqPriceRow">
+  <span class="tp-booking-price-label" id="inqPriceLabel">Төлөх дүн</span>
   <span class="tp-price-final" id="inqPriceDisplay">—</span>
 </div>
+<div id="inqRequestNote" class="tp-request-note" style="display:none"></div>
 <div class="tp-form-grid">
 <div class="tp-field"><label>Нэр *</label><input name="customer_name" id="inqName" required></div>
 <div class="tp-field"><label>Утас / WhatsApp *</label><input name="customer_phone" id="inqPhone" required></div>

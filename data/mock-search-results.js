@@ -30,14 +30,23 @@
     return { results: [], meta: { error: "flight_routes_unavailable" } };
   }
 
+  function estimatedHotels(cityInput, opts) {
+    if (window.HOTEL_FALLBACK?.generate) {
+      return window.HOTEL_FALLBACK.generate(cityInput, opts || {});
+    }
+    return [];
+  }
+
   window.MOCK_SEARCH = {
     FALLBACK_IMG,
     hotels: mockHotels,
     transport: mockTransport,
     trains: mockTrains,
-    flights: mockFlights
+    flights: mockFlights,
+    estimatedHotels
   };
 
   window.fallbackFlights = mockFlights;
   window.fallbackTransportRoutes = mockTransport;
+  window.fallbackHotels = estimatedHotels;
 })();

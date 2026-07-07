@@ -5,6 +5,7 @@ const ordersStore = require("./lib/orders-store");
 const { getSupabase } = require("./lib/supabase-client");
 
 const STATUS = "awaiting_payment";
+const REQUEST_STATUS = "hotel_search_request";
 
 function genRequestId() {
   const d = new Date();
@@ -65,8 +66,11 @@ exports.handler = async (event) => {
     return json(400, { error: "Утас эсвэл email заавал" });
   }
 
+  const serviceType = String(body.service_type || "hotel");
+  const isRequestOnly = !!body.request_only || serviceType === REQUEST_STATUS;
+
   const finalPriceMnt = Number(body.final_price_mnt || body.amount || 0);
-  if (!finalPriceMnt || finalPriceMnt <= 0) {
+  if (!isRequestOnly && (!finalPriceMnt || finalPriceMnt <= 0)) {
     return json(400, { error: "Үнэ олдсонгүй" });
   }
 
@@ -76,10 +80,18 @@ exports.handler = async (event) => {
   const hotelMeta = hotelId ? await getHotelMeta(hotelId) : null;
   const selectedItem = String(body.selected_item || body.hotel_official_name || "").trim();
 
+  const dataSource = isRequestOnly
+    ? (body.data_source || "estimated_ai")
+    : (hotelId ? "supabase_verified" : (body.data_source || "supplier_pending"));
+
   const order = {
     orderId,
-    status: STATUS,
-    service_type: String(body.service_type || "hotel"),
+    status: isRequestOnly ? REQUEST_STATUS : STATUS,
+    service_type: isRequestOnly ? REQUEST_STATUS : serviceType,
+    data_source: dataSource,
+    estimated_price_mnt: isRequestOnly ? Number(body.estimated_price_mnt || finalPriceMnt || 0) : null,
+    area_name: body.area_name || null,
+    stars: body.stars ? Number(body.stars) || null : null,
     customer_name: name,
     customer_phone: phone,
     customer_email: email,
@@ -110,10 +122,22 @@ exports.handler = async (event) => {
 
   console.log("[travel-booking-admin]", JSON.stringify({
     orderId,
+    status: order.status,
+    data_source: order.data_source,
     city_id: cityId,
     hotel: order.hotel_official_name,
     supplier: order.supplier_internal?.supplier_name
   }));
+
+  if (isRequestOnly) {
+    return json(200, {
+      ok: true,
+      request: true,
+      orderId,
+      status: REQUEST_STATUS,
+      message: "Таны хүсэлтийг авлаа. Манай аяллын зөвлөх тухайн хотод тохирох бодит буудлын сонголтыг шалгаад танд илгээнэ."
+    });
+  }
 
   const description = selectedItem
     ? `eSIM Mongolia: ${selectedItem}`.slice(0, 120)

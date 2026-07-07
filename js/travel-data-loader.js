@@ -48,7 +48,16 @@
     "эрээн": "erenhot", erenhot: "erenhot", erlian: "erenhot",
     "хөх хот": "hohhot", hohhot: "hohhot",
     "гуанжоу": "guangzhou", guangzhou: "guangzhou",
-    "бангкок": "bangkok", bangkok: "bangkok"
+    "бангкок": "bangkok", bangkok: "bangkok",
+    "сөүл": "seoul", seoul: "seoul", "сеул": "seoul",
+    "пусан": "busan", busan: "busan",
+    "токио": "tokyo", tokyo: "tokyo",
+    "осака": "osaka", osaka: "osaka",
+    "сингапур": "singapore", singapore: "singapore",
+    "дубай": "dubai", dubai: "dubai",
+    "истанбул": "istanbul", istanbul: "istanbul",
+    "ханой": "hanoi", hanoi: "hanoi",
+    "хошимин": "ho_chi_minh", "хонконг": "hong_kong", hong_kong: "hong_kong"
   };
 
   function normalizeCity(input) {

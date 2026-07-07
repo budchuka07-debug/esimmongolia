@@ -144,10 +144,25 @@
     const titleEl = $("inquiryModalTitle");
     if (titleEl) titleEl.textContent = title || BOOKING_TITLES[type] || "Захиалах";
 
+    const requestMode = !!(pendingBooking?.request_mode || preset?.request_mode);
     const priceEl = $("inqPriceDisplay");
     if (priceEl && pendingBooking?.final_price_mnt) {
       priceEl.textContent = fmtMnt(pendingBooking.final_price_mnt);
     }
+    const priceLabel = $("inqPriceLabel");
+    if (priceLabel) priceLabel.textContent = requestMode ? "Ойролцоо үнэ (тооцоолсон)" : "Төлөх дүн";
+    const reqNote = $("inqRequestNote");
+    if (reqNote) {
+      if (requestMode) {
+        reqNote.style.display = "";
+        reqNote.textContent = "Энэ нь тооцоолсон санал юм. Та хүсэлт илгээснээр манай аяллын зөвлөх тухайн хотод тохирох бодит буудлыг шалгаад үнэ, өрөөний боломжийг танд илгээнэ. Одоо төлбөр төлөхгүй.";
+      } else {
+        reqNote.style.display = "none";
+        reqNote.textContent = "";
+      }
+    }
+    const submitBtn = $("inquiryForm")?.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = requestMode ? "Санал авах хүсэлт илгээх" : "Үргэлжлүүлэх";
 
     const fieldMap = {
       name: "inqName",
@@ -602,6 +617,39 @@
     });
   }
 
+  function openAiHotelSuggestion(cityInput, filters) {
+    const gen = window.HOTEL_FALLBACK?.aiSuggest;
+    const box = $("mockResults");
+    if (!gen) {
+      window.TravelAssistant?.openAiChat?.(`${cityInput || ""} хотод санал болгох бүс, буудлын талаар зөвлөгөө өгнө үү.`);
+      return;
+    }
+    const s = gen(cityInput, filters || {});
+    const areaList = s.areas.map((a) =>
+      `<li><strong>${a.area}</strong> — ${a.who}${a.metro ? " · метро ойр" : ""}</li>`
+    ).join("");
+    const panel = document.createElement("div");
+    panel.className = "tp-ai-hotel-suggest";
+    panel.innerHTML = `
+      <h4>🤖 ${s.cityMn} — байрлах зөвлөмж</h4>
+      <p class="tp-ai-suggest-lead">Санал болгох бүсүүд:</p>
+      <ul class="tp-ai-suggest-areas">${areaList}</ul>
+      <p class="tp-ai-suggest-budget">💰 ${s.budget.nights} шөнийн төсөв: <strong>${fmtMnt(s.budget.low)} – ${fmtMnt(s.budget.high)}</strong></p>
+      <p class="tp-ai-suggest-fit">${s.suits}</p>
+      <div class="tp-ai-suggest-actions">
+        <button type="button" class="tp-btn primary" data-action="ai-hotel-admin">Зөвлөхөөр бодит буудал шалгуулах</button>
+      </div>`;
+    const header = box?.querySelector(".tp-results-header");
+    if (header) header.insertAdjacentElement("afterend", panel);
+    else box?.prepend(panel);
+    panel.querySelector("[data-action=ai-hotel-admin]")?.addEventListener("click", () => {
+      window.TravelAssistant?.openAiChat?.(
+        `${s.cityMn} хотод ${s.budget.nights} шөнө байрлах бодит буудлыг шалгуулмаар байна. Төсөв: ${fmtMnt(s.budget.low)}–${fmtMnt(s.budget.high)}.`
+      );
+    });
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
   function normalizeSearchParams(type, fd) {
     const params = { ...fd };
     const norm = window.TRAVEL_CITIES?.normalizeCity;
@@ -627,24 +675,154 @@
     if (container) container.style.display = "";
   }
 
-  async function fetchFlightResults(searchParams) {
-    let payload = await apiSearch("flight", searchParams);
+  const CABIN_LABELS = {
+    economy: "Энгийн",
+    premium_economy: "Дунд",
+    business: "Бизнес"
+  };
+  const CABIN_MULTIPLIER = { economy: 1, premium_economy: 1.4, business: 2.2 };
+
+  function applyCabin(items, cabin) {
+    const mult = CABIN_MULTIPLIER[cabin] || 1;
+    if (mult === 1) return items;
+    return (items || []).map((f) => ({
+      ...f,
+      cabin,
+      final_price_mnt: Math.round((f.final_price_mnt * mult) / 1000) * 1000
+    }));
+  }
+
+  async function fetchOneWayFlights(fromParam, toParam, searchParams) {
+    const params = { ...searchParams, from: fromParam, city: toParam };
+    // Only pass matching city ids; drop stale ones when swapping direction.
+    if (fromParam !== searchParams.from) delete params.from_city_id;
+    if (toParam !== searchParams.city) delete params.city_id;
+    let payload = await apiSearch("flight", params);
     const apiEmpty = !payload.results?.length || payload.meta?.error;
     if (apiEmpty) {
       const fallback = window.fallbackFlights || window.MOCK_SEARCH?.flights;
       if (fallback) {
-        const fb = fallback(searchParams.from, searchParams.city, searchParams);
+        const fb = fallback(fromParam, toParam, params);
         if (fb?.results?.length) {
-          payload = {
-            results: applyResultPricing(fb.results),
-            meta: { ...(fb.meta || {}), source: "fallback" }
-          };
+          payload = { results: applyResultPricing(fb.results), meta: { ...(fb.meta || {}), source: "fallback" } };
         }
       }
     } else {
       payload.results = applyResultPricing(payload.results);
     }
     return payload;
+  }
+
+  function parseDurationMin(dur) {
+    const s = String(dur || "");
+    const h = /(\d+)\s*ц/.exec(s);
+    const m = /(\d+)\s*мин/.exec(s);
+    return (h ? Number(h[1]) * 60 : 0) + (m ? Number(m[1]) : 0);
+  }
+
+  function fmtDurationMin(min) {
+    if (!min) return "";
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return `${h ? `${h}ц ` : ""}${m ? `${m}мин` : ""}`.trim();
+  }
+
+  function buildRoundTripResults(outbound, inbound, searchParams) {
+    const pairs = [];
+    const count = Math.min(outbound.length, inbound.length) || outbound.length;
+    for (let i = 0; i < count; i++) {
+      const out = outbound[i];
+      const back = inbound[i] || inbound[inbound.length - 1] || outbound[i];
+      if (!out || !back) continue;
+      const total = Number(out.final_price_mnt || 0) + Number(back.final_price_mnt || 0);
+      const totalMin = parseDurationMin(out.duration) + parseDurationMin(back.duration);
+      pairs.push({
+        id: `rt-${out.id}-${back.id}`,
+        type: "flight_roundtrip",
+        roundtrip: true,
+        outbound: out,
+        inbound: back,
+        depart_date: searchParams.date || null,
+        return_date: searchParams.return_date || null,
+        baggage: out.baggage || back.baggage || "",
+        cabin: searchParams.cabin || "economy",
+        total_duration: fmtDurationMin(totalMin),
+        data_confidence: out.data_confidence || back.data_confidence || "estimated",
+        final_price_mnt: Math.round(total / 1000) * 1000
+      });
+    }
+    return pairs;
+  }
+
+  async function fetchFlightResults(searchParams) {
+    const cabin = searchParams.cabin || "economy";
+    const isReturn = searchParams.trip_type === "return";
+
+    const outPayload = await fetchOneWayFlights(searchParams.from, searchParams.city, searchParams);
+    outPayload.results = applyCabin(outPayload.results || [], cabin);
+
+    if (!isReturn) {
+      return { results: outPayload.results, meta: { ...(outPayload.meta || {}), trip_type: "oneway", cabin } };
+    }
+
+    const inPayload = await fetchOneWayFlights(searchParams.city, searchParams.from, searchParams);
+    inPayload.results = applyCabin(inPayload.results || [], cabin);
+
+    if (!outPayload.results.length || !inPayload.results.length) {
+      return { results: outPayload.results, meta: { ...(outPayload.meta || {}), trip_type: "return_partial", cabin } };
+    }
+
+    const results = buildRoundTripResults(outPayload.results, inPayload.results, searchParams);
+    return {
+      results,
+      meta: {
+        ...(outPayload.meta || {}),
+        trip_type: "return",
+        cabin,
+        return_meta: inPayload.meta || {}
+      }
+    };
+  }
+
+  async function fetchHotelResults(searchParams) {
+    let payload = await apiSearch("hotel", searchParams);
+    let results = applyMntFilters(payload.results || [], collectHotelFilters());
+    const verified = results.filter((h) => !h.estimated);
+    if (verified.length) {
+      return {
+        results: verified.map((h) => ({ ...h, data_source: h.data_source || "supabase_verified", verified: true })),
+        meta: { ...(payload.meta || {}), source: "supabase" }
+      };
+    }
+
+    // No verified hotels — generate public-style estimated suggestions.
+    const gen = window.fallbackHotels || window.MOCK_SEARCH?.estimatedHotels;
+    const estimated = gen ? gen(searchParams.city, searchParams) : [];
+    return {
+      results: applyMntFilters(estimated, collectHotelFilters()),
+      meta: {
+        ...(payload.meta || {}),
+        source: "estimated",
+        estimated: true,
+        cityInput: searchParams.city,
+        note: "Одоогоор энэ хотын буудлууд манай сан дээр бүрэн ороогүй байна. Доорх нь боломжит санал бөгөөд захиалга хийх үед бодит үнэ, өрөөний боломжийг дахин шалгана."
+      }
+    };
+  }
+
+  function renderFlightResults(results, meta) {
+    showResultsContainer();
+    showMockResults("flight", results, meta);
+  }
+
+  function renderTransportResults(results, meta) {
+    showResultsContainer();
+    showMockResults("train", results, meta);
+  }
+
+  function renderHotelResults(results, meta) {
+    showResultsContainer();
+    showMockResults("hotel", results, meta);
   }
 
   async function fetchTransportResults(searchParams) {
@@ -670,16 +848,6 @@
       payload.results = payload.results.map(enrichTransportItem);
     }
     return payload;
-  }
-
-  function renderFlightResults(results, meta) {
-    showResultsContainer();
-    showMockResults("flight", results, meta);
-  }
-
-  function renderTransportResults(results, meta) {
-    showResultsContainer();
-    showMockResults("train", results, meta);
   }
 
   function itemLabel(item) {
@@ -730,11 +898,15 @@
         renderTransportResults(payload.results || [], payload.meta || {});
         return;
       }
-
-      let payload = await apiSearch(type, searchParams);
       if (type === "hotel") {
-        payload.results = applyMntFilters(payload.results || [], collectHotelFilters());
+        console.log("Hotel search clicked", searchParams);
+        const payload = await fetchHotelResults(searchParams);
+        console.log("Hotel results", payload.results, payload.meta?.source);
+        renderHotelResults(payload.results || [], payload.meta || {});
+        return;
       }
+
+      const payload = await apiSearch(type, searchParams);
       showMockResults(type, payload.results || [], payload.meta || {});
     } catch (err) {
       console.error("[TravelBooking]", err);
@@ -760,6 +932,21 @@
           return;
         }
         renderTransportResults([], { error: "api_error" });
+        return;
+      }
+      if (type === "hotel") {
+        const gen = window.fallbackHotels || window.MOCK_SEARCH?.estimatedHotels;
+        const estimated = gen ? gen(searchParams.city, searchParams) : [];
+        if (estimated.length) {
+          renderHotelResults(applyMntFilters(estimated, collectHotelFilters()), {
+            source: "estimated",
+            estimated: true,
+            cityInput: searchParams.city,
+            note: "Одоогоор энэ хотын буудлууд манай сан дээр бүрэн ороогүй байна. Доорх нь боломжит санал бөгөөд захиалга хийх үед бодит үнэ, өрөөний боломжийг дахин шалгана."
+          });
+          return;
+        }
+        renderHotelResults([], { error: "api_error" });
         return;
       }
       showMockResults(type, [], { error: "api_error" });
@@ -848,30 +1035,79 @@
   }
 
   function renderHotelCard(h) {
+    const isEstimated = h.estimated || h.data_source === "estimated_ai";
     const badges = (h.amenities || h.badges || []).slice(0, 3).map((b) => `<span class="tp-badge">${b}</span>`).join("");
     const dist = formatHotelDist(h);
     const areaLine = [h.area_name || h.district].filter(Boolean).join(" · ");
+    const cityMn = h.city_name_mn || cityLabel(h.city_id);
+    const countryMn = h.country_name_mn || countryLabel(h.country_id);
+    const sourceBadge = isEstimated
+      ? '<span class="tp-badge tp-badge-estimated">Боломжит санал</span>'
+      : '<span class="tp-badge tp-badge-verified">✓ Баталгаажсан буудал</span>';
+    const desc = isEstimated && h.description_mn
+      ? `<div class="tp-hotel-desc-mn">${h.description_mn}</div>`
+      : "";
+    const note = isEstimated
+      ? `<p class="tp-hotel-est-note">⚠️ ${h.needs_check_message || "Үнэ, өрөө захиалга хийх үед дахин шалгагдана."}</p>`
+      : "";
+    const bookBtn = isEstimated
+      ? `<button type="button" class="tp-btn-book" data-book-type="hotel_request" data-item-id="${h.id}">Санал авах</button>`
+      : `<button type="button" class="tp-btn-book" data-book-type="hotel" data-item-id="${h.id}">Захиалах</button>`;
+    const detailBtn = isEstimated
+      ? ""
+      : `<button type="button" class="tp-btn tp-btn-detail" data-detail-type="hotel" data-item-id="${h.id}">Дэлгэрэнгүй</button>`;
+    const imgHtml = isEstimated
+      ? `<div class="tp-hotel-img tp-hotel-img-est" aria-hidden="true"><span>${"★".repeat(h.stars || 3)}</span></div>`
+      : hotelImgTag(h, "tp-hotel-img");
     return `
-      <article class="tp-hotel-card" data-item-id="${h.id}" data-lat="${h.latitude || 0}" data-lng="${h.longitude || 0}">
-        ${hotelImgTag(h, "tp-hotel-img")}
+      <article class="tp-hotel-card${isEstimated ? " tp-hotel-card-est" : ""}" data-item-id="${h.id}" data-lat="${h.latitude || 0}" data-lng="${h.longitude || 0}">
+        ${imgHtml}
         <div class="tp-hotel-body">
+          <div class="tp-hotel-badges tp-hotel-source-row">${sourceBadge}</div>
           <div class="tp-hotel-stars">${stars(h.stars)}</div>
           <h4 class="tp-hotel-name">${h.name_en}</h4>
-          <div class="tp-hotel-area">${countryLabel(h.country_id)} • ${cityLabel(h.city_id)} • ${areaLine}</div>
+          <div class="tp-hotel-area">${countryMn} • ${cityMn}${areaLine ? ` • ${areaLine}` : ""}</div>
           ${dist ? `<div class="tp-hotel-dist">${dist}</div>` : ""}
+          ${desc}
           <div class="tp-hotel-badges">${badges}${h.breakfast ? '<span class="tp-badge">☕ Өглөөний цай</span>' : ""}${h.free_cancellation ? '<span class="tp-badge">✓ Цуцлах</span>' : ""}${h.family_friendly ? '<span class="tp-badge">👨‍👩‍👧 Гэр бүл</span>' : ""}</div>
+          ${note}
           <div class="tp-card-price-row">
             <div>
               <div class="tp-price-final">${fmtMnt(h.final_price_mnt)}</div>
               ${h.nights ? `<div class="tp-price-note">${h.nights} шөнө · ${customerPriceNote()}</div>` : `<div class="tp-price-note">${customerPriceNote()}</div>`}
             </div>
             <div class="tp-card-actions">
-              <button type="button" class="tp-btn tp-btn-detail" data-detail-type="hotel" data-item-id="${h.id}">Дэлгэрэнгүй</button>
-              <button type="button" class="tp-btn-book" data-book-type="hotel" data-item-id="${h.id}">Захиалах</button>
+              ${detailBtn}
+              ${bookBtn}
             </div>
           </div>
         </div>
       </article>`;
+  }
+
+  function buildHotelRequestPreset(hotel) {
+    const label = `${hotel.name_en} — ${hotel.city_name_mn || cityLabel(hotel.city_id)}${hotel.area_name ? `, ${hotel.area_name}` : ""}`;
+    return {
+      selectedItem: label,
+      city: hotel.city_name_mn || cityLabel(hotel.city_id),
+      country: hotel.country_id || "",
+      city_id: hotel.city_id,
+      request_mode: true,
+      bookingItem: {
+        final_price_mnt: hotel.final_price_mnt,
+        selected_item: label,
+        service_type: "hotel_search_request",
+        request_mode: true,
+        data_source: "estimated_ai",
+        city_id: hotel.city_id,
+        city_name: hotel.city_name_mn || cityLabel(hotel.city_id),
+        area_name: hotel.area_name || "",
+        stars: hotel.stars,
+        category_key: hotel.category_key || "",
+        estimated_price_mnt: hotel.final_price_mnt,
+        room_type: hotel.category_key || ""
+      }
+    };
   }
 
   function buildTransportBookingPreset(item, classOpt) {
@@ -1126,6 +1362,91 @@
       </article>`;
   }
 
+  function flightLegHtml(f, label) {
+    return `
+      <div class="tp-rt-leg">
+        <div class="tp-rt-leg-head">
+          <span class="tp-rt-leg-label">${label}</span>
+          <span class="tp-rt-leg-airline">✈️ ${f.airline}</span>
+        </div>
+        <div class="tp-train-route">
+          <div class="tp-train-city">
+            <div class="tp-train-time">${f.depart_time}</div>
+            <div class="tp-train-place">${f.depart_airport || ""}</div>
+            <div class="tp-flight-sub">${f.from_city}</div>
+          </div>
+          <div class="tp-train-mid">
+            <div class="tp-train-dur">${f.duration}</div>
+            <div class="tp-train-line"></div>
+          </div>
+          <div class="tp-train-city align-right">
+            <div class="tp-train-time">${f.arrive_time}</div>
+            <div class="tp-train-place">${f.arrive_airport || ""}</div>
+            <div class="tp-flight-sub">${f.to_city}</div>
+          </div>
+        </div>
+        ${!f.is_direct && f.transfer_city ? `<div class="tp-transport-transfer">🔀 Дамжих: <strong>${f.transfer_city}</strong></div>` : ""}
+      </div>`;
+  }
+
+  function renderRoundTripCard(rt) {
+    const out = rt.outbound;
+    const back = rt.inbound;
+    const cabinLabel = CABIN_LABELS[rt.cabin] || "Энгийн";
+    const outLabel = `Явах${rt.depart_date ? ` · ${rt.depart_date}` : ""}`;
+    const backLabel = `Ирэх${rt.return_date ? ` · ${rt.return_date}` : ""}`;
+    return `
+      <article class="tp-flight-card tp-rt-card" data-item-id="${rt.id}">
+        <div class="tp-transport-badges">
+          <span class="tp-badge tp-badge-direct">🔁 Хоёр талдаа</span>
+          <span class="tp-badge muted">${cabinLabel}</span>
+        </div>
+        ${flightLegHtml(out, outLabel)}
+        <div class="tp-rt-divider"></div>
+        ${flightLegHtml(back, backLabel)}
+        <div class="tp-train-meta">
+          ${rt.total_duration ? `<span class="tp-badge">⏱ Нийт ${rt.total_duration}</span>` : ""}
+          ${rt.baggage ? `<span class="tp-badge">🧳 ${rt.baggage}</span>` : ""}
+        </div>
+        <div class="tp-card-price-row">
+          <div>
+            <div class="tp-rt-total-label">Нийт (2 талдаа)</div>
+            <div class="tp-price-final">${fmtMnt(rt.final_price_mnt)}</div>
+            <div class="tp-price-note">${customerPriceNote()}</div>
+          </div>
+          <button type="button" class="tp-btn-book" data-book-type="flight" data-item-id="${rt.id}">Захиалах</button>
+        </div>
+      </article>`;
+  }
+
+  function buildFlightBookingPreset(item) {
+    let label;
+    let cityId;
+    if (item.type === "flight_roundtrip") {
+      label = `${item.outbound.from_city} ⇄ ${item.outbound.to_city} (2 талдаа)`;
+      cityId = item.outbound.to_city_id;
+    } else {
+      label = itemLabel(item);
+      cityId = item.to_city_id;
+    }
+    return {
+      selectedItem: label,
+      city: cityLabel(cityId),
+      country: item.country_id || "",
+      city_id: cityId,
+      bookingItem: {
+        final_price_mnt: item.final_price_mnt,
+        selected_item: label,
+        service_type: "flight",
+        trip_type: item.roundtrip ? "return" : "oneway",
+        cabin: item.cabin || "economy",
+        from_city_id: item.outbound?.from_city_id || item.from_city_id,
+        to_city_id: cityId,
+        supplier_internal: item.internal_supplier_reference || null
+      }
+    };
+  }
+
   function renderAttractionCard(a) {
     const img = travelImg(a.image || a.cover_image_url, {
       kind: "attraction",
@@ -1209,23 +1530,35 @@
       gridClass = "tp-transport-results";
       cards = renderTransportSections(results) || "";
     } else if (type === "flight") {
-      gridClass = "tp-flight-grid";
-      if (meta?.no_direct_message) {
+      const isReturn = meta?.trip_type === "return";
+      gridClass = isReturn ? "tp-flight-grid tp-rt-grid" : "tp-flight-grid";
+      if (isReturn && meta?.fromId && meta?.toId) {
+        sub = `<p class="tp-lead">🔁 ${cityLabel(meta.fromId)} ⇄ ${cityLabel(meta.toId)} · хоёр талын нислэг</p>`;
+      } else if (meta?.trip_type === "return_partial") {
+        sub = `<p class="tp-lead tp-warn">Буцах нислэгийн мэдээлэл олдсонгүй тул зөвхөн явах нислэгийг харууллаа. Хоёр талын захиалгыг зөвлөхөөр баталгаажуулна уу.</p>`;
+      } else if (meta?.no_direct_message) {
         sub = `<p class="tp-lead tp-warn">${meta.no_direct_message}</p>`;
       } else if (meta?.has_direct && meta?.fromId && meta?.toId) {
         sub = `<p class="tp-lead">${cityLabel(meta.fromId)} → ${cityLabel(meta.toId)} · шууд нислэгийн боломжтой чиглэл</p>`;
       }
-      if (meta?.section_title && results.length) {
+      if (meta?.section_title && results.length && !isReturn) {
         sub += `<h4 class="tp-flight-section-title">${meta.section_title}</h4>`;
       }
       const rateNote = customerPriceNote();
       if (rateNote) sub += `<p class="tp-lead tp-muted">${rateNote}</p>`;
-      cards = results.map(renderFlightCard).join("");
+      cards = results.map((r) => (r.type === "flight_roundtrip" ? renderRoundTripCard(r) : renderFlightCard(r))).join("");
     } else {
       cards = results.map(renderAttractionCard).join("");
     }
 
-    if (isHotel && meta?.cityId && !meta?.error) {
+    if (isHotel && meta?.source === "estimated") {
+      const cityMn = results[0]?.city_name_mn || meta.cityInput || "";
+      sub = `<p class="tp-lead">${cityMn ? `${cityMn} · ` : ""}<strong>${results.length}</strong> боломжит санал</p>`;
+      sub += `<div class="tp-est-notice">
+        <p>${meta.note || "Одоогоор энэ хотын буудлууд манай сан дээр бүрэн ороогүй байна."}</p>
+        <button type="button" class="tp-btn" data-action="ai-hotel-search" data-city="${meta.cityInput || cityMn}">🤖 AI-аар боломжит буудал хайх</button>
+      </div>`;
+    } else if (isHotel && meta?.cityId && !meta?.error) {
       const c = window.TRAVEL_CITIES?.getCity(meta.cityId);
       const f = meta.filters || {};
       const parts = [countryLabel(c?.country_id), window.TRAVEL_CITIES?.getCityLabel(meta.cityId)];
@@ -1243,7 +1576,7 @@
       sub = `<p class="tp-lead tp-warn">Сонгосон улс, хот тохирохгүй байна. Улсаа зөв сонгоно уу.</p>`;
     }
     if (isHotel && !results.length && !meta?.error) {
-      sub += `<p class="tp-lead tp-warn">Энэ байршилд буудал олдсонгүй. Өөр бүс эсвэл шүүлтүүрээ өөрчилнө үү.</p>`;
+      sub += searchEmptyHtml();
     }
     if (type === "train") {
       if (meta?.fromId && meta?.toId) {
@@ -1267,6 +1600,9 @@
     `;
 
     bindConsultAdvisor(box.querySelector("[data-action=consult-advisor]"));
+    box.querySelector("[data-action=ai-hotel-search]")?.addEventListener("click", (e) => {
+      openAiHotelSuggestion(e.currentTarget.dataset.city, lastSearchMeta?.filters || {});
+    });
 
     (container || box).scrollIntoView({ behavior: "smooth", block: "nearest" });
 
@@ -1295,6 +1631,14 @@
         }
         if (bookType === "train" && item.transport_type === "bus") {
           openBookingForm(bookType, buildTransportBookingPreset(item), BOOKING_TITLES[bookType]);
+          return;
+        }
+        if (bookType === "hotel_request") {
+          openBookingForm("hotel", buildHotelRequestPreset(item), "Буудлын санал авах хүсэлт");
+          return;
+        }
+        if (bookType === "flight") {
+          openBookingForm("flight", buildFlightBookingPreset(item), BOOKING_TITLES.flight);
           return;
         }
         openBookingForm(bookType, buildHotelBookingPreset(item), BOOKING_TITLES[bookType]);
@@ -1358,20 +1702,42 @@
     return list;
   }
 
+  function showRequestSuccess(orderId) {
+    const stepForm = $("bookingStepForm");
+    const payStep = $("bookingStepPay");
+    const successStep = $("bookingStepSuccess");
+    if (stepForm) stepForm.style.display = "none";
+    if (payStep) payStep.style.display = "none";
+    if (successStep) successStep.style.display = "block";
+    const box = $("bookingSuccessBox");
+    if (box) {
+      box.innerHTML = `
+        <div class="tp-booking-success">
+          <div class="tp-success-icon">✅</div>
+          <h4>Таны хүсэлтийг авлаа.</h4>
+          <p class="tp-success-meta">Манай аяллын зөвлөх тухайн хотод тохирох бодит буудлын сонголтыг шалгаад танд илгээнэ.</p>
+          ${orderId ? `<p class="tp-success-order">Хүсэлтийн дугаар: <strong>${orderId}</strong></p>` : ""}
+          <p class="tp-success-meta">Хариу: <strong>ажлын 24 цагийн дотор</strong> (утас / WhatsApp / email).</p>
+          <button type="button" class="tp-btn primary" id="bookingDoneBtn">Хаах</button>
+        </div>`;
+      $("bookingDoneBtn")?.addEventListener("click", closeInquiryModal, { once: true });
+    }
+  }
+
   async function submitInquiry(e) {
     e.preventDefault();
     const form = $("inquiryForm");
     const statusEl = $("inqStatus");
     if (!form) return;
 
+    const requestMode = !!pendingBooking?.request_mode;
     const amount = Number(pendingBooking?.final_price_mnt || $("inqBudget")?.value || 0);
-    if (!amount || amount <= 0) {
+    if (!requestMode && (!amount || amount <= 0)) {
       if (statusEl) statusEl.textContent = "Эхлээд хайлтаас сонголтоо хийж «Захиалах» дарна уу.";
       return;
     }
 
     const payload = Object.fromEntries(new FormData(form));
-    payload.service_type = payload.service_type || "flight";
     payload.final_price_mnt = amount;
     payload.selected_item = payload.selected_item || pendingBooking?.selected_item || "";
     payload.supplier_internal = pendingBooking?.supplier_internal || null;
@@ -1383,7 +1749,20 @@
     payload.check_out = payload.check_out || pendingBooking?.check_out || "";
     payload.guest_count = payload.people_count || pendingBooking?.guest_count || 2;
 
-    if (statusEl) statusEl.textContent = "Бэлтгэж байна…";
+    if (requestMode) {
+      payload.service_type = "hotel_search_request";
+      payload.request_only = true;
+      payload.data_source = pendingBooking?.data_source || "estimated_ai";
+      payload.estimated_price_mnt = pendingBooking?.estimated_price_mnt || amount;
+      payload.area_name = pendingBooking?.area_name || "";
+      payload.stars = pendingBooking?.stars || "";
+    } else {
+      payload.service_type = payload.service_type || pendingBooking?.service_type || "flight";
+      if (pendingBooking?.trip_type) payload.trip_type = pendingBooking.trip_type;
+      if (pendingBooking?.cabin) payload.cabin = pendingBooking.cabin;
+    }
+
+    if (statusEl) statusEl.textContent = requestMode ? "Хүсэлт илгээж байна…" : "Бэлтгэж байна…";
     const submitBtn = form.querySelector('button[type="submit"]');
     if (submitBtn) submitBtn.disabled = true;
 
@@ -1396,6 +1775,10 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Алдаа");
 
+      if (requestMode || data.request) {
+        showRequestSuccess(data.orderId);
+        return;
+      }
       await openQPayForBooking(data.orderId, data.amount, data.description);
     } catch (err) {
       const formStep = $("bookingStepForm");
@@ -1415,6 +1798,21 @@
 
     $("openInquiryBtn")?.addEventListener("click", () => {
       openBookingForm("flight", {}, BOOKING_TITLES.flight);
+    });
+
+    const tripInput = $("flightTripInput");
+    const returnField = $("flightReturnField");
+    document.querySelectorAll("#flightTripType .tp-trip-opt").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const trip = btn.dataset.trip;
+        document.querySelectorAll("#flightTripType .tp-trip-opt").forEach((b) => {
+          const active = b === btn;
+          b.classList.toggle("active", active);
+          b.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        if (tripInput) tripInput.value = trip;
+        if (returnField) returnField.style.display = trip === "return" ? "" : "none";
+      });
     });
 
     document.querySelectorAll("[data-search-run]").forEach((btn) => {

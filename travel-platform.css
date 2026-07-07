@@ -527,6 +527,129 @@
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
   transition: box-shadow .15s;
 }
+
+/* Flight trip-type selector */
+.tp-trip-type {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.tp-trip-opt {
+  border: 0;
+  background: transparent;
+  padding: 8px 18px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--tp-muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.tp-trip-opt.active {
+  background: var(--tp-white);
+  color: var(--tp-text);
+  box-shadow: 0 1px 4px rgba(15,23,42,.12);
+}
+
+/* Round-trip flight card */
+.tp-rt-card { padding: 14px; }
+.tp-rt-leg { padding: 6px 0; }
+.tp-rt-leg-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.tp-rt-leg-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--tp-brand, #2563eb);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.tp-rt-leg-airline { font-size: 13px; font-weight: 700; }
+.tp-rt-divider {
+  height: 1px;
+  background: var(--tp-border);
+  margin: 8px 0;
+  position: relative;
+}
+.tp-rt-divider::after {
+  content: "⇅";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--tp-white);
+  padding: 0 8px;
+  color: var(--tp-muted);
+  font-size: 13px;
+}
+.tp-rt-total-label { font-size: 12px; color: var(--tp-muted); font-weight: 700; }
+
+/* Estimated hotel card */
+.tp-badge-estimated { background: #fef3c7; color: #92400e; }
+.tp-hotel-card-est { border-color: #fcd34d; }
+.tp-hotel-source-row { margin-bottom: 6px; }
+.tp-hotel-img-est {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fde68a, #fbbf24);
+  color: #78350f;
+  font-size: 26px;
+  letter-spacing: 3px;
+  height: 120px;
+}
+.tp-hotel-desc-mn { font-size: 13px; color: #475569; margin: 4px 0 6px; line-height: 1.45; }
+.tp-hotel-est-note {
+  font-size: 12px;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 7px 9px;
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+/* Estimated results notice + AI suggestion panel */
+.tp-est-notice {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+.tp-est-notice p { margin: 0 0 10px; font-size: 13px; color: #78350f; line-height: 1.5; }
+.tp-ai-hotel-suggest {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+.tp-ai-hotel-suggest h4 { margin: 0 0 8px; font-size: 15px; }
+.tp-ai-suggest-lead { margin: 6px 0 4px; font-weight: 700; font-size: 13px; }
+.tp-ai-suggest-areas { margin: 0 0 10px; padding-left: 18px; font-size: 13px; line-height: 1.6; }
+.tp-ai-suggest-budget { font-size: 14px; margin: 8px 0; }
+.tp-ai-suggest-fit { font-size: 13px; color: #475569; line-height: 1.5; margin: 8px 0; }
+.tp-ai-suggest-actions { margin-top: 10px; }
+
+/* Booking request note */
+.tp-request-note {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.5;
+  margin: 10px 0;
+}
 .tp-hotel-card:hover,
 .tp-train-card:hover,
 .tp-flight-card:hover {
