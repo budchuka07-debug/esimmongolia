@@ -112,8 +112,15 @@ exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(), body: "" };
   if (event.httpMethod !== "GET") return json(405, { error: "GET only" });
 
-  const sb = getSupabase();
-  if (!sb) return json(503, { error: "Supabase not configured", countries: [], cities: [] });
+  const sb = getSupabase("travel-catalog");
+  if (!sb) {
+    return json(503, {
+      error: "Supabase not configured",
+      hint: "Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Netlify environment variables",
+      countries: [],
+      cities: []
+    });
+  }
 
   const params = event.queryStringParameters || {};
 
