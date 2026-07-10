@@ -46,6 +46,8 @@
   let activeTab = "flight";
   let lastMockResults = [];
   let lastSearchMeta = {};
+  let lastHotelSearchParams = null;
+  let hotelResultsPage = 1;
   let pendingBooking = null;
   let bookingPayInterval = null;
   let currentInvoiceId = null;
@@ -784,30 +786,38 @@
     };
   }
 
-  async function fetchHotelResults(searchParams) {
-    let payload = await apiSearch("hotel", searchParams);
-    let results = applyMntFilters(payload.results || [], collectHotelFilters());
-    const verified = results.filter((h) => !h.estimated);
-    if (verified.length) {
-      return {
-        results: verified.map((h) => ({ ...h, data_source: h.data_source || "supabase_verified", verified: true })),
-        meta: { ...(payload.meta || {}), source: "supabase" }
-      };
-    }
-
-    // No verified hotels — generate public-style estimated suggestions.
-    const gen = window.fallbackHotels || window.MOCK_SEARCH?.estimatedHotels;
-    const estimated = gen ? gen(searchParams.city, searchParams) : [];
+  async function fetchHotelResults(searchParams, page = 1) {
+    const payload = await apiSearch("hotel", { ...searchParams, page, pageSize: 12 });
     return {
-      results: applyMntFilters(estimated, collectHotelFilters()),
+      results: payload.results || [],
       meta: {
         ...(payload.meta || {}),
-        source: "estimated",
-        estimated: true,
-        cityInput: searchParams.city,
-        note: "Одоогоор энэ хотын буудлууд манай сан дээр бүрэн ороогүй байна. Доорх нь боломжит санал бөгөөд захиалга хийх үед бодит үнэ, өрөөний боломжийг дахин шалгана."
+        source: payload.meta?.source || "hybrid"
       }
     };
+  }
+
+  async function loadMoreHotels() {
+    if (!lastHotelSearchParams || !lastSearchMeta?.hasMore) return;
+    const btn = $("hotelLoadMore");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Ачаалж байна…";
+    }
+    try {
+      hotelResultsPage += 1;
+      const payload = await fetchHotelResults(lastHotelSearchParams, hotelResultsPage);
+      lastMockResults = [...lastMockResults, ...(payload.results || [])];
+      lastSearchMeta = { ...lastSearchMeta, ...(payload.meta || {}), hasMore: payload.meta?.hasMore };
+      showMockResults("hotel", lastMockResults, lastSearchMeta);
+    } catch (err) {
+      console.error("[TravelBooking] loadMoreHotels", err);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Илүү олон үзэх";
+      }
+    }
   }
 
   function renderFlightResults(results, meta) {
@@ -900,8 +910,10 @@
       }
       if (type === "hotel") {
         console.log("Hotel search clicked", searchParams);
-        const payload = await fetchHotelResults(searchParams);
-        console.log("Hotel results", payload.results, payload.meta?.source);
+        hotelResultsPage = 1;
+        lastHotelSearchParams = searchParams;
+        const payload = await fetchHotelResults(searchParams, 1);
+        console.log("Hotel results", payload.results, payload.meta);
         renderHotelResults(payload.results || [], payload.meta || {});
         return;
       }
@@ -1027,6 +1039,9 @@
     if (h.nearby_metro && h.distance_to_metro_m < 9000) {
       parts.push(`🚇 ${h.nearby_metro} ${h.distance_to_metro_m}м`);
     }
+    if (h.distance_to_center_km != null && h.distance_to_center_km < 25) {
+      parts.push(`🏙 Төвөөс ${h.distance_to_center_km}км`);
+    }
     const lm = (h.nearby_landmarks || [])[0];
     if (lm && h.distance_to_attraction_km) {
       parts.push(`📍 ${lm} ${h.distance_to_attraction_km}км`);
@@ -1035,37 +1050,39 @@
   }
 
   function renderHotelCard(h) {
-    const isEstimated = h.estimated || h.data_source === "estimated_ai";
-    const badges = (h.amenities || h.badges || []).slice(0, 3).map((b) => `<span class="tp-badge">${b}</span>`).join("");
+    const isMock = h.is_mock === true || h.source === "ai_mock";
+    const badges = (h.facilities || h.amenities || h.badges || []).slice(0, 3).map((b) => `<span class="tp-badge">${b}</span>`).join("");
     const dist = formatHotelDist(h);
     const areaLine = [h.area_name || h.district].filter(Boolean).join(" · ");
-    const cityMn = h.city_name_mn || cityLabel(h.city_id);
-    const countryMn = h.country_name_mn || countryLabel(h.country_id);
-    const sourceBadge = isEstimated
-      ? '<span class="tp-badge tp-badge-estimated">Боломжит санал</span>'
-      : '<span class="tp-badge tp-badge-verified">✓ Баталгаажсан буудал</span>';
-    const desc = isEstimated && h.description_mn
-      ? `<div class="tp-hotel-desc-mn">${h.description_mn}</div>`
+    const cityMn = h.city_name_mn || h.city || cityLabel(h.city_id);
+    const countryMn = h.country_name_mn || h.country || countryLabel(h.country_id);
+    const displayName = h.name_en || h.name || "Буудал";
+    const sourceBadge = isMock
+      ? ""
+      : '<span class="tp-badge tp-badge-verified">✓ Баталгаажсан</span>';
+    const desc = h.description_mn || h.description
+      ? `<div class="tp-hotel-desc-mn">${h.description_mn || h.description}</div>`
       : "";
-    const note = isEstimated
-      ? `<p class="tp-hotel-est-note">⚠️ ${h.needs_check_message || "Үнэ, өрөө захиалга хийх үед дахин шалгагдана."}</p>`
+    const note = isMock
+      ? `<p class="tp-hotel-est-note">${h.needs_check_message || "Үнэ болон өрөөний боломж захиалга баталгаажуулах үед шалгагдана."}</p>`
       : "";
-    const bookBtn = isEstimated
+    const bookBtn = isMock
       ? `<button type="button" class="tp-btn-book" data-book-type="hotel_request" data-item-id="${h.id}">Санал авах</button>`
       : `<button type="button" class="tp-btn-book" data-book-type="hotel" data-item-id="${h.id}">Захиалах</button>`;
-    const detailBtn = isEstimated
+    const detailBtn = isMock
       ? ""
       : `<button type="button" class="tp-btn tp-btn-detail" data-detail-type="hotel" data-item-id="${h.id}">Дэлгэрэнгүй</button>`;
-    const imgHtml = isEstimated
-      ? `<div class="tp-hotel-img tp-hotel-img-est" aria-hidden="true"><span>${"★".repeat(h.stars || 3)}</span></div>`
-      : hotelImgTag(h, "tp-hotel-img");
+    const imgSrc = h.image_url || h.cover_image || h.image;
+    const imgHtml = imgSrc
+      ? `<img class="tp-hotel-img" src="${imgSrc}" alt="${displayName}" loading="lazy" onerror="this.onerror=null;this.classList.add('tp-hotel-img-est')">`
+      : `<div class="tp-hotel-img tp-hotel-img-est" aria-hidden="true"><span>${"★".repeat(h.stars || 3)}</span></div>`;
     return `
-      <article class="tp-hotel-card${isEstimated ? " tp-hotel-card-est" : ""}" data-item-id="${h.id}" data-lat="${h.latitude || 0}" data-lng="${h.longitude || 0}">
+      <article class="tp-hotel-card${isMock ? " tp-hotel-card-est" : ""}" data-item-id="${h.id}" data-lat="${h.latitude || 0}" data-lng="${h.longitude || 0}">
         ${imgHtml}
         <div class="tp-hotel-body">
-          <div class="tp-hotel-badges tp-hotel-source-row">${sourceBadge}</div>
+          ${sourceBadge ? `<div class="tp-hotel-badges tp-hotel-source-row">${sourceBadge}</div>` : ""}
           <div class="tp-hotel-stars">${stars(h.stars)}</div>
-          <h4 class="tp-hotel-name">${h.name_en}</h4>
+          <h4 class="tp-hotel-name">${displayName}</h4>
           <div class="tp-hotel-area">${countryMn} • ${cityMn}${areaLine ? ` • ${areaLine}` : ""}</div>
           ${dist ? `<div class="tp-hotel-dist">${dist}</div>` : ""}
           ${desc}
@@ -1073,7 +1090,7 @@
           ${note}
           <div class="tp-card-price-row">
             <div>
-              <div class="tp-price-final">${fmtMnt(h.final_price_mnt)}</div>
+              <div class="tp-price-final">${fmtMnt(h.price_per_night ?? h.final_price_mnt)}</div>
               ${h.nights ? `<div class="tp-price-note">${h.nights} шөнө · ${customerPriceNote()}</div>` : `<div class="tp-price-note">${customerPriceNote()}</div>`}
             </div>
             <div class="tp-card-actions">
@@ -1086,26 +1103,24 @@
   }
 
   function buildHotelRequestPreset(hotel) {
-    const label = `${hotel.name_en} — ${hotel.city_name_mn || cityLabel(hotel.city_id)}${hotel.area_name ? `, ${hotel.area_name}` : ""}`;
+    const label = `${hotel.name_en || hotel.name} — ${hotel.city_name_mn || hotel.city || cityLabel(hotel.city_id)}${hotel.area_name ? `, ${hotel.area_name}` : ""}`;
     return {
       selectedItem: label,
-      city: hotel.city_name_mn || cityLabel(hotel.city_id),
+      city: hotel.city_name_mn || hotel.city || cityLabel(hotel.city_id),
       country: hotel.country_id || "",
       city_id: hotel.city_id,
       request_mode: true,
       bookingItem: {
-        final_price_mnt: hotel.final_price_mnt,
+        final_price_mnt: hotel.price_per_night ?? hotel.final_price_mnt,
         selected_item: label,
         service_type: "hotel_search_request",
         request_mode: true,
-        data_source: "estimated_ai",
+        data_source: hotel.source === "ai_mock" ? "ai_mock" : "estimated_ai",
         city_id: hotel.city_id,
-        city_name: hotel.city_name_mn || cityLabel(hotel.city_id),
-        area_name: hotel.area_name || "",
+        city_name: hotel.city_name_mn || hotel.city || cityLabel(hotel.city_id),
+        area_name: hotel.area_name || hotel.district || "",
         stars: hotel.stars,
-        category_key: hotel.category_key || "",
-        estimated_price_mnt: hotel.final_price_mnt,
-        room_type: hotel.category_key || ""
+        estimated_price_mnt: hotel.price_per_night ?? hotel.final_price_mnt
       }
     };
   }
@@ -1551,20 +1566,11 @@
       cards = results.map(renderAttractionCard).join("");
     }
 
-    if (isHotel && meta?.source === "estimated") {
-      const cityMn = results[0]?.city_name_mn || meta.cityInput || "";
-      sub = `<p class="tp-lead">${cityMn ? `${cityMn} · ` : ""}<strong>${results.length}</strong> боломжит санал</p>`;
-      sub += `<div class="tp-est-notice">
-        <p>${meta.note || "Одоогоор энэ хотын буудлууд манай сан дээр бүрэн ороогүй байна."}</p>
-        <button type="button" class="tp-btn" data-action="ai-hotel-search" data-city="${meta.cityInput || cityMn}">🤖 AI-аар боломжит буудал хайх</button>
-      </div>`;
-    } else if (isHotel && meta?.cityId && !meta?.error) {
-      const c = window.TRAVEL_CITIES?.getCity(meta.cityId);
+    if (isHotel && meta?.cityId && !meta?.error) {
+      const cityMn = meta.cityName || window.TRAVEL_CITIES?.getCityLabel(meta.cityId) || meta.cityInput || "";
+      sub = `<h3 class="tp-hotel-results-title">${cityMn} хотын санал болгох буудлууд</h3>`;
+      sub += `<p class="tp-lead tp-muted">${meta.subtitle || "Үнэ болон өрөөний боломж захиалга баталгаажуулах үед дахин шалгагдана."}</p>`;
       const f = meta.filters || {};
-      const parts = [countryLabel(c?.country_id), window.TRAVEL_CITIES?.getCityLabel(meta.cityId)];
-      if (f.area) parts.push(f.area);
-      else if (f.district) parts.push(f.district);
-      sub = `<p class="tp-lead">${parts.filter(Boolean).join(" → ")} · <strong>${results.length}</strong> буудал</p>`;
       if (f.keyword) sub += `<p class="tp-lead tp-filter-tag">🔎 «${f.keyword}»</p>`;
       const rateNote = customerPriceNote();
       if (rateNote) sub += `<p class="tp-lead tp-muted">${rateNote}</p>`;
@@ -1590,6 +1596,10 @@
       sub += searchEmptyHtml();
     }
 
+    const loadMoreBtn = isHotel && meta?.hasMore
+      ? `<div class="tp-hotel-load-more-wrap"><button type="button" class="tp-btn tp-btn-block" id="hotelLoadMore">Илүү олон үзэх</button></div>`
+      : "";
+
     const emptyGrid = (type === "flight" || type === "train") && !results.length ? "" : null;
     box.innerHTML = `
       <div class="tp-results-header">
@@ -1597,12 +1607,11 @@
         ${sub}
       </div>
       <div class="${gridClass}">${cards || emptyGrid || (type === "train" ? "" : "<p class='tp-lead'>Үр дүн олдсонгүй.</p>")}</div>
+      ${loadMoreBtn}
     `;
 
     bindConsultAdvisor(box.querySelector("[data-action=consult-advisor]"));
-    box.querySelector("[data-action=ai-hotel-search]")?.addEventListener("click", (e) => {
-      openAiHotelSuggestion(e.currentTarget.dataset.city, lastSearchMeta?.filters || {});
-    });
+    $("hotelLoadMore")?.addEventListener("click", loadMoreHotels);
 
     (container || box).scrollIntoView({ behavior: "smooth", block: "nearest" });
 
@@ -1677,7 +1686,7 @@
     f.minStars = f.minStars || formData.minStars || "";
     f.sort = f.sort || formData.sort || "recommended";
     ["nearMetro", "nearAirport", "nearAttraction", "breakfast", "freeCancellation", "familyFriendly"].forEach((k) => {
-      if (f[k] === "1") f[k] = true;
+      if (f[k] === "1" || f[k] === true) f[k] = "1";
     });
     if (f.nearLandmark) { /* keep */ }
     return f;

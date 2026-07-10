@@ -4,9 +4,10 @@
  */
 const { getSupabase } = require("./lib/supabase-client");
 const {
-  mapHotel, mapFlight, mapTransport, mapAttraction,
+  mapFlight, mapTransport, mapAttraction,
   buildCityIndex, normalizeCityInput, countrySlug
 } = require("./lib/travel-data-lib");
+const { hybridHotelSearch } = require("./lib/hotel-search-lib");
 
 function cors() {
   return {
@@ -56,46 +57,8 @@ function resolveCitySlug(input, cityIdParam, aliasIndex) {
 async function searchHotels(sb, params, ctx) {
   const citySlug = resolveCitySlug(params.city, params.city_id, ctx.aliasIndex);
   if (!citySlug) return { results: [], meta: { error: "city_not_found", cityInput: params.city } };
-
-  const cityRow = ctx.rawCities.find((c) => c.slug === citySlug);
-  if (!cityRow) return { results: [], meta: { error: "city_not_found", cityId: citySlug } };
-
-  let q = sb.from("esm_hotels").select("*").eq("city_id", cityRow.id).eq("active", true);
-  if (params.district) q = q.ilike("district", `%${params.district}%`);
-  if (params.area) q = q.ilike("area_name", `%${params.area}%`);
-  if (params.minStars) q = q.gte("stars", Number(params.minStars));
-  if (params.keyword) q = q.or(`official_name.ilike.%${params.keyword}%,description_mn.ilike.%${params.keyword}%`);
-
-  const { data, error } = await q.limit(60);
-  if (error) throw new Error(error.message);
-
-  const country = ctx.countryById[cityRow.country_id];
-  let results = (data || []).map((h) => mapHotel(h, cityRow, country));
-
-  const min = Number(params.priceMinMnt || 0);
-  const max = Number(params.priceMaxMnt || 0);
-  if (min > 0) results = results.filter((h) => h.final_price_mnt >= min);
-  if (max > 0) results = results.filter((h) => h.final_price_mnt <= max);
-
-  const sort = params.sort || "recommended";
-  if (sort === "price_asc") results.sort((a, b) => a.final_price_mnt - b.final_price_mnt);
-  else if (sort === "price_desc") results.sort((a, b) => b.final_price_mnt - a.final_price_mnt);
-  else if (sort === "stars_desc") results.sort((a, b) => b.stars - a.stars);
-
-  const nights = Number(params.days || 5);
-  results = results.map((h) => ({ ...h, nights }));
-
-  return {
-    results,
-    meta: {
-      cityId: citySlug,
-      cityInput: params.city,
-      countryId: country ? countrySlug(country) : null,
-      nights,
-      filters: params,
-      formData: params
-    }
-  };
+  const searchParams = { ...params, _resolvedCitySlug: citySlug };
+  return hybridHotelSearch(sb, searchParams, ctx);
 }
 
 async function searchFlights(sb, params, ctx) {
@@ -180,7 +143,7 @@ exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(), body: "" };
   if (event.httpMethod !== "GET") return json(405, { error: "GET only" });
 
-  const sb = getSupabase();
+  const sb = getSupabase("travel-search");
   if (!sb) return json(503, { error: "Supabase not configured", results: [], meta: {} });
 
   const params = event.queryStringParameters || {};
