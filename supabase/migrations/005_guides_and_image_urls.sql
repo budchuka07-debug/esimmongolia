@@ -8,10 +8,10 @@ update esm_hotels set gallery_urls = gallery_image_urls
 update esm_hotels set image_urls = gallery_image_urls
   where image_urls = '[]'::jsonb and gallery_image_urls is not null and gallery_image_urls != '[]'::jsonb;
 
-alter table esm_attractions add column if not exists image_urls jsonb not null default '[]';
-alter table esm_attractions add column if not exists gallery_image_urls jsonb not null default '[]';
+alter table attractions add column if not exists image_urls jsonb not null default '[]';
+alter table attractions add column if not exists gallery_image_urls jsonb not null default '[]';
 
-update esm_attractions set image_urls = '[]'::jsonb where image_urls is null;
+update attractions set image_urls = '[]'::jsonb where image_urls is null;
 
 -- esm_travel_guides
 create table if not exists esm_travel_guides (

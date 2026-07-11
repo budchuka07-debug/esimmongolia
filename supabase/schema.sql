@@ -276,9 +276,9 @@ create table if not exists esm_transport_routes (
 );
 
 -- ---------------------------------------------------------------------------
--- esm_attractions
+-- attractions
 -- ---------------------------------------------------------------------------
-create table if not exists esm_attractions (
+create table if not exists attractions (
   id uuid primary key default gen_random_uuid(),
   city_id uuid references esm_cities(id) on delete cascade,
   country_id uuid references esm_countries(id) on delete set null,
@@ -318,15 +318,15 @@ create index if not exists idx_esm_flights_from on esm_flights(from_city_id);
 create index if not exists idx_esm_flights_to on esm_flights(to_city_id);
 create index if not exists idx_esm_transport_from on esm_transport_routes(from_city_id);
 create index if not exists idx_esm_transport_to on esm_transport_routes(to_city_id);
-create index if not exists idx_esm_attractions_city on esm_attractions(city_id);
+create index if not exists idx_attractions_city on attractions(city_id);
 
 alter table esm_flights enable row level security;
 alter table esm_transport_routes enable row level security;
-alter table esm_attractions enable row level security;
+alter table attractions enable row level security;
 
 comment on table esm_flights is 'eSIM Mongolia — flight inventory';
 comment on table esm_transport_routes is 'eSIM Mongolia — train and bus routes';
-comment on table esm_attractions is 'eSIM Mongolia — attractions and tickets';
+comment on table attractions is 'eSIM Mongolia — attractions and tickets';
 
 -- ---------------------------------------------------------------------------
 -- esm_hotel_rooms

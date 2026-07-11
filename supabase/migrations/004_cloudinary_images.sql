@@ -12,8 +12,8 @@ update esm_hotels set cover_image_url = cover_image where cover_image_url is nul
 update esm_hotels set gallery_image_urls = images where gallery_image_urls = '[]'::jsonb and images is not null and images != '[]'::jsonb;
 update esm_hotels set room_image_urls = room_images where room_image_urls = '[]'::jsonb and room_images is not null and room_images != '[]'::jsonb;
 
-alter table esm_attractions add column if not exists cover_image_url text;
-update esm_attractions set cover_image_url = image_url where cover_image_url is null and image_url is not null;
+alter table attractions add column if not exists cover_image_url text;
+update attractions set cover_image_url = image_url where cover_image_url is null and image_url is not null;
 
 create table if not exists esm_hotel_rooms (
   id uuid primary key default gen_random_uuid(),

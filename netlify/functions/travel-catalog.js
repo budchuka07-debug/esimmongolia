@@ -127,12 +127,12 @@ async function buildChinaCards(sb, catalog) {
     .map(async (c) => {
       let attractions = [];
       if (sb && c.uuid && !String(c.uuid).startsWith("local-")) {
-        const { data: atts } = await sb.from("esm_attractions")
-          .select("name_mn")
-          .eq("city_id", c.uuid)
+        const { data: atts } = await sb.from("attractions")
+          .select("name, name_mn")
+          .eq("city", c.id)
           .eq("active", true)
           .limit(4);
-        attractions = (atts || []).map((a) => a.name_mn);
+        attractions = (atts || []).map((a) => a.name_mn || a.name);
       }
       return {
         id: c.id,

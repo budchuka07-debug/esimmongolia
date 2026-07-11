@@ -2023,304 +2023,304 @@ select co.id, ci.id, 'Dubai Inn Suites 8', 'Дубай 3 од', 3, 'Riverside', 
 from esm_cities ci join esm_countries co on co.id = ci.country_id where ci.slug = 'dubai' and co.iso_code = 'AE';
 
 -- ========== ATTRACTIONS (100) ==========
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Бээжин — Хоригдсон хот', 'Beijing Forbidden City', 'Бээжин хотод зочлох Хоригдсон хот. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 65, 'CNY', 35000, true
 from esm_cities ci where ci.slug = 'beijing';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Шанхай — Great Wall', 'Shanghai Great Wall', 'Шанхай хотод зочлох Great Wall. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 93, 'CNY', 50000, true
 from esm_cities ci where ci.slug = 'shanghai';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хөх хот — Shanghai Tower', 'Hohhot Shanghai Tower', 'Хөх хот хотод зочлох Shanghai Tower. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 120, 'CNY', 65000, true
 from esm_cities ci where ci.slug = 'hohhot';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Чэндү — Panda Base', 'Chengdu Chengdu Panda Base', 'Чэндү хотод зочлох Panda Base. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 148, 'CNY', 80000, true
 from esm_cities ci where ci.slug = 'chengdu';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Далиан — Terracotta Army', 'Dalian Terracotta Army', 'Далиан хотод зочлох Terracotta Army. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 176, 'CNY', 95000, true
 from esm_cities ci where ci.slug = 'dalian';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Гуанжоу — Victoria Peak', 'Guangzhou Victoria Peak', 'Гуанжоу хотод зочлох Victoria Peak. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 204, 'CNY', 110000, true
 from esm_cities ci where ci.slug = 'guangzhou';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Шэньжэнь — Grand Palace', 'Shenzhen Grand Palace', 'Шэньжэнь хотод зочлох Grand Palace. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 231, 'CNY', 125000, true
 from esm_cities ci where ci.slug = 'shenzhen';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Иву — Phi Phi Islands', 'Yiwu Phi Phi Islands', 'Иву хотод зочлох Phi Phi Islands. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 259, 'CNY', 140000, true
 from esm_cities ci where ci.slug = 'yiwu';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Харbin — Ha Long Bay', 'Harbin Ha Long Bay', 'Харbin хотод зочлох Ha Long Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 287, 'CNY', 155000, true
 from esm_cities ci where ci.slug = 'harbin';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сиань — Cu Chi Tunnels', 'Xi''an Cu Chi Tunnels', 'Сиань хотод зочлох Cu Chi Tunnels. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 315, 'CNY', 170000, true
 from esm_cities ci where ci.slug = 'xian';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Чанша — Borobudur', 'Changsha Borobudur', 'Чанша хотод зочлох Borobudur. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 343, 'CNY', 185000, true
 from esm_cities ci where ci.slug = 'changsha';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Эрээн — Tanah Lot', 'Erenhot Tanah Lot', 'Эрээн хотод зочлох Tanah Lot. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 370, 'CNY', 200000, true
 from esm_cities ci where ci.slug = 'erenhot';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Нанжин — Tokyo Skytree', 'Nanjing Tokyo Skytree', 'Нанжин хотод зочлох Tokyo Skytree. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 398, 'CNY', 215000, true
 from esm_cities ci where ci.slug = 'nanjing';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Ханzhou — Fushimi Inari', 'Hangzhou Fushimi Inari', 'Ханzhou хотод зочлох Fushimi Inari. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 426, 'CNY', 230000, true
 from esm_cities ci where ci.slug = 'hangzhou';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сүжоу — Gyeongbokgung', 'Suzhou Gyeongbokgung', 'Сүжоу хотод зочлох Gyeongbokgung. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 454, 'CNY', 245000, true
 from esm_cities ci where ci.slug = 'suzhou';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Циндао — Jeju Hallasan', 'Qingdao Hallasan', 'Циндао хотод зочлох Jeju Hallasan. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 481, 'CNY', 260000, true
 from esm_cities ci where ci.slug = 'qingdao';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Чунцин — Marina Bay', 'Chongqing Marina Bay', 'Чунцин хотод зочлох Marina Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 509, 'CNY', 275000, true
 from esm_cities ci where ci.slug = 'chongqing';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Ухань — Petronas Towers', 'Wuhan Petronas Towers', 'Ухань хотод зочлох Petronas Towers. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 537, 'CNY', 290000, true
 from esm_cities ci where ci.slug = 'wuhan';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Куньмин — Burj Khalifa', 'Kunming Burj Khalifa', 'Куньмин хотод зочлох Burj Khalifa. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 565, 'CNY', 305000, true
 from esm_cities ci where ci.slug = 'kunming';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Шiamen — Disneyland', 'Xiamen Disneyland', 'Шiamen хотод зочлох Disneyland. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 593, 'CNY', 320000, true
 from esm_cities ci where ci.slug = 'xiamen';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Нинbo — Universal Studios', 'Ningbo Universal Studios', 'Нинbo хотод зочлох Universal Studios. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 65, 'CNY', 35000, true
 from esm_cities ci where ci.slug = 'ningbo';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Тяньжин — Night Market', 'Tianjin Night Market Tour', 'Тяньжин хотод зочлох Night Market. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 93, 'CNY', 50000, true
 from esm_cities ci where ci.slug = 'tianjin';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Жэнzhou — Temple Tour', 'Zhengzhou Temple Tour', 'Жэнzhou хотод зочлох Temple Tour. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 120, 'CNY', 65000, true
 from esm_cities ci where ci.slug = 'zhengzhou';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Фучжоу — Museum Pass', 'Fuzhou City Museum', 'Фучжоу хотод зочлох Museum Pass. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 148, 'CNY', 80000, true
 from esm_cities ci where ci.slug = 'fuzhou';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Жинань — River Cruise', 'Jinan River Cruise', 'Жинань хотод зочлох River Cruise. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 176, 'CNY', 95000, true
 from esm_cities ci where ci.slug = 'jinan';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хэфэй — Food Tour', 'Hefei Street Food Tour', 'Хэфэй хотод зочлох Food Tour. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 204, 'CNY', 110000, true
 from esm_cities ci where ci.slug = 'hefei';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Наньнин — Хоригдсон хот', 'Nanning Forbidden City', 'Наньнин хотод зочлох Хоригдсон хот. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 231, 'CNY', 125000, true
 from esm_cities ci where ci.slug = 'nanning';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Гуйлинь — Great Wall', 'Guilin Great Wall', 'Гуйлинь хотод зочлох Great Wall. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 259, 'CNY', 140000, true
 from esm_cities ci where ci.slug = 'guilin';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Лижiang — Shanghai Tower', 'Lijiang Shanghai Tower', 'Лижiang хотод зочлох Shanghai Tower. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 287, 'CNY', 155000, true
 from esm_cities ci where ci.slug = 'lijiang';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Санья — Panda Base', 'Sanya Chengdu Panda Base', 'Санья хотод зочлох Panda Base. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 315, 'CNY', 170000, true
 from esm_cities ci where ci.slug = 'sanya';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Жухай — Terracotta Army', 'Zhuhai Terracotta Army', 'Жухай хотод зочлох Terracotta Army. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 343, 'CNY', 185000, true
 from esm_cities ci where ci.slug = 'zhuhai';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Дунгуань — Victoria Peak', 'Dongguan Victoria Peak', 'Дунгуань хотод зочлох Victoria Peak. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 370, 'CNY', 200000, true
 from esm_cities ci where ci.slug = 'dongguan';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Фошань — Grand Palace', 'Foshan Grand Palace', 'Фошань хотод зочлох Grand Palace. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 398, 'CNY', 215000, true
 from esm_cities ci where ci.slug = 'foshan';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Вэньzhou — Phi Phi Islands', 'Wenzhou Phi Phi Islands', 'Вэньzhou хотод зочлох Phi Phi Islands. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 426, 'CNY', 230000, true
 from esm_cities ci where ci.slug = 'wenzhou';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Үрүмчи — Ha Long Bay', 'Urumqi Ha Long Bay', 'Үрүмчи хотод зочлох Ha Long Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 454, 'CNY', 245000, true
 from esm_cities ci where ci.slug = 'urumqi';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Бангкок — Cu Chi Tunnels', 'Bangkok Cu Chi Tunnels', 'Бангкок хотод зочлох Cu Chi Tunnels. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 481, 'USD', 260000, true
 from esm_cities ci where ci.slug = 'bangkok';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Паттайя — Borobudur', 'Pattaya Borobudur', 'Паттайя хотод зочлох Borobudur. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 509, 'USD', 275000, true
 from esm_cities ci where ci.slug = 'pattaya';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Пхукет — Tanah Lot', 'Phuket Tanah Lot', 'Пхукет хотод зочлох Tanah Lot. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 537, 'USD', 290000, true
 from esm_cities ci where ci.slug = 'phuket';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Чианг Май — Tokyo Skytree', 'Chiang Mai Tokyo Skytree', 'Чианг Май хотод зочлох Tokyo Skytree. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 565, 'USD', 305000, true
 from esm_cities ci where ci.slug = 'chiang_mai';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Краби — Fushimi Inari', 'Krabi Fushimi Inari', 'Краби хотод зочлох Fushimi Inari. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 593, 'USD', 320000, true
 from esm_cities ci where ci.slug = 'krabi';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Чианг Рай — Gyeongbokgung', 'Chiang Rai Gyeongbokgung', 'Чианг Рай хотод зочлох Gyeongbokgung. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 65, 'USD', 35000, true
 from esm_cities ci where ci.slug = 'chiang_rai';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Самуи — Jeju Hallasan', 'Koh Samui Hallasan', 'Самуи хотод зочлох Jeju Hallasan. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 93, 'USD', 50000, true
 from esm_cities ci where ci.slug = 'koh_samui';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хат Яй — Marina Bay', 'Hat Yai Marina Bay', 'Хат Яй хотод зочлох Marina Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 120, 'USD', 65000, true
 from esm_cities ci where ci.slug = 'hat_yai';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Удон Тани — Petronas Towers', 'Udon Thani Petronas Towers', 'Удон Тани хотод зочлох Petronas Towers. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 148, 'USD', 80000, true
 from esm_cities ci where ci.slug = 'udon_thani';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Аютthaya — Burj Khalifa', 'Ayutthaya Burj Khalifa', 'Аютthaya хотод зочлох Burj Khalifa. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 176, 'USD', 95000, true
 from esm_cities ci where ci.slug = 'ayutthaya';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хua Hin — Disneyland', 'Hua Hin Disneyland', 'Хua Hin хотод зочлох Disneyland. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 204, 'USD', 110000, true
 from esm_cities ci where ci.slug = 'hua_hin';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сурат Тани — Universal Studios', 'Surat Thani Universal Studios', 'Сурат Тани хотод зочлох Universal Studios. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 231, 'USD', 125000, true
 from esm_cities ci where ci.slug = 'surat_thani';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Дананг — Night Market', 'Da Nang Night Market Tour', 'Дананг хотод зочлох Night Market. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 259, 'USD', 140000, true
 from esm_cities ci where ci.slug = 'da_nang';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Вунг Тau — Temple Tour', 'Vung Tau Temple Tour', 'Вунг Тau хотод зочлох Temple Tour. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 287, 'USD', 155000, true
 from esm_cities ci where ci.slug = 'vung_tau';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Нячанг — Museum Pass', 'Nha Trang City Museum', 'Нячанг хотод зочлох Museum Pass. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 315, 'USD', 170000, true
 from esm_cities ci where ci.slug = 'nha_trang';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хошимин — River Cruise', 'Ho Chi Minh City River Cruise', 'Хошимин хотод зочлох River Cruise. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 343, 'USD', 185000, true
 from esm_cities ci where ci.slug = 'ho_chi_minh';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Ханой — Food Tour', 'Hanoi Street Food Tour', 'Ханой хотод зочлох Food Tour. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 370, 'USD', 200000, true
 from esm_cities ci where ci.slug = 'hanoi';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хue — Хоригдсон хот', 'Hue Forbidden City', 'Хue хотод зочлох Хоригдсон хот. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 398, 'USD', 215000, true
 from esm_cities ci where ci.slug = 'hue';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хoi An — Great Wall', 'Hoi An Great Wall', 'Хoi An хотод зочлох Great Wall. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 426, 'USD', 230000, true
 from esm_cities ci where ci.slug = 'hoi_an';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Фу Quoc — Shanghai Tower', 'Phu Quoc Shanghai Tower', 'Фу Quoc хотод зочлох Shanghai Tower. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 454, 'USD', 245000, true
 from esm_cities ci where ci.slug = 'phu_quoc';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Кан Tho — Panda Base', 'Can Tho Chengdu Panda Base', 'Кан Tho хотод зочлох Panda Base. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 481, 'USD', 260000, true
 from esm_cities ci where ci.slug = 'can_tho';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Далat — Terracotta Army', 'Da Lat Terracotta Army', 'Далat хотод зочлох Terracotta Army. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 509, 'USD', 275000, true
 from esm_cities ci where ci.slug = 'dalat';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Ха Long — Victoria Peak', 'Ha Long Victoria Peak', 'Ха Long хотод зочлох Victoria Peak. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 537, 'USD', 290000, true
 from esm_cities ci where ci.slug = 'ha_long';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Вinh — Grand Palace', 'Vinh Grand Palace', 'Вinh хотод зочлох Grand Palace. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 565, 'USD', 305000, true
 from esm_cities ci where ci.slug = 'vinh';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Бали — Phi Phi Islands', 'Bali Phi Phi Islands', 'Бали хотод зочлох Phi Phi Islands. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 593, 'USD', 320000, true
 from esm_cities ci where ci.slug = 'bali';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Жakarta — Ha Long Bay', 'Jakarta Ha Long Bay', 'Жakarta хотод зочлох Ha Long Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 65, 'USD', 35000, true
 from esm_cities ci where ci.slug = 'jakarta';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сураbaya — Cu Chi Tunnels', 'Surabaya Cu Chi Tunnels', 'Сураbaya хотод зочлох Cu Chi Tunnels. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 93, 'USD', 50000, true
 from esm_cities ci where ci.slug = 'surabaya';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Бандung — Borobudur', 'Bandung Borobudur', 'Бандung хотод зочлох Borobudur. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 120, 'USD', 65000, true
 from esm_cities ci where ci.slug = 'bandung';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Yogyakarta — Tanah Lot', 'Yogyakarta Tanah Lot', 'Yogyakarta хотод зочлох Tanah Lot. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 148, 'USD', 80000, true
 from esm_cities ci where ci.slug = 'yogyakarta';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Медan — Tokyo Skytree', 'Medan Tokyo Skytree', 'Медan хотод зочлох Tokyo Skytree. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 176, 'USD', 95000, true
 from esm_cities ci where ci.slug = 'medan';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Лombok — Fushimi Inari', 'Lombok Fushimi Inari', 'Лombok хотод зочлох Fushimi Inari. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 204, 'USD', 110000, true
 from esm_cities ci where ci.slug = 'lombok';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Бatam — Gyeongbokgung', 'Batam Gyeongbokgung', 'Бatam хотод зочлох Gyeongbokgung. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 231, 'USD', 125000, true
 from esm_cities ci where ci.slug = 'batam';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Токио — Jeju Hallasan', 'Tokyo Hallasan', 'Токио хотод зочлох Jeju Hallasan. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 259, 'JPY', 140000, true
 from esm_cities ci where ci.slug = 'tokyo';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Оsaka — Marina Bay', 'Osaka Marina Bay', 'Оsaka хотод зочлох Marina Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 287, 'JPY', 155000, true
 from esm_cities ci where ci.slug = 'osaka';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Кyoto — Petronas Towers', 'Kyoto Petronas Towers', 'Кyoto хотод зочлох Petronas Towers. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 315, 'JPY', 170000, true
 from esm_cities ci where ci.slug = 'kyoto';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сapporo — Burj Khalifa', 'Sapporo Burj Khalifa', 'Сapporo хотод зочлох Burj Khalifa. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 343, 'JPY', 185000, true
 from esm_cities ci where ci.slug = 'sapporo';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Фukuoka — Disneyland', 'Fukuoka Disneyland', 'Фukuoka хотод зочлох Disneyland. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 370, 'JPY', 200000, true
 from esm_cities ci where ci.slug = 'fukuoka';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Нagoya — Universal Studios', 'Nagoya Universal Studios', 'Нagoya хотод зочлох Universal Studios. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 398, 'JPY', 215000, true
 from esm_cities ci where ci.slug = 'nagoya';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Хiroshima — Night Market', 'Hiroshima Night Market Tour', 'Хiroshima хотод зочлох Night Market. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 426, 'JPY', 230000, true
 from esm_cities ci where ci.slug = 'hiroshima';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Нara — Temple Tour', 'Nara Temple Tour', 'Нara хотод зочлох Temple Tour. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 454, 'JPY', 245000, true
 from esm_cities ci where ci.slug = 'nara';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Оkinawa — Museum Pass', 'Okinawa City Museum', 'Оkinawa хотод зочлох Museum Pass. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 481, 'JPY', 260000, true
 from esm_cities ci where ci.slug = 'okinawa';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сенdai — River Cruise', 'Sendai River Cruise', 'Сенdai хотод зочлох River Cruise. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 509, 'JPY', 275000, true
 from esm_cities ci where ci.slug = 'sendai';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сөүл — Food Tour', 'Seoul Street Food Tour', 'Сөүл хотод зочлох Food Tour. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 537, 'USD', 290000, true
 from esm_cities ci where ci.slug = 'seoul';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Бusan — Хоригдсон хот', 'Busan Forbidden City', 'Бusan хотод зочлох Хоригдсон хот. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 565, 'USD', 305000, true
 from esm_cities ci where ci.slug = 'busan';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Жeju — Great Wall', 'Jeju Great Wall', 'Жeju хотод зочлох Great Wall. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 593, 'USD', 320000, true
 from esm_cities ci where ci.slug = 'jeju';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Иncheon — Shanghai Tower', 'Incheon Shanghai Tower', 'Иncheon хотод зочлох Shanghai Tower. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 65, 'USD', 35000, true
 from esm_cities ci where ci.slug = 'incheon';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Daegu — Panda Base', 'Daegu Chengdu Panda Base', 'Daegu хотод зочлох Panda Base. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 93, 'USD', 50000, true
 from esm_cities ci where ci.slug = 'daegu';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Gwangju — Terracotta Army', 'Gwangju Terracotta Army', 'Gwangju хотод зочлох Terracotta Army. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 120, 'USD', 65000, true
 from esm_cities ci where ci.slug = 'gwangju';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Daejeon — Victoria Peak', 'Daejeon Victoria Peak', 'Daejeon хотод зочлох Victoria Peak. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 148, 'USD', 80000, true
 from esm_cities ci where ci.slug = 'daejeon';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Jeonju — Grand Palace', 'Jeonju Grand Palace', 'Jeonju хотод зочлох Grand Palace. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 176, 'USD', 95000, true
 from esm_cities ci where ci.slug = 'jeonju';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Gangneung — Phi Phi Islands', 'Gangneung Phi Phi Islands', 'Gangneung хотод зочлох Phi Phi Islands. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 204, 'USD', 110000, true
 from esm_cities ci where ci.slug = 'gangneung';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Gyeongju — Ha Long Bay', 'Gyeongju Ha Long Bay', 'Gyeongju хотод зочлох Ha Long Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 231, 'USD', 125000, true
 from esm_cities ci where ci.slug = 'gyeongju';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Улаанбаатар — Cu Chi Tunnels', 'Ulaanbaatar Cu Chi Tunnels', 'Улаанбаатар хотод зочлох Cu Chi Tunnels. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 259, 'USD', 140000, true
 from esm_cities ci where ci.slug = 'ulanbaatar';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Эрдэнэт — Borobudur', 'Erdenet Borobudur', 'Эрдэнэт хотод зочлох Borobudur. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 287, 'USD', 155000, true
 from esm_cities ci where ci.slug = 'erdenet';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Дarkhan — Tanah Lot', 'Darkhan Tanah Lot', 'Дarkhan хотод зочлох Tanah Lot. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 315, 'USD', 170000, true
 from esm_cities ci where ci.slug = 'darkhan';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Сингапур — Tokyo Skytree', 'Singapore Tokyo Skytree', 'Сингапур хотод зочлох Tokyo Skytree. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 343, 'USD', 185000, true
 from esm_cities ci where ci.slug = 'singapore';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Sentosa — Fushimi Inari', 'Sentosa Fushimi Inari', 'Sentosa хотод зочлох Fushimi Inari. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 370, 'USD', 200000, true
 from esm_cities ci where ci.slug = 'sentosa';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Куала Lumpur — Gyeongbokgung', 'Kuala Lumpur Gyeongbokgung', 'Куала Lumpur хотод зочлох Gyeongbokgung. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 398, 'USD', 215000, true
 from esm_cities ci where ci.slug = 'kuala_lumpur';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Penang — Jeju Hallasan', 'Penang Hallasan', 'Penang хотод зочлох Jeju Hallasan. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 426, 'USD', 230000, true
 from esm_cities ci where ci.slug = 'penang';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Langkawi — Marina Bay', 'Langkawi Marina Bay', 'Langkawi хотод зочлох Marina Bay. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 454, 'USD', 245000, true
 from esm_cities ci where ci.slug = 'langkawi';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Melaka — Petronas Towers', 'Malacca Petronas Towers', 'Melaka хотод зочлох Petronas Towers. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 481, 'USD', 260000, true
 from esm_cities ci where ci.slug = 'melaka';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Johor Bahru — Burj Khalifa', 'Johor Bahru Burj Khalifa', 'Johor Bahru хотод зочлох Burj Khalifa. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 509, 'USD', 275000, true
 from esm_cities ci where ci.slug = 'johor_bahru';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Kota Kinabalu — Disneyland', 'Kota Kinabalu Disneyland', 'Kota Kinabalu хотод зочлох Disneyland. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 537, 'USD', 290000, true
 from esm_cities ci where ci.slug = 'kota_kinabalu';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Дубай — Universal Studios', 'Dubai Universal Studios', 'Дубай хотод зочлох Universal Studios. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 565, 'USD', 305000, true
 from esm_cities ci where ci.slug = 'dubai';
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
+insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)
 select ci.id, 'Аbu Dhabi — Night Market', 'Abu Dhabi Night Market Tour', 'Аbu Dhabi хотод зочлох Night Market. Тасалбар, хөтөчийн үйлчилгээ.', null, '[]'::jsonb, '[]'::jsonb, 593, 'USD', 320000, true
 from esm_cities ci where ci.slug = 'abu_dhabi';
 

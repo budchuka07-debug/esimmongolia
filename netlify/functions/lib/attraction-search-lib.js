@@ -10,6 +10,7 @@ const TARGET_TOTAL = 24;
 const MAX_TOTAL = 48;
 const PAGE_SIZE_DEFAULT = 12;
 const SUPABASE_QUERY_MS = 2500;
+const ATTRACTIONS_TABLE = "attractions";
 
 function isMockAttraction(a) {
   return !!(a.is_mock || a.source === "local_mock" || a.source === "mock");
@@ -101,8 +102,24 @@ function dedupeAttractions(verified, mockCandidates) {
 }
 
 async function fetchSupabaseAttractions(sb, params, cityRow, country) {
-  let q = sb.from("esm_attractions").select("*").eq("city_id", cityRow.id).eq("active", true);
-  if (country?.id) q = q.eq("country_id", country.id);
+  const citySlug = cityRow?.slug || params.city_id || params._resolvedCitySlug;
+  const countrySlugVal = params.country || (country ? countrySlug(country) : null);
+  const cityIdIsUuid = cityRow?.id && !String(cityRow.id).startsWith("local-");
+
+  let q = sb.from(ATTRACTIONS_TABLE).select("*").eq("active", true);
+
+  if (citySlug) {
+    q = q.eq("city", citySlug);
+  } else if (cityIdIsUuid) {
+    q = q.eq("city_id", cityRow.id);
+  }
+
+  if (countrySlugVal) {
+    q = q.eq("country", countrySlugVal);
+  } else if (country?.id && !String(country.id).startsWith("local-")) {
+    q = q.eq("country_id", country.id);
+  }
+
   if (params.category && params.category !== "all" && !["family", "free"].includes(params.category)) {
     q = q.eq("category", params.category);
   }
@@ -111,12 +128,22 @@ async function fetchSupabaseAttractions(sb, params, cityRow, country) {
   if (params.district) q = q.ilike("district", `%${params.district}%`);
   const kw = params.keyword || params.attraction;
   if (kw) {
-    q = q.or(`name_mn.ilike.%${kw}%,name_en.ilike.%${kw}%,description_mn.ilike.%${kw}%,district.ilike.%${kw}%`);
+    q = q.or(
+      `name.ilike.%${kw}%,name_mn.ilike.%${kw}%,name_en.ilike.%${kw}%,` +
+      `description.ilike.%${kw}%,description_mn.ilike.%${kw}%,` +
+      `short_description.ilike.%${kw}%,district.ilike.%${kw}%`
+    );
   }
 
-  const { data, error } = await q.order("sort_order").limit(120);
+  let { data, error } = await q.order("popularity_score", { ascending: false }).limit(120);
+  if (error && /popularity_score|sort_order/i.test(error.message)) {
+    ({ data, error } = await q.limit(120));
+  }
   if (error) throw new Error(error.message);
-  let results = (data || []).map((row) => enrichAttraction(mapAttraction(row, cityRow, country), cityRow, country));
+
+  let results = (data || []).map((row) =>
+    enrichAttraction(mapAttraction(row, cityRow, country, citySlug), cityRow, country)
+  );
   results = applyFilters(results, params);
   return results;
 }
@@ -236,6 +263,7 @@ async function hybridAttractionSearch(sb, params, ctx) {
 
 module.exports = {
   hybridAttractionSearch,
+  ATTRACTIONS_TABLE,
   SUPABASE_SUFFICIENT,
   TARGET_TOTAL,
   MAX_TOTAL,

@@ -157,25 +157,32 @@ function mapTransport(row, fromCity, toCity, transferCity) {
   };
 }
 
-function mapAttraction(row, cityRow, countryRow) {
+function mapAttraction(row, cityRow, countryRow, citySlugOverride) {
   const cover = pickCover(row, FALLBACK.attraction);
   const gallery = row.gallery_urls?.length ? row.gallery_urls
     : (row.image_urls?.length ? row.image_urls
       : (row.gallery_image_urls?.length ? row.gallery_image_urls : []));
-  const price = row.final_price_mnt ?? (row.original_price ? Math.round(Number(row.original_price) * 500) : 0);
+  const displayName = row.name || row.name_mn || row.name_en || "";
+  const description = row.description || row.description_mn || "";
+  const shortDesc = row.short_description || row.short_description_mn || description;
+  const price = Number(row.estimated_price ?? row.final_price_mnt ?? 0) ||
+    (row.original_price ? Math.round(Number(row.original_price) * 500) : 0);
+  const cityId = row.city || citySlugOverride || cityRow?.slug;
+  const countryId = row.country || (countryRow ? countrySlug(countryRow) : null);
+
   return {
     type: "attraction",
     id: row.id,
-    city_id: cityRow?.slug,
-    country_id: countryRow ? countrySlug(countryRow) : null,
-    name: row.name_mn || row.name_en,
-    name_mn: row.name_mn,
-    name_en: row.name_en,
+    city_id: cityId,
+    country_id: countryId,
+    name: displayName,
+    name_mn: row.name_mn || displayName,
+    name_en: row.name_en || displayName,
     district: row.district,
     category: row.category || "history_culture",
-    description: row.description_mn,
-    description_mn: row.description_mn,
-    short_description: row.short_description_mn || row.description_mn,
+    description,
+    description_mn: row.description_mn || description,
+    short_description: shortDesc,
     cover_image_url: row.cover_image_url || row.image_url || null,
     image_urls: gallery,
     gallery_urls: gallery,
@@ -199,6 +206,7 @@ function mapAttraction(row, cityRow, countryRow) {
     official_url: row.official_url,
     popularity_score: row.popularity_score ?? 50,
     source: row.source || "supabase",
+    verification_status: row.verification_status || "verified",
     active: row.active
   };
 }

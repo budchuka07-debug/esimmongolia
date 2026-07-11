@@ -133,9 +133,9 @@ async function searchAttractions(sb, params, ctx) {
   const cityRow = ctx.rawCities.find((c) => c.slug === citySlug);
   if (!cityRow) return { results: [], meta: { cityId: citySlug } };
 
-  const { data, error } = await sb.from("esm_attractions")
+  const { data, error } = await sb.from("attractions")
     .select("*")
-    .eq("city_id", cityRow.id)
+    .eq("city", citySlug)
     .eq("active", true)
     .limit(20);
   if (error) throw new Error(error.message);

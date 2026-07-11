@@ -10,7 +10,7 @@
 | `esm_cities` | 100 хот |
 | `esm_hotels` | 500+ буудал |
 | `esm_hotel_rooms` | Өрөө |
-| `esm_attractions` | Үзвэр |
+| `attractions` | Үзвэр |
 | `esm_long_stay_rentals` | Урт хугацааны түрээс |
 | `esm_travel_guides` | Аяллын гарын авлага |
 | `esm_health_guides` | Даатгал / вакцин / эмнэлэг |

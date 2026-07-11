@@ -377,7 +377,7 @@ function buildSql() {
 
   lines.push("-- ========== ATTRACTIONS (100) ==========");
   for (const a of attractions) {
-    lines.push(`insert into esm_attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)`);
+    lines.push(`insert into attractions (city_id, name_mn, name_en, description_mn, cover_image_url, image_urls, gallery_image_urls, original_price, currency, final_price_mnt, active)`);
     lines.push(`select ci.id, '${escSql(a.name_mn)}', '${escSql(a.name_en)}', '${escSql(a.description_mn)}', null, '[]'::jsonb, '[]'::jsonb, ${Math.round(a.price / 540)}, '${a.currency}', ${a.price}, true`);
     lines.push(`from esm_cities ci where ci.slug = '${a.city_slug}';`);
   }

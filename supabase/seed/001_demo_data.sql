@@ -83,7 +83,7 @@ select 'bus', 'direct', (select id from esm_cities where slug='erenhot'), (selec
   null, '8–10 цаг', 180, 280, '{}'::jsonb, 120000, 'Erenhot station', '', 'estimated', true;
 
 -- Attractions
-insert into esm_attractions (city_id, name_mn, name_en, description_mn, original_price, currency, final_price_mnt, active, sort_order)
+insert into attractions (city_id, name_mn, name_en, description_mn, original_price, currency, final_price_mnt, active, sort_order)
 select ci.id, a.name_mn, a.name_en, a.desc_mn, a.price, 'CNY', a.price_mnt, true, a.ord
 from esm_cities ci
 join (values
