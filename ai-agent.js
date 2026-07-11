@@ -2,8 +2,8 @@
  * AI Travel Advisor — real chat UI + local responses + Netlify/Supabase backend
  */
 (function () {
-  const ENDPOINT = "/.netlify/functions/ai-travel-agent";
-  const REMOTE_TIMEOUT_MS = 8000;
+  const ENDPOINT = "/.netlify/functions/travel-ai";
+  const REMOTE_TIMEOUT_MS = 25000;
   const USE_REMOTE = true;
 
   const history = [];
@@ -164,7 +164,7 @@
     el.innerHTML = `
       <div class="tp-msg-avatar">🧳</div>
       <div class="tp-msg ai typing">
-        <span class="tp-typing-label">AI аяллын зөвлөх бичиж байна...</span>
+        <span class="tp-typing-label">Танд тохирох саналуудыг хайж байна…</span>
         <span class="tp-dots"><span></span><span></span><span></span></span>
       </div>`;
     box.appendChild(el);
@@ -190,6 +190,19 @@
       .trim();
   }
 
+  function aiErrorFallback() {
+    return {
+      reply: "Уучлаарай, AI зөвлөх түр холбогдож чадсангүй. Буудал, маршрут эсвэл eSIM товчийг сонгоод хайлтаа үргэлжлүүлээрэй.",
+      quickReplies: [
+        { id: "hotel_suggest", label: "🏨 Буудал" },
+        { id: "route_plan", label: "🗺 Маршрут" },
+        { id: "esim_view", label: "📶 eSIM" }
+      ],
+      ctas: [],
+      context: lastContext,
+      cards: []
+    };
+  }
   function generateLocalTravelResponse(message) {
     if (window.AiLocalResponses?.generateLocalTravelResponse) {
       return window.AiLocalResponses.generateLocalTravelResponse(message);
@@ -215,6 +228,7 @@
           message,
           sessionId: sessionStorage.getItem("aiSessionId") || null,
           history: history.slice(-10),
+          context: lastContext,
           locale: "mn"
         })
       });
@@ -245,6 +259,7 @@
     if (USE_REMOTE) {
       const remote = await fetchRemoteTravelResponse(message);
       if (remote) return remote;
+      return aiErrorFallback();
     }
     await new Promise((r) => setTimeout(r, 400));
     return generateLocalTravelResponse(message);
@@ -281,7 +296,7 @@
       history.push({ role: "assistant", content: payload.reply });
     } catch (err) {
       clearTyping();
-      appendAi(generateLocalTravelResponse(q));
+      appendAi(aiErrorFallback());
     } finally {
       sendBusy = false;
       scrollChat();

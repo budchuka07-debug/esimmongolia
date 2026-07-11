@@ -190,17 +190,19 @@ async function hybridHotelSearch(sb, params, ctx) {
   let mockFiltered = filterMockPool(pool, params);
   mockFiltered = deduplicateHotels(verified, mockFiltered);
 
-  const needMock = Math.max(0, MIN_TARGET - verified.length);
+  const minTarget = Number(params.minTarget) > 0 ? Number(params.minTarget) : MIN_TARGET;
+  const maxTotal = Number(params.maxResults) > 0 ? Number(params.maxResults) : MAX_TOTAL;
+  const needMock = Math.max(0, minTarget - verified.length);
   let mockSelected = mockFiltered.slice(0, Math.max(needMock, 0));
 
   let merged = [...verified, ...mockSelected];
-  if (merged.length < MIN_TARGET && mockFiltered.length > mockSelected.length) {
-    const extra = mockFiltered.slice(mockSelected.length, MIN_TARGET - verified.length + mockSelected.length);
+  if (merged.length < minTarget && mockFiltered.length > mockSelected.length) {
+    const extra = mockFiltered.slice(mockSelected.length, minTarget - verified.length + mockSelected.length);
     merged = [...verified, ...mockSelected, ...extra];
   }
 
   merged = sortHotels(merged, sort);
-  merged = merged.slice(0, MAX_TOTAL);
+  merged = merged.slice(0, maxTotal);
 
   const mockCount = merged.filter((h) => h.is_mock).length;
   const total = merged.length;
@@ -224,7 +226,7 @@ async function hybridHotelSearch(sb, params, ctx) {
       pageSize,
       hasMore: start + pageSize < total,
       maxResults: MAX_TOTAL,
-      minTarget: MIN_TARGET,
+      minTarget,
       filters: params,
       formData: params,
       subtitle: NEEDS_CHECK_MSG
