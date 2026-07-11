@@ -4,12 +4,15 @@
 const { getSupabase } = require("./supabase-client");
 const { buildCityIndex, normalizeCityInput, countrySlug, mapFlight } = require("./travel-data-lib");
 const { hybridHotelSearch, sortHotels, getHotelTargetForCity, TARGET_MAJOR } = require("./hotel-search-lib");
+const { hybridAttractionSearch, TARGET_TOTAL: ATTRACTION_TARGET, PAGE_SIZE_DEFAULT: ATTRACTION_PAGE_SIZE } = require("./attraction-search-lib");
+const { NEEDS_CHECK_MSG: ATTRACTION_CHECK_MSG, categoryLabelMn } = require("./attraction-mock");
 const { NEEDS_CHECK_MSG } = require("./hotel-mock");
 const { buildOfflineSearchCtx, resolveOfflineCitySlug } = require("./asia-catalog-fallback");
 const consultant = require("./ai-consultant");
 const { getChinaPlans } = require("../china-plans");
 
 const AI_DISPLAY_HOTELS = 5;
+const AI_DISPLAY_ATTRACTIONS = 5;
 const UI_PAGE_SIZE = TARGET_MAJOR;
 
 async function buildSearchCtxFast(sb, citySlug, cityInput) {
@@ -169,6 +172,155 @@ function formToSearchParams(form) {
     page: Number(form.page || 1),
     pageSize: Number(form.pageSize || UI_PAGE_SIZE),
     minTarget: getHotelTargetForCity(form.city_id || form.city)
+  };
+}
+
+function mapAttractionForAi(a) {
+  const isMock = a.is_mock || a.source === "local_mock" || a.source === "mock";
+  return {
+    id: a.id,
+    name: a.name_mn || a.name_en || a.name,
+    country: a.country || a.country_name_mn,
+    city: a.city || a.city_name_mn || a.city_id,
+    district: a.district,
+    category: a.category,
+    category_label_mn: a.category_label_mn || categoryLabelMn(a.category),
+    short_description: a.short_description || a.description_mn || "",
+    image_url: a.image_url || a.cover_image_url,
+    estimated_price: a.estimated_price ?? a.final_price_mnt,
+    currency: "MNT",
+    opening_hours: a.opening_hours,
+    recommended_duration: a.recommended_duration,
+    family_friendly: !!a.family_friendly,
+    free_entry: !!a.free_entry,
+    source: isMock ? "local_mock" : "supabase",
+    is_mock: isMock,
+    verification_status: isMock ? "check_before_booking" : "verified",
+    needs_check_message: isMock ? ATTRACTION_CHECK_MSG : undefined
+  };
+}
+
+function enrichAttractionResults(results) {
+  return (results || []).map((a) => {
+    const isMock = a.is_mock || a.source === "local_mock" || a.source === "mock";
+    if (!isMock) return a;
+    return {
+      ...a,
+      source: "local_mock",
+      is_mock: true,
+      verification_status: "check_before_booking",
+      needs_check_message: ATTRACTION_CHECK_MSG
+    };
+  });
+}
+
+function attractionFormToParams(form) {
+  return {
+    city_id: form.city_id || "",
+    city: form.city || "",
+    country: form.country || form.country_id || "",
+    keyword: form.keyword || form.attraction || "",
+    attraction: form.attraction || form.keyword || "",
+    category: form.category || "all",
+    visitors: Number(form.visitors || form.people || 2),
+    visit_date: form.visit_date || form.date || "",
+    priceMinMnt: form.priceMinMnt || form.budget_min || "",
+    priceMaxMnt: form.priceMaxMnt || form.budget_max || "",
+    budget_min: form.budget_min || form.priceMinMnt || "",
+    budget_max: form.budget_max || form.priceMaxMnt || "",
+    district: form.district || "",
+    familyFriendly: form.familyFriendly || "",
+    freeOnly: form.freeOnly || "",
+    sort: form.sort || "recommended",
+    page: Number(form.page || 1),
+    pageSize: Number(form.pageSize || ATTRACTION_PAGE_SIZE),
+    minTarget: ATTRACTION_TARGET
+  };
+}
+
+async function searchAttractionsFull(form, log) {
+  const sb = getSupabase("travel-ai");
+  const params = attractionFormToParams(form);
+  const ctx = await buildSearchCtx(sb, params.city_id, params.city);
+  if (!ctx) {
+    return {
+      success: false,
+      error: "city_not_found",
+      attractions: [],
+      results: [],
+      meta: { error: "city_not_found", cityInput: params.city }
+    };
+  }
+
+  params._resolvedCitySlug = ctx.resolvedSlug || params.city_id;
+  params.city_id = params._resolvedCitySlug;
+
+  const payload = await hybridAttractionSearch(sb, params, ctx);
+  const attractions = enrichAttractionResults(payload.attractions || []);
+  const realCount = payload.meta?.real_count ?? 0;
+  const mockCount = payload.meta?.mock_count ?? attractions.filter((a) => a.is_mock).length;
+
+  log.tool = "search_attractions_full";
+  log.real_count = realCount;
+  log.mock_count = mockCount;
+
+  return {
+    success: true,
+    error: null,
+    attractions,
+    results: attractions,
+    real_count: realCount,
+    mock_count: mockCount,
+    total: payload.meta?.total ?? attractions.length,
+    source: payload.meta?.source || "local_mock",
+    meta: { ...payload.meta, real_count: realCount, mock_count: mockCount }
+  };
+}
+
+async function searchAttractions(intent, log) {
+  const sb = getSupabase("travel-ai");
+  const ctx = await buildSearchCtx(sb, intent.city_id, intent.city);
+  const citySlug = ctx?.resolvedSlug || intent.city_id || resolveOfflineCitySlug(intent.city);
+  if (!citySlug || !ctx) {
+    return { attractions: [], real_count: 0, mock_count: 0, error: "city_not_found", success: false };
+  }
+
+  const params = {
+    city_id: citySlug,
+    city: intent.city,
+    country: intent.country,
+    keyword: intent.keyword || intent.attraction || "",
+    attraction: intent.attraction || intent.keyword || "",
+    category: intent.category || "all",
+    visitors: intent.guests || intent.visitors || 2,
+    priceMinMnt: intent.budget_min || "",
+    priceMaxMnt: intent.budget_max || "",
+    familyFriendly: intent.family_friendly ? "1" : "",
+    freeOnly: intent.free_only ? "1" : "",
+    sort: intent.sort || "recommended",
+    page: 1,
+    pageSize: AI_DISPLAY_ATTRACTIONS,
+    minTarget: ATTRACTION_TARGET
+  };
+  params._resolvedCitySlug = citySlug;
+
+  const payload = await hybridAttractionSearch(sb, params, ctx);
+  let results = enrichAttractionResults(payload.attractions || []);
+  const top = results.slice(0, AI_DISPLAY_ATTRACTIONS).map(mapAttractionForAi);
+
+  log.tool = "search_attractions";
+  log.real_count = payload.meta?.real_count ?? 0;
+  log.mock_count = payload.meta?.mock_count ?? 0;
+
+  return {
+    success: true,
+    error: null,
+    attractions: top,
+    total: payload.meta?.total || results.length,
+    real_count: payload.meta?.real_count ?? 0,
+    mock_count: payload.meta?.mock_count ?? 0,
+    city: payload.meta?.cityName || intent.city,
+    visitors: intent.guests || 2
   };
 }
 
@@ -407,6 +559,7 @@ async function runTool(name, args, intent, log) {
   const payload = { ...intent, ...(args || {}) };
   switch (name) {
     case "search_hotels": return searchHotels(payload, log);
+    case "search_attractions": return searchAttractions(payload, log);
     case "search_flights": return searchFlights(payload, log);
     case "search_esim_plans": return searchEsimPlans(payload, log);
     case "create_itinerary": return createItinerary(payload, log);
@@ -453,18 +606,38 @@ function esimToCards(esimResult) {
   }));
 }
 
+function attractionsToCards(attractionResult) {
+  return (attractionResult.attractions || []).map((a) => {
+    const isMock = a.is_mock || a.source === "local_mock";
+    return {
+      type: "attraction",
+      title: a.name,
+      subtitle: `${a.city}${a.district ? ` · ${a.district}` : ""} · ${a.category_label_mn || a.category || ""}`,
+      detail: isMock ? ATTRACTION_CHECK_MSG : (a.short_description?.slice(0, 120) || ATTRACTION_CHECK_MSG),
+      price: a.estimated_price != null ? `${Number(a.estimated_price).toLocaleString("mn-MN")}₮` : "",
+      badge: a.free_entry ? "Үнэгүй" : (a.family_friendly ? "Гэр бүлд" : null)
+    };
+  });
+}
+
 module.exports = {
   runTool,
   searchHotels,
   searchHotelsFull,
+  searchAttractions,
+  searchAttractionsFull,
   searchFlights,
   searchEsimPlans,
   createItinerary,
   getSupabaseCatalog,
   buildSearchCtx,
+  buildSearchCtxFast,
   formToSearchParams,
+  attractionFormToParams,
   hotelsToCards,
+  attractionsToCards,
   flightsToCards,
   esimToCards,
-  AI_DISPLAY_HOTELS
+  AI_DISPLAY_HOTELS,
+  AI_DISPLAY_ATTRACTIONS
 };

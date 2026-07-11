@@ -157,26 +157,49 @@ function mapTransport(row, fromCity, toCity, transferCity) {
   };
 }
 
-function mapAttraction(row, cityRow) {
+function mapAttraction(row, cityRow, countryRow) {
   const cover = pickCover(row, FALLBACK.attraction);
-  const gallery = row.image_urls?.length ? row.image_urls
-    : (row.gallery_image_urls?.length ? row.gallery_image_urls : []);
+  const gallery = row.gallery_urls?.length ? row.gallery_urls
+    : (row.image_urls?.length ? row.image_urls
+      : (row.gallery_image_urls?.length ? row.gallery_image_urls : []));
+  const price = row.final_price_mnt ?? (row.original_price ? Math.round(Number(row.original_price) * 500) : 0);
   return {
     type: "attraction",
     id: row.id,
     city_id: cityRow?.slug,
+    country_id: countryRow ? countrySlug(countryRow) : null,
+    name: row.name_mn || row.name_en,
     name_mn: row.name_mn,
     name_en: row.name_en,
+    district: row.district,
+    category: row.category || "history_culture",
+    description: row.description_mn,
     description_mn: row.description_mn,
+    short_description: row.short_description_mn || row.description_mn,
     cover_image_url: row.cover_image_url || row.image_url || null,
     image_urls: gallery,
+    gallery_urls: gallery,
     gallery_image_urls: gallery,
     image_url: cover,
     image: cover,
     images: resolveGallery(gallery.length ? gallery : [cover], FALLBACK.attraction),
+    latitude: row.latitude,
+    longitude: row.longitude,
+    address: row.address,
+    estimated_price: price,
     original_price: row.original_price,
-    currency: row.currency || "CNY",
-    final_price_mnt: row.final_price_mnt
+    currency: row.currency || "MNT",
+    final_price_mnt: price,
+    opening_hours: row.opening_hours,
+    recommended_duration: row.recommended_duration,
+    family_friendly: !!row.family_friendly,
+    free_entry: !!row.free_entry,
+    indoor: row.indoor !== false,
+    booking_required: !!row.booking_required,
+    official_url: row.official_url,
+    popularity_score: row.popularity_score ?? 50,
+    source: row.source || "supabase",
+    active: row.active
   };
 }
 

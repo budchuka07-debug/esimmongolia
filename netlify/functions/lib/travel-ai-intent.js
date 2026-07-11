@@ -64,8 +64,9 @@ function detectIntent(text, partial) {
   const t = text.toLowerCase();
   if (/esim|интернет|интернэт|дата/i.test(t)) return "esim_search";
   if (/нислэг|нисэх|flight/i.test(t)) return "flight_search";
+  if (/үзвэр|музей|disneyland|дисней|тур|aquarium|аквариум|theme park|парк|үзэх газар|sightseeing|attraction/i.test(t)) return "attraction_search";
   if (/маршрут|төлөвлө|itinerary|өдөр өдр/i.test(t)) return "itinerary";
-  if (/буудал|hotel|зочид|disneyland|дисней/i.test(t)) return "hotel_search";
+  if (/буудал|hotel|зочид/i.test(t)) return "hotel_search";
   if (/арай хямд|хямд|үнэ бага|cheaper|budget/i.test(t) && (partial.city_id || partial.city)) return "hotel_search";
   if (partial.city_id && (partial.nights || partial.guests)) return "hotel_search";
   return "general";
@@ -91,6 +92,15 @@ function parseMessage(message) {
   if (/өглөөний цай|breakfast/i.test(hay)) facilities.push("breakfast");
   if (/disneyland|дисней/i.test(hay)) facilities.push("near_attraction");
 
+  const wantsDisney = /disneyland|дисней/i.test(hay);
+  let category = null;
+  if (/музей|museum/i.test(hay)) category = "museum";
+  else if (/theme|парк|disneyland|дисней/i.test(hay)) category = "theme_park";
+  else if (/үнэгүй|free/i.test(hay)) category = "free";
+  else if (/хүүхэд|гэр бүл|family/i.test(hay)) category = "family";
+  else if (/шөнө|night/i.test(hay)) category = "night_activity";
+  else if (/зах|shopping|худалдаа/i.test(hay)) category = "shopping";
+
   const partial = {
     country: cityMatch?.country || null,
     country_mn: cityMatch?.country_mn || null,
@@ -102,11 +112,16 @@ function parseMessage(message) {
     stars,
     district,
     facilities,
+    category,
+    keyword: wantsDisney ? "Disneyland" : null,
+    attraction: wantsDisney ? "Disneyland" : null,
+    family_friendly: /хүүхэд|гэр бүл|family/i.test(hay),
+    free_only: /үнэгүй|free/i.test(hay),
     ...budget,
     month: month ? Number(month) : null,
     day: day ? Number(day) : null,
     wants_cheaper: /арай хямд|хямд|үнэ бага|cheaper/i.test(text),
-    wants_disney: /disneyland|дисней/i.test(text)
+    wants_disney: wantsDisney
   };
   partial.intent = detectIntent(text, partial);
   return partial;
@@ -132,9 +147,15 @@ function mergeIntent(prevContext, message) {
     month: fresh.month || prev.month || null,
     day: fresh.day || prev.day || null,
     wants_cheaper: fresh.wants_cheaper || prev.wants_cheaper || false,
-    wants_disney: fresh.wants_disney || prev.wants_disney || false
+    wants_disney: fresh.wants_disney || prev.wants_disney || false,
+    category: fresh.category || prev.category || null,
+    keyword: fresh.keyword || prev.keyword || null,
+    attraction: fresh.attraction || prev.attraction || null,
+    family_friendly: fresh.family_friendly || prev.family_friendly || false,
+    free_only: fresh.free_only || prev.free_only || false
   };
   if (fresh.wants_cheaper) merged.intent = "hotel_search";
+  if (fresh.intent === "attraction_search") merged.intent = "attraction_search";
   return merged;
 }
 

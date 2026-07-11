@@ -48,6 +48,9 @@
   let lastSearchMeta = {};
   let lastHotelSearchParams = null;
   let hotelResultsPage = 1;
+  let lastAttractionSearchParams = null;
+  let attractionResultsPage = 1;
+  const ATTRACTION_NOTICE = "Тасалбарын үнэ, ажиллах цагийг захиалга хийхийн өмнө дахин шалгана.";
   let pendingBooking = null;
   let bookingPayInterval = null;
   let currentInvoiceId = null;
@@ -665,6 +668,15 @@
         const c = window.TRAVEL_CITIES?.getCity(params.city_id);
         if (c?.name_en) params.city = c.name_en;
       }
+      if (params.country && !params.country_id) params.country_id = params.country;
+      if (type === "attraction") {
+        if (params.attraction && !params.keyword) params.keyword = params.attraction;
+        if (params.people && !params.visitors) params.visitors = params.people;
+        const sortEl = $("attractionSortSelect");
+        if (sortEl?.value) params.sort = sortEl.value;
+        params.pageSize = 12;
+        params.minTarget = 24;
+      }
       if (type === "hotel" && params.country && !params.country_id) {
         params.country_id = params.country;
       }
@@ -793,6 +805,41 @@
     };
   }
 
+  async function fetchAttractionResults(searchParams, page = 1) {
+    const payload = await apiSearch("attraction", { ...searchParams, page, pageSize: 12, minTarget: 24 });
+    return {
+      results: payload.results || [],
+      meta: {
+        ...(payload.meta || {}),
+        source: payload.meta?.source || "attraction-catalog",
+        real_count: payload.meta?.real_count ?? 0,
+        mock_count: payload.meta?.mock_count ?? 0,
+        total: payload.meta?.total ?? (payload.results || []).length
+      }
+    };
+  }
+
+  async function loadMoreAttractions() {
+    if (!lastAttractionSearchParams || !lastSearchMeta?.hasMore) return;
+    const btn = $("attractionLoadMore");
+    if (btn) { btn.disabled = true; btn.textContent = "Ачаалж байна…"; }
+    try {
+      attractionResultsPage += 1;
+      const payload = await fetchAttractionResults(lastAttractionSearchParams, attractionResultsPage);
+      lastMockResults = [...lastMockResults, ...(payload.results || [])];
+      lastSearchMeta = { ...lastSearchMeta, ...(payload.meta || {}), hasMore: payload.meta?.hasMore };
+      renderAttractionResults(lastMockResults, lastSearchMeta);
+    } catch (err) {
+      console.error("[TravelBooking] loadMoreAttractions", err);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = "Илүү олон үзэх"; }
+    }
+  }
+
+  function renderAttractionResults(results, meta) {
+    showMockResults("attraction", results, meta);
+  }
+
   async function fetchHotelResults(searchParams, page = 1) {
     const pageSize = Number(searchParams.pageSize) || 48;
     const payload = await apiSearch("hotel", { ...searchParams, page, pageSize });
@@ -831,6 +878,11 @@
   function renderFlightResults(results, meta) {
     showResultsContainer();
     showMockResults("flight", results, meta);
+  }
+
+  function renderAttractionResultsView(results, meta) {
+    showResultsContainer();
+    showMockResults("attraction", results, meta);
   }
 
   function renderTransportResults(results, meta) {
@@ -916,6 +968,16 @@
         renderTransportResults(payload.results || [], payload.meta || {});
         return;
       }
+      if (type === "attraction") {
+        console.log("Attraction search clicked", searchParams);
+        attractionResultsPage = 1;
+        lastAttractionSearchParams = searchParams;
+        window.AttractionDestinationSelect?.syncUrlParams?.();
+        const payload = await fetchAttractionResults(searchParams, 1);
+        console.log("Attraction results", payload.results, payload.meta);
+        renderAttractionResultsView(payload.results || [], payload.meta || {});
+        return;
+      }
       if (type === "hotel") {
         console.log("Hotel search clicked", searchParams);
         hotelResultsPage = 1;
@@ -968,6 +1030,10 @@
           return;
         }
         renderHotelResults([], { error: "api_error" });
+        return;
+      }
+      if (type === "attraction") {
+        renderAttractionResultsView([], { error: "api_error", subtitle: "Үзвэрийн хайлт түр амжилтгүй. Дахин оролдоно уу." });
         return;
       }
       showMockResults(type, [], { error: "api_error" });
@@ -1471,25 +1537,105 @@
     };
   }
 
+  function categoryLabelMn(cat) {
+    const map = {
+      history_culture: "Түүх, соёл", museum: "Музей", temple: "Сүм, хийд", nature: "Байгаль",
+      theme_park: "Зугаа цэнгэлийн парк", zoo: "Амьтны хүрээлэн", aquarium: "Аквариум",
+      shopping: "Худалдаа, зах", city_view: "Хотын үзэмж", night_activity: "Шөнийн аялал",
+      family: "Гэр бүл", free: "Үнэгүй үзвэр", day_trip: "Өдрийн аялал"
+    };
+    return map[cat] || cat || "";
+  }
+
+  function buildAttractionBookingPreset(item, visitors) {
+    const cityId = item.city_id || lastAttractionSearchParams?.city_id || "";
+    return {
+      service_type: "attraction",
+      city_id: cityId,
+      selected_item: item.name_mn || item.name,
+      people_count: visitors || lastAttractionSearchParams?.visitors || 2,
+      travel_date: lastAttractionSearchParams?.visit_date || "",
+      budget_mnt: item.final_price_mnt || item.estimated_price || 0,
+      bookingItem: {
+        final_price_mnt: item.final_price_mnt || item.estimated_price || 0,
+        selected_item: item.name_mn || item.name,
+        service_type: "attraction",
+        city_id: cityId
+      }
+    };
+  }
+
+  function openAttractionDetail(item) {
+    const isMock = item.is_mock || item.source === "local_mock";
+    const body = [
+      item.short_description || item.description_mn || item.description || "",
+      "",
+      `📍 ${item.city_name_mn || item.city || ""}${item.district ? ` · ${item.district}` : ""}`,
+      `🏷 ${item.category_label_mn || categoryLabelMn(item.category)}`,
+      item.opening_hours ? `🕐 ${item.opening_hours}` : "",
+      item.recommended_duration ? `⏱ ${item.recommended_duration}` : "",
+      item.final_price_mnt != null ? `💰 ${item.free_entry ? "Үнэгүй (тооцоолсон)" : fmtMnt(item.final_price_mnt)}` : "",
+      isMock ? `\n${ATTRACTION_NOTICE}` : ""
+    ].filter(Boolean).join("\n");
+    window.alert(`${item.name_mn || item.name}\n\n${body}`);
+  }
+
   function renderAttractionCard(a) {
-    const img = travelImg(a.image || a.cover_image_url, {
+    const img = travelImg(a.image || a.cover_image_url || a.image_url, {
       kind: "attraction",
       size: "card",
       className: "tp-hotel-img",
       alt: a.name_mn || a.name
     });
+    const isMock = a.is_mock || a.source === "local_mock" || a.source === "mock";
+    const price = a.free_entry ? "Үнэгүй*" : (a.final_price_mnt != null ? fmtMnt(a.final_price_mnt) : "Тодорхойгүй");
+    const badges = [
+      a.family_friendly ? '<span class="tp-badge tp-badge-family">👨‍👩‍👧 Гэр бүлд</span>' : "",
+      a.free_entry ? '<span class="tp-badge tp-badge-free">Үнэгүй</span>' : "",
+      isMock ? '<span class="tp-badge tp-badge-mock">Шалгах</span>' : ""
+    ].filter(Boolean).join("");
     return `
-      <article class="tp-train-card" data-item-id="${a.id}">
+      <article class="tp-attraction-card" data-item-id="${a.id}">
         ${img}
-        <h4 class="tp-hotel-name">${a.name_mn || a.name}</h4>
-        <p class="tp-hotel-desc">${a.description_mn || a.description || ""}</p>
-        <div class="tp-card-price-row">
-          <div>
-            <div class="tp-price-final">${fmtMnt(a.final_price_mnt)}</div>
+        <div class="tp-attraction-body">
+          <h4 class="tp-hotel-name">${a.name_mn || a.name}</h4>
+          <p class="tp-attraction-meta">${categoryLabelMn(a.category)} · ${a.city_name_mn || a.city || ""}${a.district ? ` · ${a.district}` : ""}</p>
+          <p class="tp-hotel-desc">${(a.short_description || a.description_mn || "").slice(0, 140)}</p>
+          <div class="tp-attraction-facts">
+            ${a.opening_hours ? `<span>🕐 ${a.opening_hours}</span>` : ""}
+            ${a.recommended_duration ? `<span>⏱ ${a.recommended_duration}</span>` : ""}
           </div>
-          <button type="button" class="tp-btn-book" data-book-type="attraction" data-item-id="${a.id}">Захиалах</button>
+          <div class="tp-attraction-badges">${badges}</div>
+          ${isMock ? `<p class="tp-mock-notice">${ATTRACTION_NOTICE}</p>` : ""}
+          <div class="tp-card-price-row">
+            <div><div class="tp-price-final">${price}</div></div>
+          </div>
+          <div class="tp-attraction-actions">
+            <button type="button" class="tp-btn tp-btn-sm" data-attr-action="map" data-item-id="${a.id}">Газраар харах</button>
+            <button type="button" class="tp-btn tp-btn-sm" data-attr-action="detail" data-item-id="${a.id}">Дэлгэрэнгүй</button>
+            <button type="button" class="tp-btn tp-btn-sm" data-attr-action="itinerary" data-item-id="${a.id}">Маршрутдаа нэмэх</button>
+            <button type="button" class="tp-btn tp-btn-sm primary" data-attr-action="ticket" data-item-id="${a.id}">Тасалбар асуух</button>
+          </div>
         </div>
       </article>`;
+  }
+
+  function renderAttractionMapPins(results) {
+    const box = $("attractionMapPins");
+    const note = $("attractionMapNote");
+    if (!box) return;
+    const withCoords = (results || []).filter((a) => a.latitude != null && a.longitude != null);
+    if (note) {
+      note.textContent = withCoords.some((a) => a.coords_approximate)
+        ? "Ойролцоо координат (баталгаажаагүй)"
+        : "Байршил";
+    }
+    const pins = withCoords.slice(0, 24).map((a, i) => {
+      const left = 8 + (i % 5) * 18;
+      const top = 8 + Math.floor(i / 5) * 22;
+      return `<span class="tp-map-pin" style="left:${left}%;top:${top}%" title="${a.name_mn || a.name}">📍</span>`;
+    }).join("");
+    box.innerHTML = pins || "<span class='tp-muted'>Координаттай үзвэр олдсонгүй</span>";
   }
 
   function renderMapPins(results) {
@@ -1511,6 +1657,26 @@
     wrap.classList.toggle("has-results", shown);
   }
 
+  function setAttractionResultsLayout(isAttraction) {
+    const container = $("resultsContainer");
+    const toolbar = $("attractionToolbar");
+    const hotelToolbar = $("hotelToolbar");
+    const sidebar = $("hotelFiltersSidebar");
+    if (container) {
+      container.style.display = "";
+      container.classList.toggle("tp-attraction-layout", isAttraction);
+      container.classList.toggle("tp-hotel-layout", false);
+    }
+    syncHomeSearchShell();
+    if (toolbar) toolbar.style.display = isAttraction ? "" : "none";
+    if (hotelToolbar) hotelToolbar.style.display = "none";
+    if (sidebar) sidebar.classList.remove("tp-hotel-filters-visible", "open");
+    if (!isAttraction) {
+      const map = $("attractionMapPlaceholder");
+      if (map) map.style.display = "none";
+    }
+  }
+
   function setHotelResultsLayout(isHotel) {
     const container = $("resultsContainer");
     const sidebar = $("hotelFiltersSidebar");
@@ -1522,6 +1688,8 @@
     syncHomeSearchShell();
     if (sidebar) sidebar.classList.toggle("tp-hotel-filters-visible", isHotel);
     if (toolbar) toolbar.style.display = isHotel ? "" : "none";
+    const attrToolbar = $("attractionToolbar");
+    if (attrToolbar) attrToolbar.style.display = "none";
     if (!isHotel) {
       const map = $("hotelMapPlaceholder");
       if (map) map.style.display = "none";
@@ -1539,8 +1707,10 @@
     if (!box) return;
     const label = SERVICE_TYPES[type] || type;
     const isHotel = type === "hotel";
+    const isAttraction = type === "attraction";
 
-    setHotelResultsLayout(isHotel);
+    if (isAttraction) setAttractionResultsLayout(true);
+    else setHotelResultsLayout(isHotel);
     box.style.display = "block";
 
     let gridClass = "tp-results-grid";
@@ -1571,8 +1741,10 @@
       const rateNote = customerPriceNote();
       if (rateNote) sub += `<p class="tp-lead tp-muted">${rateNote}</p>`;
       cards = results.map((r) => (r.type === "flight_roundtrip" ? renderRoundTripCard(r) : renderFlightCard(r))).join("");
-    } else {
+    } else if (isAttraction) {
+      gridClass = "tp-attraction-grid";
       cards = results.map(renderAttractionCard).join("");
+      renderAttractionMapPins(results);
     }
 
     if (isHotel && meta?.cityId && !meta?.error) {
@@ -1593,6 +1765,20 @@
     if (isHotel && !results.length && !meta?.error) {
       sub += searchEmptyHtml();
     }
+    if (isAttraction && meta?.cityId && !meta?.error) {
+      const cityMn = meta.cityName || window.TRAVEL_CITIES?.getCityLabel(meta.cityId) || "";
+      sub = `<h3 class="tp-hotel-results-title">${cityMn} хотын үзвэрүүд</h3>`;
+      sub += `<p class="tp-lead tp-muted">${meta.subtitle || ATTRACTION_NOTICE}</p>`;
+      if (meta.real_count != null) {
+        sub += `<p class="tp-lead tp-muted">Жинхэнэ: ${meta.real_count} · Санал: ${meta.mock_count || 0}</p>`;
+      }
+    }
+    if (isAttraction && meta?.error === "city_not_found") {
+      sub = `<p class="tp-lead tp-warn">Хот олдсонгүй. Улс, хотыг дахин сонгоно уу.</p>`;
+    }
+    if (isAttraction && !results.length && !meta?.error) {
+      sub += searchEmptyHtml();
+    }
     if (type === "train") {
       if (meta?.fromId && meta?.toId) {
         sub = `<p class="tp-lead">${cityLabel(meta.fromId)} → ${cityLabel(meta.toId)} · зэрэглэл сонгоод захална уу</p>`;
@@ -1607,7 +1793,9 @@
 
     const loadMoreBtn = isHotel && meta?.hasMore
       ? `<div class="tp-hotel-load-more-wrap"><button type="button" class="tp-btn tp-btn-block" id="hotelLoadMore">Илүү олон үзэх</button></div>`
-      : "";
+      : (isAttraction && meta?.hasMore
+        ? `<div class="tp-hotel-load-more-wrap"><button type="button" class="tp-btn tp-btn-block" id="attractionLoadMore">Илүү олон үзэх</button></div>`
+        : "");
 
     const emptyGrid = (type === "flight" || type === "train") && !results.length ? "" : null;
     box.innerHTML = `
@@ -1621,6 +1809,31 @@
 
     bindConsultAdvisor(box.querySelector("[data-action=consult-advisor]"));
     $("hotelLoadMore")?.addEventListener("click", loadMoreHotels);
+    $("attractionLoadMore")?.addEventListener("click", loadMoreAttractions);
+
+    box.querySelectorAll("[data-attr-action]").forEach((btn) => {
+      const item = results.find((r) => r.id === btn.dataset.itemId);
+      if (!item) return;
+      btn.addEventListener("click", () => {
+        const action = btn.dataset.attrAction;
+        if (action === "detail") openAttractionDetail(item);
+        else if (action === "map") {
+          const map = $("attractionMapPlaceholder");
+          if (map) {
+            map.style.display = "block";
+            map.setAttribute("aria-hidden", "false");
+            renderAttractionMapPins(results);
+            map.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        } else if (action === "itinerary") {
+          window.TravelAssistant?.openAiChat?.(
+            `${item.city_name_mn || item.city} хотын маршрутад «${item.name_mn || item.name}» нэмж төлөвлөж өгнө үү.`
+          );
+        } else if (action === "ticket") {
+          openBookingForm("attraction", buildAttractionBookingPreset(item), "Тасалбар асуух");
+        }
+      });
+    });
 
     (container || box).scrollIntoView({ behavior: "smooth", block: "nearest" });
 
@@ -1657,6 +1870,10 @@
         }
         if (bookType === "flight") {
           openBookingForm("flight", buildFlightBookingPreset(item), BOOKING_TITLES.flight);
+          return;
+        }
+        if (bookType === "attraction") {
+          openBookingForm("attraction", buildAttractionBookingPreset(item), BOOKING_TITLES.attraction);
           return;
         }
         openBookingForm(bookType, buildHotelBookingPreset(item), BOOKING_TITLES[bookType]);
@@ -1935,6 +2152,25 @@
     window.LocationAutocomplete?.initAll();
   }
 
+  function initAttractionUI() {
+    $("attractionMapToggle")?.addEventListener("click", () => {
+      const map = $("attractionMapPlaceholder");
+      if (!map) return;
+      const show = map.style.display === "none";
+      map.style.display = show ? "block" : "none";
+      map.setAttribute("aria-hidden", show ? "false" : "true");
+      if (show) renderAttractionMapPins(lastMockResults);
+    });
+    $("attractionSortSelect")?.addEventListener("change", () => {
+      const panel = document.querySelector('[data-panel="attraction"]');
+      if (panel) runSearch("attraction", collectForm(panel));
+    });
+  }
+
+  function initAttractionDestinationSelect() {
+    return window.AttractionDestinationSelect?.init?.();
+  }
+
   function initHotelDestinationSelect() {
     return window.HotelDestinationSelect?.init?.();
   }
@@ -1978,6 +2214,8 @@
   document.addEventListener("DOMContentLoaded", async () => {
     await initDailyRates();
     await initHotelDestinationSelect();
+    await initAttractionDestinationSelect();
+    initAttractionUI();
     renderDestinations();
     renderChinaCities();
     bindServices();
@@ -1987,7 +2225,7 @@
     initCityDatalists();
     initHotelFiltersUI();
     const urlTab = new URLSearchParams(location.search).get("tab");
-    setTab(urlTab === "hotel" ? "hotel" : "flight");
+    setTab(urlTab === "hotel" ? "hotel" : urlTab === "attraction" ? "attraction" : "flight");
 
     if (location.hash === "#esim") {
       document.querySelector("#esim")?.scrollIntoView({ behavior: "smooth" });

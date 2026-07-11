@@ -36,7 +36,25 @@ const TOOL_DEFS = [
   },
   {
     type: "function",
-    name: "search_esim_plans",
+    name: "search_attractions",
+    description: "Search attractions, theme parks, museums, and activities in a city.",
+    parameters: {
+      type: "object",
+      properties: {
+        city_id: { type: "string" },
+        city: { type: "string" },
+        country: { type: "string" },
+        keyword: { type: "string" },
+        category: { type: "string" },
+        guests: { type: "number" },
+        budget_min: { type: "number" },
+        budget_max: { type: "number" },
+        family_friendly: { type: "boolean" },
+        free_only: { type: "boolean" }
+      }
+    }
+  },
+  {
     description: "Search eSIM data plans for China or travel duration.",
     parameters: {
       type: "object",
@@ -87,7 +105,8 @@ const SYSTEM_INSTRUCTIONS = `Та eSIM Mongolia-ийн аяллын зөвлөх
 - Буудлын боломж баталгаажсан гэж бүү хэл. "Үнэ болон өрөөний боломж захиалга баталгаажуулах үед шалгагдана" гэж хэл.
 - Хуурамч захиалга, review, баталгаажсан өрөө гэж бүү хэл.
 - Tool-ийн өгөгдөлд тулгуурлан 5 хамгийн сайн сонголтыг тайлбарла.
-- Disneyland, төв, хямд гэх мэт шүүлтүүр санал болго.`;
+- Үзвэр, Disneyland, музей, хүүхэдтэй гэр бүл, үнэгүй үзвэр гэх мэт асуултад search_attractions ашигла.
+- Тасалбарын үнэ, ажиллах цагийг баталгаажуулсан гэж бүү хэл. "Тасалбарын үнэ, ажиллах цагийг захиалга хийхийн өмнө дахин шалгана" гэж хэл.`;
 
 function cors() {
   return {
@@ -166,6 +185,7 @@ function buildInputFromHistory(history, message) {
 function cardsFromToolResults(toolResults) {
   let cards = [];
   if (toolResults.search_hotels) cards = cards.concat(tools.hotelsToCards(toolResults.search_hotels));
+  if (toolResults.search_attractions) cards = cards.concat(tools.attractionsToCards(toolResults.search_attractions));
   if (toolResults.search_flights) cards = cards.concat(tools.flightsToCards(toolResults.search_flights));
   if (toolResults.search_esim_plans) cards = cards.concat(tools.esimToCards(toolResults.search_esim_plans));
   return cards;
@@ -232,9 +252,10 @@ async function runOpenAIWithTools(message, history, intent, devLog) {
 function pickToolsForIntent(intent) {
   switch (intent.intent) {
     case "hotel_search": return ["search_hotels"];
+    case "attraction_search": return ["search_attractions"];
+    case "itinerary": return ["create_itinerary", "search_attractions"];
     case "flight_search": return ["search_flights"];
     case "esim_search": return ["search_esim_plans"];
-    case "itinerary": return ["create_itinerary"];
     default: return intent.city_id ? ["search_hotels"] : [];
   }
 }
@@ -269,6 +290,26 @@ function buildLocalReply(message, intent, toolResults) {
       cards: cardsFromToolResults(toolResults),
       quickReplies: consultant.QUICK_REPLIES?.slice(0, 4) || [],
       ctas: [{ id: "hotel_suggest", label: "Буудал санал авах" }],
+      context: intent
+    };
+  }
+
+  if (intent.intent === "attraction_search" && toolResults.search_attractions) {
+    const a = toolResults.search_attractions;
+    const lines = [
+      `${intent.city || a.city} хотод тохирох **${(a.attractions || []).length} үзвэрийн санал** оллоо.`,
+      "",
+      ...(a.attractions || []).map((x, i) =>
+        `${i + 1}. **${x.name}** — ${x.category_label_mn || x.category || ""} · ${Number(x.estimated_price || 0).toLocaleString("mn-MN")}₮`
+      ),
+      "",
+      "Тасалбарын үнэ, ажиллах цагийг захиалга хийхийн өмнө дахин шалгана."
+    ];
+    return {
+      reply: lines.join("\n"),
+      cards: cardsFromToolResults(toolResults),
+      quickReplies: consultant.QUICK_REPLIES?.slice(0, 4) || [],
+      ctas: [{ id: "attraction_search", label: "Үзвэр хайх" }],
       context: intent
     };
   }
@@ -465,6 +506,58 @@ async function handleHotelSearch(body) {
   }
 }
 
+async function handleAttractionSearch(body) {
+  const devLog = { tool: "search_attractions_full", real_count: 0, mock_count: 0 };
+  try {
+    const payload = await tools.searchAttractionsFull(body, devLog);
+    const attractions = payload.attractions || payload.results || [];
+    console.log("[travel-ai]", JSON.stringify({
+      action: "search_attractions",
+      city_id: body.city_id,
+      real_count: payload.real_count ?? devLog.real_count,
+      mock_count: payload.mock_count ?? devLog.mock_count,
+      source: payload.source,
+      total: attractions.length
+    }));
+
+    if (!payload.success) {
+      return fail(payload.error || "attraction_search_failed", {
+        action: "search_attractions",
+        attractions: [],
+        results: [],
+        real_count: 0,
+        mock_count: 0,
+        total: 0,
+        source: "error",
+        meta: payload.meta || {}
+      });
+    }
+
+    return ok({
+      action: "search_attractions",
+      attractions,
+      results: attractions,
+      real_count: payload.real_count ?? devLog.real_count,
+      mock_count: payload.mock_count ?? devLog.mock_count,
+      total: payload.total ?? attractions.length,
+      source: payload.source || payload.meta?.source || "local_mock",
+      meta: payload.meta || {}
+    });
+  } catch (err) {
+    console.error("[travel-ai] attraction search failed", err.message);
+    return fail(err.message || "attraction_search_error", {
+      action: "search_attractions",
+      attractions: [],
+      results: [],
+      real_count: 0,
+      mock_count: 0,
+      total: 0,
+      source: "error",
+      meta: {}
+    });
+  }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(), body: "" };
   if (event.httpMethod !== "POST") {
@@ -480,5 +573,6 @@ exports.handler = async (event) => {
 
   const action = body.action || "chat";
   if (action === "search_hotels") return handleHotelSearch(body);
+  if (action === "search_attractions") return handleAttractionSearch(body);
   return handleChat(body);
 };

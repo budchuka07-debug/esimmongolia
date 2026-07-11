@@ -325,14 +325,46 @@
 </div>
 
 <div class="tp-panel" data-panel="attraction">
-<div class="tp-form-grid">
-<div class="tp-field"><label>Хот</label><input type="text" data-loc="city" data-field="city" data-loc-types="city,airport" data-loc-hidden="city_id" value="Шанхай" placeholder="Хот, Disneyland…" autocomplete="off"></div>
-<div class="tp-field"><label>Үзвэр</label><input data-field="attraction" value="Disneyland"></div>
-<div class="tp-field"><label>Хүн</label><input data-field="people" value="2"></div>
+<div class="tp-form-grid tp-form-grid-3">
+<div class="tp-field"><label>Улс</label><select data-field="country" id="attractionCountrySelect">
+<option value="china" selected>🇨🇳 Хятад</option>
+</select></div>
+<div class="tp-field"><label>Хот</label>
+<div class="tp-city-combo-wrap" id="attractionCitySelectWrap">
+<input type="text" id="attractionCityComboInput" placeholder="Хот сонгох эсвэл хайх…" autocomplete="off" value="Шанхай">
+<input type="hidden" data-field="city_id" id="attractionCityIdInput" value="shanghai">
+<input type="hidden" data-field="city" id="attractionCityValueInput" value="Shanghai">
+<div class="tp-loc-dropdown tp-city-dropdown" id="attractionCityDropdown" role="listbox" aria-hidden="true"></div>
+</div>
+</div>
+<div class="tp-field"><label>Үзвэр / түлхүүр үг</label><input data-field="attraction" data-field-alt="keyword" placeholder="Disneyland, музей, The Bund…"></div>
+</div>
+<div class="tp-form-grid tp-form-grid-3" style="margin-top:10px">
+<div class="tp-field"><label>Ангилал</label><select data-field="category" id="attractionCategorySelect">
+<option value="all">Бүх үзвэр</option>
+<option value="history_culture">Түүх, соёл</option>
+<option value="museum">Музей</option>
+<option value="temple">Сүм, хийд</option>
+<option value="nature">Байгаль</option>
+<option value="theme_park">Зугаа цэнгэлийн парк</option>
+<option value="zoo">Амьтны хүрээлэн</option>
+<option value="aquarium">Аквариум</option>
+<option value="shopping">Худалдаа, зах</option>
+<option value="city_view">Хотын үзэмж</option>
+<option value="night_activity">Шөнийн аялал</option>
+<option value="family">Хүүхэдтэй гэр бүл</option>
+<option value="free">Үнэгүй үзвэр</option>
+<option value="day_trip">Өдрийн аялал</option>
+</select></div>
+<div class="tp-field"><label>Зочид</label><input data-field="people" data-field-alt="visitors" type="number" value="2" min="1"></div>
+<div class="tp-field"><label>Очих огноо</label><input data-field="visit_date" type="date"></div>
+</div>
+<div class="tp-form-grid tp-form-grid-2" style="margin-top:10px">
+<div class="tp-field"><label>Төсөв (₮) — доод</label><input data-field="budget_min" data-field-alt="priceMinMnt" type="number" min="0" step="10000" placeholder="0"></div>
+<div class="tp-field"><label>Төсөв (₮) — дээд</label><input data-field="budget_max" data-field-alt="priceMaxMnt" type="number" min="0" step="10000" placeholder="500000"></div>
 </div>
 <div class="tp-search-actions">
-<button type="button" class="tp-btn primary" data-search-run="attraction">Үзвэр хайх</button>
-<a class="tp-btn" href="/aylal.html">aylal.html</a>
+<button type="button" class="tp-btn primary" data-search-run="attraction">🎫 Үзвэр хайх</button>
 </div>
 </div>
 
@@ -384,6 +416,23 @@
 </div>
 </aside>
 <div class="tp-results-main" id="resultsMain">
+<div class="tp-hotel-toolbar" id="attractionToolbar" style="display:none">
+<select class="tp-hotel-sort" id="attractionSortSelect" data-filter="sort">
+<option value="recommended">Санал болгох</option>
+<option value="price_asc">Үнэ — багаас их</option>
+<option value="popular">Алдартай</option>
+<option value="family">Гэр бүлд тохиромжтой</option>
+</select>
+<button type="button" class="tp-btn" id="attractionMapToggle">🗺 Газраар харах</button>
+</div>
+<div class="tp-hotel-map-placeholder" id="attractionMapPlaceholder" style="display:none" aria-hidden="true">
+<div class="tp-map-mock-inner">
+<span class="tp-map-mock-pin">📍</span>
+<p>Үзвэрүүдийн байршил</p>
+<p class="tp-muted" id="attractionMapNote">Ойролцоо координат (mock)</p>
+<div class="tp-map-mock-grid" id="attractionMapPins"></div>
+</div>
+</div>
 <div class="tp-hotel-toolbar" id="hotelToolbar" style="display:none">
 <button type="button" class="tp-btn tp-btn-filter-mob" id="hotelFilterOpen">☰ Шүүлтүүр</button>
 <select class="tp-hotel-sort" id="hotelSortSelect" data-filter="sort">
@@ -1845,10 +1894,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/mock-search-results.js?v=2"></script>
 <script src="/js/travel-images.js?v=2"></script>
 <script src="/data/asia-destinations.js?v=1"></script>
-<script src="/js/travel-data-loader.js?v=5"></script>
 <script src="/location-autocomplete.js"></script>
 <script src="/js/hotel-destination-select.js?v=1"></script>
-<script src="/booking.js?v=20"></script>
+<script src="/js/attraction-destination-select.js?v=1"></script>
+<script src="/js/travel-data-loader.js?v=6"></script>
+<script src="/booking.js?v=21"></script>
 <script src="/js/ai-local-responses.js"></script>
 <script src="/ai-agent.js?v=10"></script>
 <script src="/travel-assistant.js?v=3"></script>

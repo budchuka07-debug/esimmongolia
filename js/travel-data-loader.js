@@ -4,6 +4,7 @@
  */
 (function (root) {
   const TRAVEL_AI_URL = "/.netlify/functions/travel-ai";
+  const ATTRACTION_CATALOG_URL = "/.netlify/functions/attraction-catalog";
   const SEARCH_URL = "/.netlify/functions/travel-search";
 
   async function parseJsonResponse(res) {
@@ -362,6 +363,49 @@
       } catch (err) {
         console.error("[TravelSearch] hotel via travel-ai failed", err);
         return { results: [], meta: { error: "hotel_search_error" } };
+      }
+    }
+
+    if (type === "attraction") {
+      try {
+        const res = await fetch(ATTRACTION_CATALOG_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData || {})
+        });
+        const data = await parseJsonResponse(res);
+        if (!res.ok || data.success === false) {
+          return {
+            results: [],
+            meta: {
+              error: data.error || (res.ok ? "attraction_search_failed" : `http_${res.status}`),
+              real_count: data.real_count ?? 0,
+              mock_count: data.mock_count ?? 0,
+              source: data.source || "error",
+              ...(data.meta || {})
+            }
+          };
+        }
+        const raw = data.attractions || data.results || [];
+        const results = raw.map((item) => {
+          if (item.final_price_mnt != null && item.final_price_mnt > 0) return item;
+          if (item.estimated_price != null) return { ...item, final_price_mnt: item.estimated_price };
+          return root.TRAVEL_DATA.priceItem(item);
+        });
+        return {
+          results,
+          meta: {
+            ...(data.meta || {}),
+            source: data.source || data.meta?.source || "attraction-catalog",
+            real_count: data.real_count ?? data.meta?.real_count ?? 0,
+            mock_count: data.mock_count ?? data.meta?.mock_count ?? 0,
+            total: data.total ?? data.meta?.total ?? results.length,
+            elapsed_ms: data.elapsed_ms
+          }
+        };
+      } catch (err) {
+        console.error("[TravelSearch] attraction catalog failed", err);
+        return { results: [], meta: { error: "attraction_search_error" } };
       }
     }
 
