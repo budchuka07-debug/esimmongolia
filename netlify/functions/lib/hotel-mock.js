@@ -2,6 +2,7 @@
  * Deterministic local mock hotel generator — no OpenAI, no live availability claims.
  */
 const { FALLBACK } = require("./travel-images");
+const { isMajorCity, getMockPoolSizeForCity } = require("./city-hotel-targets");
 
 const NEEDS_CHECK_MSG = "Үнэ болон өрөөний боломж захиалга баталгаажуулах үед шалгагдана.";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -19,17 +20,28 @@ const HOTEL_BRANDS = [
 const HOTEL_SUFFIXES = ["Hotel", "Suites", "Residence", "Inn", "Grand Hotel", "Plaza", "Lodge"];
 
 const CITY_AREAS = {
-  shanghai: { tier: 1.15, areas: ["Pudong", "Jing'an", "Huangpu", "Xuhui", "Hongqiao", "Lujiazui"] },
-  beijing: { tier: 1.1, areas: ["Wangfujing", "Chaoyang", "Haidian", "Dongcheng", "Sanlitun", "CBD"] },
-  seoul: { tier: 1.25, areas: ["Myeongdong", "Gangnam", "Hongdae", "Dongdaemun", "Itaewon", "Incheon Airport"] },
-  tokyo: { tier: 1.3, areas: ["Shinjuku", "Shibuya", "Asakusa", "Ginza", "Ueno", "Narita Airport"] },
-  bangkok: { tier: 0.85, areas: ["Sukhumvit", "Silom", "Siam", "Riverside", "Khaosan", "Suvarnabhumi"] },
+  shanghai: { tier: 1.15, areas: ["Pudong", "Jing'an", "Huangpu", "Xuhui", "Hongqiao", "Lujiazui", "Minhang", "Changning"] },
+  beijing: { tier: 1.1, areas: ["Wangfujing", "Chaoyang", "Haidian", "Dongcheng", "Sanlitun", "CBD", "Xicheng", "Fengtai"] },
+  guangzhou: { tier: 1.05, areas: ["Tianhe", "Yuexiu", "Haizhu", "Panyu", "Baiyun", "Liwan", "Zhujiang New Town"] },
+  shenzhen: { tier: 1.1, areas: ["Futian", "Nanshan", "Luohu", "Bao'an", "Longgang", "Shekou", "Huaqiangbei"] },
+  chengdu: { tier: 0.95, areas: ["Jinjiang", "Wuhou", "Qingyang", "Chenghua", "Hi-Tech Zone", "Chunxi Road", "Tianfu"] },
+  chongqing: { tier: 0.9, areas: ["Jiefangbei", "Nan'an", "Yuzhong", "Jiangbei", "Guanyinqiao", "Three Gorges Museum"] },
+  xian: { tier: 0.9, areas: ["Bell Tower", "Yanta", "Weiyang", "Lintong", "High-Tech", "North Station"] },
+  hangzhou: { tier: 1.0, areas: ["West Lake", "Gongshu", "Xihu", "Binjiang", "Xiacheng", "Qiantang"] },
+  seoul: { tier: 1.25, areas: ["Myeongdong", "Gangnam", "Hongdae", "Dongdaemun", "Itaewon", "Incheon Airport", "Jongno", "Mapo"] },
+  tokyo: { tier: 1.3, areas: ["Shinjuku", "Shibuya", "Asakusa", "Ginza", "Ueno", "Narita Airport", "Roppongi", "Akihabara"] },
+  osaka: { tier: 1.2, areas: ["Umeda", "Namba", "Shinsaibashi", "Tennoji", "Universal City", "Shin-Osaka"] },
+  bangkok: { tier: 0.85, areas: ["Sukhumvit", "Silom", "Siam", "Riverside", "Khaosan", "Suvarnabhumi", "Ratchada", "Chatuchak"] },
   hohhot: { tier: 0.75, areas: ["Xincheng", "Huimin", "Saihan", "Airport Road", "Railway Station", "Downtown"] },
-  singapore: { tier: 1.35, areas: ["Marina Bay", "Orchard", "Chinatown", "Bugis", "Sentosa Gateway", "Changi"] },
-  dubai: { tier: 1.3, areas: ["Downtown", "Marina", "Deira", "JBR", "Business Bay", "DXB Airport"] },
-  istanbul: { tier: 1.0, areas: ["Sultanahmet", "Taksim", "Sisli", "Kadikoy", "Besiktas", "Airport"] },
-  hanoi: { tier: 0.8, areas: ["Old Quarter", "Hoan Kiem", "Ba Dinh", "West Lake", "Airport Road", "Train Street"] },
-  ho_chi_minh: { tier: 0.8, areas: ["District 1", "District 3", "Pham Ngu Lao", "Binh Thanh", "Airport", "Thu Duc"] }
+  singapore: { tier: 1.35, areas: ["Marina Bay", "Orchard", "Chinatown", "Bugis", "Sentosa Gateway", "Changi", "Clarke Quay", "Jurong East"] },
+  dubai: { tier: 1.3, areas: ["Downtown", "Marina", "Deira", "JBR", "Business Bay", "DXB Airport", "Palm Jumeirah", "Al Barsha"] },
+  istanbul: { tier: 1.0, areas: ["Sultanahmet", "Taksim", "Sisli", "Kadikoy", "Besiktas", "Airport", "Beyoglu", "Uskudar"] },
+  hanoi: { tier: 0.8, areas: ["Old Quarter", "Hoan Kiem", "Ba Dinh", "West Lake", "Airport Road", "Train Street", "Tay Ho"] },
+  ho_chi_minh: { tier: 0.8, areas: ["District 1", "District 3", "Pham Ngu Lao", "Binh Thanh", "Airport", "Thu Duc", "District 7"] },
+  hong_kong: { tier: 1.3, areas: ["Tsim Sha Tsui", "Central", "Causeway Bay", "Mong Kok", "Wan Chai", "Kowloon Bay", "Airport"] },
+  delhi: { tier: 0.85, areas: ["Connaught Place", "Aerocity", "Karol Bagh", "Paharganj", "Dwarka", "Gurgaon Link"] },
+  mumbai: { tier: 0.9, areas: ["Bandra", "Andheri", "Colaba", "BKC", "Juhu", "Airport Zone", "Lower Parel"] },
+  kuala_lumpur: { tier: 0.95, areas: ["KLCC", "Bukit Bintang", "Chinatown", "Bangsar", "Mont Kiara", "KL Sentral"] }
 };
 
 const COUNTRY_TIER = {
@@ -95,13 +107,26 @@ function buildFacilities(seed, stars, nearMetro) {
   return list;
 }
 
-function generateLocalMockHotel(ctx, index) {
+function starsForIndex(index, total, major) {
+  if (!major) {
+    const h = hashCode(`stars-${index}`);
+    return 2 + (h % 4);
+  }
+  const pct = index / Math.max(total, 1);
+  if (pct < 0.12) return 2;
+  if (pct < 0.45) return 3;
+  if (pct < 0.82) return 4;
+  return 5;
+}
+
+function generateLocalMockHotel(ctx, index, poolSize) {
   const { citySlug, cityRow, countryRow, countrySlug } = ctx;
+  const major = isMajorCity(citySlug);
   const areasCfg = resolveCityAreas(citySlug, cityRow, countryRow);
   const district = areasCfg.areas[index % areasCfg.areas.length];
   const seed = `${citySlug}-${district}-${index}`;
   const h = hashCode(seed);
-  const stars = 2 + (h % 4);
+  const stars = starsForIndex(index, poolSize || 48, major);
   const brand = HOTEL_BRANDS[h % HOTEL_BRANDS.length];
   const suffix = HOTEL_SUFFIXES[(h >> 3) % HOTEL_SUFFIXES.length];
   const name = `${brand} ${district} ${suffix}`;
@@ -173,7 +198,8 @@ function generateLocalMockHotel(ctx, index) {
 
 function generateLocalMockPool(ctx, count) {
   const out = [];
-  for (let i = 0; i < count; i++) out.push(generateLocalMockHotel(ctx, i));
+  for (let i = 0; i < count; i++) out.push(generateLocalMockHotel(ctx, i, count));
+  out.sort((a, b) => (b.recommendation_score ?? 0) - (a.recommendation_score ?? 0));
   return out;
 }
 
@@ -185,7 +211,8 @@ function getMockPoolForCity(ctx) {
     return { pool: cached.pool, generator: "local_template" };
   }
 
-  const pool = generateLocalMockPool(ctx, MOCK_POOL_SIZE);
+  const poolSize = getMockPoolSizeForCity(ctx.citySlug);
+  const pool = generateLocalMockPool(ctx, poolSize);
   cityMockCache.set(cacheKey, { pool, generator: "local_template", ts: Date.now() });
   return { pool, generator: "local_template" };
 }

@@ -4,11 +4,12 @@
 const { mapHotel, countrySlug } = require("./travel-data-lib");
 const { normalizeHotelKey, getMockPoolForCity, filterMockPool, NEEDS_CHECK_MSG } = require("./hotel-mock");
 const { buildOfflineSearchCtx } = require("./asia-catalog-fallback");
+const { TARGET_MAJOR, TARGET_MINOR, getHotelTargetForCity } = require("./city-hotel-targets");
 
 const SUPABASE_SUFFICIENT = 12;
-const TARGET_TOTAL = 36;
-const MAX_TOTAL = 48;
-const DEFAULT_PAGE_SIZE = 36;
+const TARGET_TOTAL = TARGET_MINOR;
+const MAX_TOTAL = TARGET_MAJOR;
+const DEFAULT_PAGE_SIZE = TARGET_MAJOR;
 const SUPABASE_QUERY_MS = 2500;
 
 function enrichSupabaseHotel(mapped, nights, cityRow, country) {
@@ -87,6 +88,10 @@ function applyPriceFilters(hotels, params) {
   return list;
 }
 
+function isMockHotel(h) {
+  return !!(h.is_mock || h.source === "mock" || h.source === "ai_mock");
+}
+
 function sortHotels(hotels, sort) {
   const list = hotels.slice();
   if (sort === "price_asc") {
@@ -94,15 +99,29 @@ function sortHotels(hotels, sort) {
   } else if (sort === "price_desc") {
     list.sort((a, b) => (b.price_per_night ?? b.final_price_mnt) - (a.price_per_night ?? a.final_price_mnt));
   } else if (sort === "stars_desc") {
-    list.sort((a, b) => b.stars - a.stars);
+    list.sort((a, b) => b.stars - a.stars || (a.price_per_night ?? 0) - (b.price_per_night ?? 0));
   } else if (sort === "metro_asc" || sort === "center_asc") {
     list.sort((a, b) => (a.distance_to_center_km ?? 99) - (b.distance_to_center_km ?? 99));
   } else if (sort === "attraction_asc") {
     list.sort((a, b) => (a.distance_to_attraction_km ?? 99) - (b.distance_to_attraction_km ?? 99));
   } else {
-    list.sort((a, b) => (b.recommendation_score ?? 0) - (a.recommendation_score ?? 0));
+    list.sort((a, b) => {
+      const aMock = isMockHotel(a);
+      const bMock = isMockHotel(b);
+      if (aMock !== bMock) return aMock ? 1 : -1;
+      const score = (b.recommendation_score ?? 0) - (a.recommendation_score ?? 0);
+      if (score) return score;
+      const stars = b.stars - a.stars;
+      if (stars) return stars;
+      return (a.distance_to_center_km ?? 99) - (b.distance_to_center_km ?? 99);
+    });
   }
   return list;
+}
+
+function resolveTargetTotal(params, citySlug) {
+  if (Number(params.minTarget) > 0) return Number(params.minTarget);
+  return getHotelTargetForCity(citySlug);
 }
 
 function deduplicateHotels(verified, mockCandidates) {
@@ -172,7 +191,7 @@ async function mockOnlyHotelSearch(params, ctx) {
   const sort = params.sort || "recommended";
   const page = Math.max(1, Number(params.page || 1));
   const pageSize = Math.min(MAX_TOTAL, Math.max(1, Number(params.pageSize || DEFAULT_PAGE_SIZE)));
-  const minTarget = Number(params.minTarget) > 0 ? Number(params.minTarget) : TARGET_TOTAL;
+  const minTarget = resolveTargetTotal(params, citySlug);
 
   const mockCtx = {
     citySlug,
@@ -207,6 +226,7 @@ async function mockOnlyHotelSearch(params, ctx) {
       hasMore: start + pageSize < total,
       maxResults: minTarget,
       minTarget,
+      city_tier: getHotelTargetForCity(citySlug) === TARGET_MAJOR ? "major" : "minor",
       filters: params,
       formData: params,
       subtitle: NEEDS_CHECK_MSG,
@@ -257,7 +277,7 @@ async function hybridHotelSearch(sb, params, ctx) {
     return [];
   });
   const supabaseCount = verified.length;
-  const targetTotal = Number(params.minTarget) > 0 ? Number(params.minTarget) : TARGET_TOTAL;
+  const targetTotal = resolveTargetTotal(params, citySlug);
 
   if (supabaseCount >= SUPABASE_SUFFICIENT) {
     let merged = sortHotels(verified, sort);
@@ -284,6 +304,7 @@ async function hybridHotelSearch(sb, params, ctx) {
         hasMore: start + pageSize < total,
         maxResults: total,
         minTarget: targetTotal,
+        city_tier: getHotelTargetForCity(citySlug) === TARGET_MAJOR ? "major" : "minor",
         filters: params,
         formData: params,
         subtitle: NEEDS_CHECK_MSG
@@ -332,7 +353,8 @@ async function hybridHotelSearch(sb, params, ctx) {
       page,
       pageSize,
       hasMore: start + pageSize < total,
-      maxResults: TARGET_TOTAL,
+      maxResults: targetTotal,
+      city_tier: getHotelTargetForCity(citySlug) === TARGET_MAJOR ? "major" : "minor",
       minTarget: targetTotal,
       filters: params,
       formData: params,
@@ -345,10 +367,15 @@ module.exports = {
   hybridHotelSearch,
   SUPABASE_SUFFICIENT,
   TARGET_TOTAL,
+  TARGET_MAJOR,
+  TARGET_MINOR,
   MAX_TOTAL,
   DEFAULT_PAGE_SIZE,
   SUPABASE_QUERY_MS,
   enrichSupabaseHotel,
   sortHotels,
-  deduplicateHotels
+  deduplicateHotels,
+  getHotelTargetForCity,
+  resolveTargetTotal,
+  isMockHotel
 };

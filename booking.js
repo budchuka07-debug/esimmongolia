@@ -794,7 +794,8 @@
   }
 
   async function fetchHotelResults(searchParams, page = 1) {
-    const payload = await apiSearch("hotel", { ...searchParams, page, pageSize: 36 });
+    const pageSize = Number(searchParams.pageSize) || 48;
+    const payload = await apiSearch("hotel", { ...searchParams, page, pageSize });
     return {
       results: payload.results || [],
       meta: {
@@ -1713,9 +1714,20 @@
     const list = results.slice();
     if (sort === "price_asc") list.sort((a, b) => a.final_price_mnt - b.final_price_mnt);
     else if (sort === "price_desc") list.sort((a, b) => b.final_price_mnt - a.final_price_mnt);
-    else if (sort === "stars_desc") list.sort((a, b) => b.stars - a.stars);
+    else if (sort === "stars_desc") list.sort((a, b) => b.stars - a.stars || a.final_price_mnt - b.final_price_mnt);
     else if (sort === "metro_asc") list.sort((a, b) => a.distance_to_metro_m - b.distance_to_metro_m);
     else if (sort === "attraction_asc") list.sort((a, b) => a.distance_to_attraction_km - b.distance_to_attraction_km);
+    else if (sort === "center_asc") list.sort((a, b) => (a.distance_to_center_km ?? 99) - (b.distance_to_center_km ?? 99));
+    else {
+      list.sort((a, b) => {
+        const aMock = a.is_mock || a.source === "mock";
+        const bMock = b.is_mock || b.source === "mock";
+        if (aMock !== bMock) return aMock ? 1 : -1;
+        const score = (b.recommendation_score ?? 0) - (a.recommendation_score ?? 0);
+        if (score) return score;
+        return b.stars - a.stars || (a.distance_to_center_km ?? 99) - (b.distance_to_center_km ?? 99);
+      });
+    }
     return list;
   }
 

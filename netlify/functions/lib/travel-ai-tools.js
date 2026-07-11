@@ -3,15 +3,14 @@
  */
 const { getSupabase } = require("./supabase-client");
 const { buildCityIndex, normalizeCityInput, countrySlug, mapFlight } = require("./travel-data-lib");
-const { hybridHotelSearch, sortHotels, TARGET_TOTAL } = require("./hotel-search-lib");
+const { hybridHotelSearch, sortHotels, getHotelTargetForCity, TARGET_MAJOR } = require("./hotel-search-lib");
 const { NEEDS_CHECK_MSG } = require("./hotel-mock");
 const { buildOfflineSearchCtx, resolveOfflineCitySlug } = require("./asia-catalog-fallback");
 const consultant = require("./ai-consultant");
 const { getChinaPlans } = require("../china-plans");
 
 const AI_DISPLAY_HOTELS = 5;
-const UI_TARGET_HOTELS = TARGET_TOTAL;
-const UI_PAGE_SIZE = TARGET_TOTAL;
+const UI_PAGE_SIZE = TARGET_MAJOR;
 
 async function buildSearchCtxFast(sb, citySlug, cityInput) {
   const slug = citySlug || resolveOfflineCitySlug(cityInput);
@@ -130,7 +129,7 @@ function intentToSearchParams(intent) {
     minStars: intent.stars || "",
     priceMinMnt: intent.budget_min || "",
     priceMaxMnt: intent.budget_max || "",
-    minTarget: UI_TARGET_HOTELS,
+    minTarget: getHotelTargetForCity(intent.city_id || intent.city),
     page: 1,
     pageSize: AI_DISPLAY_HOTELS,
     sort: intent.wants_cheaper ? "price_asc" : "recommended"
@@ -169,7 +168,7 @@ function formToSearchParams(form) {
     sort: form.sort || "recommended",
     page: Number(form.page || 1),
     pageSize: Number(form.pageSize || UI_PAGE_SIZE),
-    minTarget: UI_TARGET_HOTELS
+    minTarget: getHotelTargetForCity(form.city_id || form.city)
   };
 }
 
@@ -188,9 +187,10 @@ async function searchHotelsFull(form, log) {
 
   params._resolvedCitySlug = ctx.resolvedSlug || params.city_id;
   params.city_id = params._resolvedCitySlug;
+  const cityTarget = getHotelTargetForCity(params.city_id);
   params.page = Number(form.page || 1);
-  params.pageSize = Math.max(Number(form.pageSize || UI_PAGE_SIZE), UI_TARGET_HOTELS);
-  params.minTarget = UI_TARGET_HOTELS;
+  params.pageSize = Math.max(Number(form.pageSize || cityTarget), cityTarget);
+  params.minTarget = cityTarget;
 
   const payload = await hybridHotelSearch(sb, params, ctx);
   const hotels = enrichHotelResults(payload.results || []);
