@@ -1,8 +1,9 @@
 /**
- * Travel data bootstrap — Supabase only (esm_* tables via Netlify BFF)
+ * Travel data bootstrap — local Asia catalog + travel-ai for hotel search.
+ * Frontend does NOT call travel-catalog directly.
  */
 (function (root) {
-  const CATALOG_URL = "/.netlify/functions/travel-catalog?all=1";
+  const TRAVEL_AI_URL = "/.netlify/functions/travel-ai";
   const SEARCH_URL = "/.netlify/functions/travel-search";
 
   let countries = [];
@@ -80,58 +81,55 @@
     return hit?.id || null;
   }
 
-  async function fetchCatalog() {
-    const res = await fetch(CATALOG_URL);
-    if (!res.ok) throw new Error("catalog_http_" + res.status);
-    return res.json();
+  async function bootstrap() {
+    mergeAsiaFallback();
+    rebuildIndex();
+    return {
+      countries,
+      cities,
+      destinations: buildLocalDestinations(),
+      chinaCities: buildLocalChinaCities()
+    };
   }
 
+  function buildLocalDestinations() {
+    const featured = ["china", "thailand", "japan", "korea", "singapore"];
+    return countries
+      .filter((c) => featured.includes(c.id))
+      .map((c) => ({
+        code: c.iso_code || c.id?.toUpperCase()?.slice(0, 2),
+        name: c.name_mn,
+        flag: c.flag,
+        img: "/images/china/guide/route-asia.jpg",
+        href: c.id === "china" ? "/china/" : `/marshrut.html?country=${c.id}`
+      }));
+  }
+
+  function buildLocalChinaCities() {
+    return cities
+      .filter((c) => c.country_id === "china")
+      .slice(0, 8)
+      .map((c) => ({
+        id: c.id,
+        name: c.name_mn,
+        cn: c.local || "",
+        img: "/images/routes/china/shanghai-bund.jpg",
+        attractions: [],
+        transport: "",
+        budget: "",
+        map: "#",
+        route: `/china-route.html#${c.id}`,
+        esim: "/?plan=CN"
+      }));
+  }
   let dataSource = "local_fallback";
 
-  function mergeAsiaFallback(supabaseLoaded) {
+  function mergeAsiaFallback() {
     const asia = root.ASIA_DESTINATIONS;
-    if (!asia) {
-      dataSource = supabaseLoaded && countries.length ? "supabase" : "local_fallback";
-      return;
-    }
-    const localCountries = asia.getCountries();
-    const localCities = asia.getCities();
-    if (!countries.length) {
-      countries = localCountries;
-      cities = localCities;
-      dataSource = "local_fallback";
-      return;
-    }
-    const countryIds = new Set(countries.map((c) => c.id));
-    localCountries.forEach((c) => {
-      if (!countryIds.has(c.id)) countries.push(c);
-    });
-    const cityIds = new Set(cities.map((c) => c.id));
-    localCities.forEach((c) => {
-      if (!cityIds.has(c.id)) cities.push(c);
-    });
-    countries = countries.map((c) => {
-      const local = asia.getCountry(c.id);
-      if (!local) return c;
-      return { ...c, name_mn: local.name_mn || c.name_mn, name_en: local.name_en || c.name_en };
-    });
-    dataSource = supabaseLoaded ? "hybrid" : "local_fallback";
-  }
-
-  async function bootstrap() {
-    let data = { countries: [], cities: [], destinations: [], chinaCities: [] };
-    let supabaseLoaded = false;
-    try {
-      data = await fetchCatalog();
-      countries = data.countries || [];
-      cities = data.cities || [];
-      supabaseLoaded = countries.length > 0;
-    } catch (err) {
-      console.error("[TravelCatalog]", err);
-    }
-    mergeAsiaFallback(supabaseLoaded);
-    rebuildIndex();
-    return data;
+    if (!asia) return;
+    countries = asia.getCountries();
+    cities = asia.getCities();
+    dataSource = "local_fallback";
   }
 
   root.TravelCatalog = {
@@ -155,7 +153,7 @@
     getDataSource: () => dataSource,
     ready: bootstrap().catch((err) => {
       console.error("[TravelCatalog]", err);
-      mergeAsiaFallback(false);
+      mergeAsiaFallback();
       rebuildIndex();
       return { countries: [], cities: [], destinations: [], chinaCities: [] };
     }),
@@ -203,11 +201,8 @@
       });
       return results.slice(0, limit);
     },
-    async fetchDistricts(citySlug) {
-      const res = await fetch(`/.netlify/functions/travel-catalog?districts=${encodeURIComponent(citySlug)}`);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return data.districts || [];
+    async fetchDistricts() {
+      return [];
     }
   };
 
@@ -311,13 +306,40 @@
   });
 
   async function apiSearch(type, formData) {
+    if (type === "hotel") {
+      try {
+        const res = await fetch(TRAVEL_AI_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "search_hotels", ...(formData || {}) })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          return { results: [], meta: { error: data.error || "hotel_search_failed", ...(data.meta || {}) } };
+        }
+        const results = (data.results || []).map((item) => {
+          if (item.final_price_mnt != null && item.final_price_mnt > 0) return item;
+          if (item.price_per_night != null && item.price_per_night > 0) {
+            return { ...item, final_price_mnt: item.price_per_night };
+          }
+          return root.TRAVEL_DATA.priceItem(item);
+        });
+        return { results, meta: { ...(data.meta || {}), source: data.meta?.source || "travel-ai" } };
+      } catch (err) {
+        console.error("[TravelSearch] hotel via travel-ai failed", err);
+        return { results: [], meta: { error: "hotel_search_error" } };
+      }
+    }
+
     const params = new URLSearchParams({ type });
     Object.entries(formData || {}).forEach(([k, v]) => {
       if (v != null && v !== "") params.set(k, v);
     });
     const res = await fetch(`${SEARCH_URL}?${params}`);
-    if (!res.ok) return { results: [], meta: { error: "api_error" } };
     const data = await res.json();
+    if (!data.success) {
+      return { results: [], meta: { error: data.error || "api_error", ...(data.meta || {}) } };
+    }
     const results = (data.results || []).map((item) => {
       if (item.final_price_mnt != null && item.final_price_mnt > 0) return item;
       return root.TRAVEL_DATA.priceItem(item);

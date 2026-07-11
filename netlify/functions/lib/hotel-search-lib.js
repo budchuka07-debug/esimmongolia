@@ -2,12 +2,8 @@
  * Hybrid hotel search — Supabase verified + deterministic mock fill
  */
 const { mapHotel, countrySlug } = require("./travel-data-lib");
-const {
-  normalizeHotelKey,
-  getMockPoolForCity,
-  filterMockPool,
-  NEEDS_CHECK_MSG
-} = require("./hotel-mock");
+const { normalizeHotelKey, getMockPoolForCity, filterMockPool, NEEDS_CHECK_MSG } = require("./hotel-mock");
+const { buildOfflineSearchCtx } = require("./asia-catalog-fallback");
 
 const MIN_TARGET = 30;
 const MAX_TOTAL = 48;
@@ -153,22 +149,89 @@ async function fetchSupabaseHotels(sb, params, ctx, cityRow, country) {
   return results;
 }
 
+async function mockOnlyHotelSearch(params, ctx) {
+  const citySlug = params.city_id || params._resolvedCitySlug;
+  const offlineCtx = ctx?.cityRow ? ctx : buildOfflineSearchCtx(citySlug);
+  if (!offlineCtx?.cityRow) {
+    return { results: [], meta: { error: "city_not_found", cityId: citySlug, success: false } };
+  }
+
+  const cityRow = offlineCtx.cityRow;
+  const country = offlineCtx.countryRow;
+  const countryId = country?.slug || cityRow.country_id?.replace(/^local-/, "") || null;
+  const nights = Number(params.days || 5);
+  const sort = params.sort || "recommended";
+  const page = Math.max(1, Number(params.page || 1));
+  const pageSize = Math.min(DEFAULT_PAGE_SIZE, Number(params.pageSize || DEFAULT_PAGE_SIZE));
+  const minTarget = Number(params.minTarget) > 0 ? Number(params.minTarget) : MIN_TARGET;
+
+  const mockCtx = {
+    citySlug,
+    cityRow: { name_mn: cityRow.name_mn, name_en: cityRow.name_en, slug: citySlug },
+    countryRow: country,
+    countrySlug: countryId
+  };
+
+  const { pool, generator } = await getMockPoolForCity(mockCtx);
+  let merged = filterMockPool(pool, params).slice(0, minTarget);
+  merged = sortHotels(merged, sort);
+  const total = merged.length;
+  const start = (page - 1) * pageSize;
+  const pageResults = merged.slice(start, start + pageSize);
+
+  return {
+    results: pageResults.map((h) => ({ ...h, nights })),
+    meta: {
+      cityId: citySlug,
+      cityName: cityRow.name_mn || citySlug,
+      cityInput: params.city,
+      countryId,
+      nights,
+      source: "mock_fallback",
+      supabase_count: 0,
+      mock_count: merged.length,
+      mock_generator: generator,
+      total,
+      page,
+      pageSize,
+      hasMore: start + pageSize < total,
+      maxResults: minTarget,
+      minTarget,
+      filters: params,
+      formData: params,
+      subtitle: NEEDS_CHECK_MSG,
+      offline: true
+    }
+  };
+}
+
 async function hybridHotelSearch(sb, params, ctx) {
   const citySlug = params.city_id || params._resolvedCitySlug;
   if (!citySlug) {
-    return { results: [], meta: { error: "city_not_found", cityInput: params.city } };
+    return { results: [], meta: { error: "city_not_found", cityInput: params.city, success: false } };
   }
 
-  const cityRow = ctx.rawCities.find((c) => c.slug === citySlug);
+  let cityRow = ctx?.rawCities?.find((c) => c.slug === citySlug);
+  if (!cityRow && !sb) {
+    return mockOnlyHotelSearch(params, ctx);
+  }
   if (!cityRow) {
-    return { results: [], meta: { error: "city_not_found", cityId: citySlug } };
+    const offline = buildOfflineSearchCtx(citySlug);
+    if (!offline) {
+      return { results: [], meta: { error: "city_not_found", cityId: citySlug, success: false } };
+    }
+    return mockOnlyHotelSearch(params, offline);
+  }
+
+  if (!sb) {
+    return mockOnlyHotelSearch(params, ctx);
   }
 
   const country = ctx.countryById[cityRow.country_id];
-  const countryId = country ? countrySlug(country) : null;
+  const countryId = country ? countrySlug(country) : (String(cityRow.country_id || "").replace(/^local-/, "") || null);
 
   if (params.country && countryId && params.country !== countryId) {
-    return { results: [], meta: { error: "country_mismatch", cityId: citySlug, countryId } };
+    return { results: [], meta: { error: "country_mismatch", cityId: citySlug, countryId, success: false } };
   }
 
   const nights = Number(params.days || 5);

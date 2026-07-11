@@ -1,6 +1,8 @@
 /**
- * Travel AI assistant — OpenAI Responses API + tool functions (server-side only).
+ * Travel AI — chat, hotel search, itineraries (OpenAI + Supabase + mock fill).
  * POST /.netlify/functions/travel-ai
+ * Actions: chat (default), search_hotels
+ * Always returns HTTP 200 with { success, error, ... }.
  */
 const { randomUUID } = require("crypto");
 const { mergeFromHistory } = require("./lib/travel-ai-intent");
@@ -78,7 +80,9 @@ const TOOL_DEFS = [
   }
 ];
 
-const SYSTEM_INSTRUCTIONS = `Та eSIM Mongolia-ийн аяллын зөвлөх AI. Монгол хэлээр энгийн, найрсаг, зөвлөх мэт хариул.
+const SYSTEM_INSTRUCTIONS = `Та eSIM Mongolia-ийн аяллын зөвлөх AI.
+Хэрэглэгч өөр хэл заавал хүсэхээс бусад тохиолдолд ЗӨВХӨН Монгол хэлээр хариул.
+Монгол хэлээр энгийн, найрсаг, зөвлөх мэт хариул.
 - Заавал нэг л тодруулга асуу (хэрвээ хот, хоног, хүн мэдээгүй бол).
 - Буудлын боломж баталгаажсан гэж бүү хэл. "Үнэ болон өрөөний боломж захиалга баталгаажуулах үед шалгагдана" гэж хэл.
 - Хуурамч захиалга, review, баталгаажсан өрөө гэж бүү хэл.
@@ -93,12 +97,20 @@ function cors() {
   };
 }
 
-function json(status, body) {
+function respond(body) {
   return {
-    statusCode: status,
+    statusCode: 200,
     headers: { "Content-Type": "application/json", ...cors() },
     body: JSON.stringify(body)
   };
+}
+
+function ok(data) {
+  return respond({ success: true, error: null, ...data });
+}
+
+function fail(error, data = {}) {
+  return respond({ success: false, error: error || "unknown_error", ...data });
 }
 
 function extractOutputText(response) {
@@ -319,19 +331,9 @@ function buildLocalReply(message, intent, toolResults) {
   };
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(), body: "" };
-  if (event.httpMethod !== "POST") return json(405, { error: "POST only" });
-
-  let body;
-  try {
-    body = JSON.parse(event.body || "{}");
-  } catch {
-    return json(400, { error: "Invalid JSON" });
-  }
-
+async function handleChat(body) {
   const message = String(body.message || "").trim();
-  if (!message) return json(400, { error: "message required" });
+  if (!message) return fail("message_required");
 
   const sessionId = body.sessionId || randomUUID();
   const history = Array.isArray(body.history) ? body.history.slice(-12) : [];
@@ -350,10 +352,9 @@ exports.handler = async (event) => {
   devLog.intent = intent.intent;
 
   let result = null;
-  let toolResults = {};
 
   try {
-    toolResults = await executeIntentTools(intent, devLog);
+    const toolResults = await executeIntentTools(intent, devLog);
     const local = buildLocalReply(message, intent, toolResults);
 
     if (process.env.OPENAI_API_KEY) {
@@ -390,6 +391,7 @@ exports.handler = async (event) => {
   }
 
   console.log("[travel-ai]", JSON.stringify({
+    action: "chat",
     sessionId: devLog.sessionId,
     intent: devLog.intent,
     tool: devLog.tool,
@@ -398,14 +400,72 @@ exports.handler = async (event) => {
     openai_status: devLog.openai_status
   }));
 
-  return json(200, {
+  return ok({
+    action: "chat",
     sessionId,
     reply: result.reply,
     cards: result.cards || [],
     quickReplies: result.quickReplies || [],
     ctas: result.ctas || [],
     context: result.context || intent,
-    locale: "mn",
-    _engine: devLog.openai_status
+    locale: body.locale || "mn",
+    _engine: devLog.openai_status,
+    supabase_count: devLog.supabase_count,
+    mock_count: devLog.mock_count
   });
+}
+
+async function handleHotelSearch(body) {
+  const devLog = { tool: "search_hotels_full", supabase_count: 0, mock_count: 0 };
+  try {
+    const payload = await tools.searchHotelsFull(body, devLog);
+    console.log("[travel-ai]", JSON.stringify({
+      action: "search_hotels",
+      city_id: body.city_id,
+      supabase_count: devLog.supabase_count,
+      mock_count: devLog.mock_count,
+      total: payload.results?.length || 0
+    }));
+
+    if (!payload.success) {
+      return fail(payload.error || "hotel_search_failed", {
+        action: "search_hotels",
+        results: [],
+        meta: payload.meta || {}
+      });
+    }
+
+    return ok({
+      action: "search_hotels",
+      results: payload.results || [],
+      meta: payload.meta || {},
+      supabase_count: devLog.supabase_count,
+      mock_count: devLog.mock_count
+    });
+  } catch (err) {
+    console.error("[travel-ai] hotel search failed", err.message);
+    return fail(err.message || "hotel_search_error", {
+      action: "search_hotels",
+      results: [],
+      meta: {}
+    });
+  }
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(), body: "" };
+  if (event.httpMethod !== "POST") {
+    return respond({ success: false, error: "method_not_allowed" });
+  }
+
+  let body;
+  try {
+    body = JSON.parse(event.body || "{}");
+  } catch {
+    return fail("invalid_json");
+  }
+
+  const action = body.action || "chat";
+  if (action === "search_hotels") return handleHotelSearch(body);
+  return handleChat(body);
 };

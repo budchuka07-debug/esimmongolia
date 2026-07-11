@@ -281,7 +281,7 @@
     return order[0] || null;
   }
 
-  root.ASIA_DESTINATIONS = {
+  const API = {
     HOTEL_COUNTRY_IDS,
     COUNTRY_DEFS,
     CITY_DEFS,
@@ -296,4 +296,7 @@
     getCityLabelMn: (id) => cityById[id]?.name_mn || String(id || ""),
     getCityLabelEn: (id) => cityById[id]?.name_en || String(id || "")
   };
+
+  root.ASIA_DESTINATIONS = API;
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof window !== "undefined" ? window : globalThis);

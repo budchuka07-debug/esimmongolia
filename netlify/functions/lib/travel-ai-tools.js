@@ -4,11 +4,14 @@
 const { getSupabase } = require("./supabase-client");
 const { buildCityIndex, normalizeCityInput, countrySlug, mapFlight } = require("./travel-data-lib");
 const { hybridHotelSearch, sortHotels } = require("./hotel-search-lib");
+const { buildOfflineSearchCtx, resolveOfflineCitySlug } = require("./asia-catalog-fallback");
 const consultant = require("./ai-consultant");
 const { getChinaPlans } = require("../china-plans");
 
 const AI_MIN_HOTELS = 20;
 const AI_DISPLAY_HOTELS = 5;
+const UI_MIN_HOTELS = 30;
+const UI_PAGE_SIZE = 12;
 
 async function loadCityMaps(sb) {
   const { data: cities } = await sb.from("esm_cities").select("*, esm_countries(*)");
@@ -80,15 +83,94 @@ function intentToSearchParams(intent) {
   return params;
 }
 
-async function searchHotels(intent, log) {
-  const sb = getSupabase("travel-ai");
-  if (!sb) {
-    return { hotels: [], supabase_count: 0, mock_count: 0, error: "supabase_not_configured" };
+async function buildSearchCtx(sb, citySlug, cityInput) {
+  const slug = citySlug || resolveOfflineCitySlug(cityInput);
+  if (!slug) return null;
+
+  if (sb) {
+    try {
+      const ctx = await loadCityMaps(sb);
+      const resolved = slug || normalizeCityInput(cityInput, ctx.aliasIndex);
+      if (ctx.rawCities.some((c) => c.slug === resolved)) {
+        return { ...ctx, resolvedSlug: resolved };
+      }
+    } catch (err) {
+      console.warn("[travel-ai-tools] loadCityMaps failed:", err.message);
+    }
   }
 
-  const ctx = await loadCityMaps(sb);
-  const citySlug = intent.city_id || normalizeCityInput(intent.city, ctx.aliasIndex);
-  if (!citySlug) return { hotels: [], supabase_count: 0, mock_count: 0, error: "city_not_found" };
+  const offline = buildOfflineSearchCtx(slug);
+  if (!offline) return null;
+  return { ...offline, resolvedSlug: slug };
+}
+
+function formToSearchParams(form) {
+  return {
+    city_id: form.city_id || "",
+    city: form.city || "",
+    country: form.country || form.country_id || "",
+    days: Number(form.days || form.checkin_days || 5),
+    guests: Number(form.guests || 2),
+    district: form.district || form.area || "",
+    area: form.area || "",
+    keyword: form.keyword || "",
+    minStars: form.minStars || "",
+    priceMinMnt: form.priceMinMnt || "",
+    priceMaxMnt: form.priceMaxMnt || "",
+    nearMetro: form.nearMetro || "",
+    nearAirport: form.nearAirport || "",
+    nearAttraction: form.nearAttraction || "",
+    breakfast: form.breakfast || "",
+    freeCancellation: form.freeCancellation || "",
+    familyFriendly: form.familyFriendly || "",
+    nearLandmark: form.nearLandmark || "",
+    sort: form.sort || "recommended",
+    page: Number(form.page || 1),
+    pageSize: Number(form.pageSize || UI_PAGE_SIZE),
+    minTarget: UI_MIN_HOTELS
+  };
+}
+
+async function searchHotelsFull(form, log) {
+  const sb = getSupabase("travel-ai");
+  const params = formToSearchParams(form);
+  const ctx = await buildSearchCtx(sb, params.city_id, params.city);
+  if (!ctx) {
+    return {
+      success: false,
+      error: "city_not_found",
+      results: [],
+      meta: { error: "city_not_found", cityInput: params.city }
+    };
+  }
+
+  params._resolvedCitySlug = ctx.resolvedSlug || params.city_id;
+  params.city_id = params._resolvedCitySlug;
+
+  const payload = await hybridHotelSearch(sb, params, ctx);
+  log.tool = "search_hotels_full";
+  log.supabase_count = payload.meta?.supabase_count ?? 0;
+  log.mock_count = payload.meta?.mock_count ?? 0;
+
+  return {
+    success: true,
+    error: null,
+    results: payload.results || [],
+    meta: {
+      ...payload.meta,
+      supabase_count: log.supabase_count,
+      mock_count: log.mock_count
+    }
+  };
+}
+
+async function searchHotels(intent, log) {
+  const sb = getSupabase("travel-ai");
+  const ctx = await buildSearchCtx(sb, intent.city_id, intent.city);
+  const citySlug = ctx?.resolvedSlug || intent.city_id || resolveOfflineCitySlug(intent.city);
+  if (!citySlug || !ctx) {
+    return { hotels: [], supabase_count: 0, mock_count: 0, error: "city_not_found", success: false };
+  }
 
   const params = intentToSearchParams({ ...intent, city_id: citySlug });
   params._resolvedCitySlug = citySlug;
@@ -109,6 +191,8 @@ async function searchHotels(intent, log) {
   log.mock_count = mock_count;
 
   return {
+    success: true,
+    error: null,
     hotels: top,
     total: payload.meta?.total || results.length,
     supabase_count,
@@ -121,7 +205,9 @@ async function searchHotels(intent, log) {
 
 async function searchFlights(intent, log) {
   const sb = getSupabase("travel-ai");
-  if (!sb) return { flights: [], error: "supabase_not_configured" };
+  if (!sb) {
+    return { flights: [], error: "supabase_not_configured", success: false };
+  }
 
   const ctx = await loadCityMaps(sb);
   const toSlug = intent.city_id || normalizeCityInput(intent.city, ctx.aliasIndex) || "shanghai";
@@ -153,7 +239,7 @@ async function searchFlights(intent, log) {
 
   log.tool = "search_flights";
   log.flight_count = flights.length;
-  return { flights, from: "Улаанбаатар", to: intent.city || toSlug };
+  return { success: true, error: null, flights, from: "Улаанбаатар", to: intent.city || toSlug };
 }
 
 function searchEsimPlans(intent, log) {
@@ -178,6 +264,8 @@ function searchEsimPlans(intent, log) {
   log.esim_count = fallback.length;
 
   return {
+    success: true,
+    error: null,
     plans: fallback.map((p) => ({
       name: p.planName || p.dataLabel,
       days: p.daysLabel || p.vaildity,
@@ -230,7 +318,18 @@ function createItinerary(intent, log) {
 
 async function getSupabaseCatalog(intent, log) {
   const sb = getSupabase("travel-ai");
-  if (!sb) return { countries: [], cities: [], error: "supabase_not_configured" };
+  if (!sb) {
+    const { getFallbackCatalog } = require("./asia-catalog-fallback");
+    const fb = getFallbackCatalog();
+    log.tool = "get_supabase_catalog";
+    return {
+      success: true,
+      error: null,
+      countries: fb.countries.map((c) => ({ id: c.id, name: c.name_mn, iso: c.iso_code })),
+      cities: fb.cities.map((c) => ({ id: c.id, name: c.name_mn, name_en: c.name_en })),
+      source: "local_fallback"
+    };
+  }
 
   const [{ data: countries }, { data: cities }] = await Promise.all([
     sb.from("esm_countries").select("slug, name_mn, name_en, iso_code").eq("active", true).order("sort_order"),
@@ -242,8 +341,11 @@ async function getSupabaseCatalog(intent, log) {
   log.catalog_cities = (cities || []).length;
 
   return {
+    success: true,
+    error: null,
     countries: (countries || []).map((c) => ({ id: c.slug || countrySlug(c), name: c.name_mn, iso: c.iso_code })),
-    cities: (cities || []).map((c) => ({ id: c.slug, name: c.name_mn, name_en: c.name_en }))
+    cities: (cities || []).map((c) => ({ id: c.slug, name: c.name_mn, name_en: c.name_en })),
+    source: "supabase"
   };
 }
 
@@ -295,10 +397,13 @@ function esimToCards(esimResult) {
 module.exports = {
   runTool,
   searchHotels,
+  searchHotelsFull,
   searchFlights,
   searchEsimPlans,
   createItinerary,
   getSupabaseCatalog,
+  buildSearchCtx,
+  formToSearchParams,
   hotelsToCards,
   flightsToCards,
   esimToCards,

@@ -246,7 +246,7 @@
       } catch (_) {
         return null;
       }
-      if (!res.ok || !data.reply) return null;
+      if (data.success === false || !data.reply) return null;
       if (data.sessionId) sessionStorage.setItem("aiSessionId", data.sessionId);
       if (isWeakRemoteReply(data.reply)) return null;
       return {

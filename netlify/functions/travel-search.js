@@ -1,13 +1,13 @@
 /**
- * Travel search — hotels, flights, trains, attractions from esm_* tables
- * GET /.netlify/functions/travel-search?type=hotel&city_id=shanghai&days=5
+ * Travel search — flights, trains, attractions from esm_* tables.
+ * Hotel search moved to travel-ai (action: search_hotels).
+ * Always returns HTTP 200 with { success, error, ... }.
  */
 const { getSupabase } = require("./lib/supabase-client");
 const {
   mapFlight, mapTransport, mapAttraction,
   buildCityIndex, normalizeCityInput, countrySlug
 } = require("./lib/travel-data-lib");
-const { hybridHotelSearch } = require("./lib/hotel-search-lib");
 
 function cors() {
   return {
@@ -17,8 +17,20 @@ function cors() {
   };
 }
 
-function json(status, body) {
-  return { statusCode: status, headers: { ...cors(), "Content-Type": "application/json" }, body: JSON.stringify(body) };
+function respond(body) {
+  return {
+    statusCode: 200,
+    headers: { ...cors(), "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  };
+}
+
+function ok(data) {
+  return respond({ success: true, error: null, ...data });
+}
+
+function fail(error, data = {}) {
+  return respond({ success: false, error: error || "unknown_error", results: [], meta: {}, ...data });
 }
 
 async function loadCityMaps(sb) {
@@ -27,7 +39,7 @@ async function loadCityMaps(sb) {
   const countryById = {};
   (countries || []).forEach((c) => { countryById[c.id] = c; });
   const byUuid = {};
-  const mapped = (cities || []).map((c) => {
+  (cities || []).map((c) => {
     const co = countryById[c.country_id] || c.esm_countries;
     const m = { uuid: c.id, slug: c.slug, name_mn: c.name_mn, name_en: c.name_en, country_id: co ? countrySlug(co) : null };
     byUuid[c.id] = m;
@@ -52,13 +64,6 @@ async function loadCityMaps(sb) {
 function resolveCitySlug(input, cityIdParam, aliasIndex) {
   if (cityIdParam) return cityIdParam;
   return normalizeCityInput(input, aliasIndex);
-}
-
-async function searchHotels(sb, params, ctx) {
-  const citySlug = resolveCitySlug(params.city, params.city_id, ctx.aliasIndex);
-  if (!citySlug) return { results: [], meta: { error: "city_not_found", cityInput: params.city } };
-  const searchParams = { ...params, _resolvedCitySlug: citySlug };
-  return hybridHotelSearch(sb, searchParams, ctx);
 }
 
 async function searchFlights(sb, params, ctx) {
@@ -141,27 +146,43 @@ async function searchAttractions(sb, params, ctx) {
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors(), body: "" };
-  if (event.httpMethod !== "GET") return json(405, { error: "GET only" });
-
-  const sb = getSupabase("travel-search");
-  if (!sb) return json(503, { error: "Supabase not configured", results: [], meta: {} });
+  if (event.httpMethod !== "GET") {
+    return respond({ success: false, error: "method_not_allowed", results: [], meta: {} });
+  }
 
   const params = event.queryStringParameters || {};
   const type = params.type || "hotel";
+
+  if (type === "hotel") {
+    return fail("hotel_search_moved", {
+      results: [],
+      meta: {
+        hint: "Use POST /.netlify/functions/travel-ai with action=search_hotels",
+        redirect: "/.netlify/functions/travel-ai"
+      }
+    });
+  }
+
+  const sb = getSupabase("travel-search");
+  if (!sb) {
+    return fail("supabase_not_configured", {
+      results: [],
+      meta: { source: "unavailable" }
+    });
+  }
 
   try {
     const ctx = await loadCityMaps(sb);
     let payload;
 
-    if (type === "hotel") payload = await searchHotels(sb, params, ctx);
-    else if (type === "flight") payload = await searchFlights(sb, params, ctx);
+    if (type === "flight") payload = await searchFlights(sb, params, ctx);
     else if (type === "train" || type === "transport") payload = await searchTransport(sb, params, ctx);
     else if (type === "attraction") payload = await searchAttractions(sb, params, ctx);
-    else return json(400, { error: "Unknown type", results: [], meta: {} });
+    else return fail("unknown_type", { results: [], meta: {} });
 
-    return json(200, payload);
+    return ok(payload);
   } catch (err) {
     console.error("[travel-search]", err);
-    return json(500, { error: err.message || "search_error", results: [], meta: {} });
+    return fail(err.message || "search_error", { results: [], meta: {} });
   }
 };
