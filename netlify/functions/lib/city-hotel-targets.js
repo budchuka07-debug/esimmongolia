@@ -5,6 +5,8 @@ const TARGET_MAJOR = 48;
 const TARGET_MINOR = 38;
 const MOCK_POOL_MAJOR = 64;
 const MOCK_POOL_MINOR = 44;
+/** Нэг хайлтаар буцаах техникийн дээд хязгаар (илүү нь удаашрах эрсдэлтэй) */
+const MAX_ABSOLUTE = 96;
 
 /** Megacities and primary travel hubs */
 const MAJOR_CITY_SLUGS = new Set([
@@ -45,6 +47,7 @@ module.exports = {
   TARGET_MINOR,
   MOCK_POOL_MAJOR,
   MOCK_POOL_MINOR,
+  MAX_ABSOLUTE,
   MAJOR_CITY_SLUGS,
   isMajorCity,
   getHotelTargetForCity,

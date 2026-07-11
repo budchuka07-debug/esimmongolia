@@ -119,12 +119,14 @@ function starsForIndex(index, total, major) {
   return 5;
 }
 
-function generateLocalMockHotel(ctx, index, poolSize) {
+function generateLocalMockHotel(ctx, index, poolSize, fixedDistrict) {
   const { citySlug, cityRow, countryRow, countrySlug } = ctx;
   const major = isMajorCity(citySlug);
   const areasCfg = resolveCityAreas(citySlug, cityRow, countryRow);
-  const district = areasCfg.areas[index % areasCfg.areas.length];
-  const seed = `${citySlug}-${district}-${index}`;
+  const district = fixedDistrict || areasCfg.areas[index % areasCfg.areas.length];
+  const seed = fixedDistrict
+    ? `${citySlug}-${district}-district-${index}`
+    : `${citySlug}-${district}-${index}`;
   const h = hashCode(seed);
   const stars = starsForIndex(index, poolSize || 48, major);
   const brand = HOTEL_BRANDS[h % HOTEL_BRANDS.length];
@@ -155,7 +157,7 @@ function generateLocalMockHotel(ctx, index, poolSize) {
     : `Хотын төвөөс ${distanceToCenter} км`;
 
   return {
-    id: `mock-${citySlug}-${index}`,
+    id: fixedDistrict ? `mock-${citySlug}-d-${index}` : `mock-${citySlug}-${index}`,
     name,
     country: countryName,
     city: cityName,
@@ -217,6 +219,36 @@ function getMockPoolForCity(ctx) {
   return { pool, generator: "local_template" };
 }
 
+function resolveDistrictsForSearch(ctx, params) {
+  const query = String(params.district || params.area || "").trim().toLowerCase();
+  if (!query) return null;
+
+  const areasCfg = resolveCityAreas(ctx.citySlug, ctx.cityRow, ctx.countryRow);
+  const matched = areasCfg.areas.filter((name) => {
+    const n = name.toLowerCase();
+    return n.includes(query) || query.includes(n);
+  });
+
+  if (matched.length) return matched;
+  const label = String(params.district || params.area || "").trim();
+  return label ? [label] : null;
+}
+
+/** District/area filter үед тухайн бүсэд бүх зорилтот тоогоор mock үүсгэнэ. */
+function getMockPoolForSearch(ctx, params, targetCount) {
+  const districts = resolveDistrictsForSearch(ctx, params);
+  if (!districts) return getMockPoolForCity(ctx);
+
+  const count = Math.max(1, Number(targetCount) || getMockPoolSizeForCity(ctx.citySlug));
+  const pool = [];
+  for (let i = 0; i < count; i++) {
+    const district = districts[i % districts.length];
+    pool.push(generateLocalMockHotel(ctx, i, count, district));
+  }
+  pool.sort((a, b) => (b.recommendation_score ?? 0) - (a.recommendation_score ?? 0));
+  return { pool, generator: "local_template_district" };
+}
+
 function filterMockPool(pool, params) {
   let list = pool.slice();
 
@@ -275,6 +307,8 @@ module.exports = {
   MOCK_POOL_SIZE,
   normalizeHotelKey,
   getMockPoolForCity,
+  getMockPoolForSearch,
+  resolveDistrictsForSearch,
   filterMockPool,
   generateLocalMockPool,
   placeholderImage,

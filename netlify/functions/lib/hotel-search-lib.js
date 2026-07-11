@@ -2,7 +2,7 @@
  * Hybrid hotel search — Supabase verified + deterministic mock fill
  */
 const { mapHotel, countrySlug } = require("./travel-data-lib");
-const { normalizeHotelKey, getMockPoolForCity, filterMockPool, NEEDS_CHECK_MSG } = require("./hotel-mock");
+const { normalizeHotelKey, getMockPoolForSearch, filterMockPool, NEEDS_CHECK_MSG } = require("./hotel-mock");
 const { buildOfflineSearchCtx } = require("./asia-catalog-fallback");
 const { TARGET_MAJOR, TARGET_MINOR, getHotelTargetForCity } = require("./city-hotel-targets");
 
@@ -200,7 +200,7 @@ async function mockOnlyHotelSearch(params, ctx) {
     countrySlug: countryId
   };
 
-  const { pool, generator } = getMockPoolForCity(mockCtx);
+  const { pool, generator } = getMockPoolForSearch(mockCtx, params, minTarget);
   let merged = filterMockPool(pool, params).slice(0, minTarget);
   merged = sortHotels(merged, sort);
   const total = merged.length;
@@ -319,7 +319,7 @@ async function hybridHotelSearch(sb, params, ctx) {
     countrySlug: countryId
   };
 
-  const { pool, generator } = getMockPoolForCity(mockCtx);
+  const { pool, generator } = getMockPoolForSearch(mockCtx, params, targetTotal);
   let mockFiltered = filterMockPool(pool, params);
   mockFiltered = deduplicateHotels(verified, mockFiltered);
 
