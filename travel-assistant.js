@@ -22,6 +22,10 @@
     return $("tpAssistDock");
   }
 
+  function isMobile() {
+    return window.matchMedia("(max-width: 768px)").matches;
+  }
+
   function ensureChatInModal() {
     const widget = getChatWidget();
     const host = $("assistAiHost");
@@ -91,7 +95,9 @@
   function openPanel(view) {
     $("travelAssistBackdrop")?.classList.add("is-open");
     $("travelAssistPanel")?.classList.add("is-open");
-    $("travelAssistFab")?.classList.add("is-hidden");
+    $("travelAssistPanel")?.classList.remove("is-expanded");
+    if (isMobile()) $("travelAssistFab")?.classList.remove("is-hidden");
+    else $("travelAssistFab")?.classList.add("is-hidden");
     document.body.classList.add("tp-assist-open");
     syncDockScale();
     showView(view || "home");
@@ -100,11 +106,22 @@
   function closePanel() {
     $("travelAssistBackdrop")?.classList.remove("is-open");
     $("travelAssistPanel")?.classList.remove("is-open");
+    $("travelAssistPanel")?.classList.remove("is-expanded");
     $("travelAssistFab")?.classList.remove("is-hidden");
     document.body.classList.remove("tp-assist-open");
     showView("home");
     restoreChatToPage();
     syncDockScale();
+  }
+
+  function togglePanel() {
+    const panel = $("travelAssistPanel");
+    if (panel?.classList.contains("is-open")) closePanel();
+    else openPanel("home");
+  }
+
+  function expandPanel() {
+    $("travelAssistPanel")?.classList.toggle("is-expanded");
   }
 
   function openAiChat(presetText) {
@@ -133,9 +150,10 @@
     window.visualViewport?.addEventListener("scroll", onViewportChange);
     window.addEventListener("resize", onViewportChange);
 
-    $("travelAssistFab")?.addEventListener("click", () => openPanel("home"));
+    $("travelAssistFab")?.addEventListener("click", togglePanel);
     $("travelAssistBackdrop")?.addEventListener("click", closePanel);
     $("travelAssistClose")?.addEventListener("click", closePanel);
+    $("travelAssistExpand")?.addEventListener("click", expandPanel);
     $("assistAiBack")?.addEventListener("click", () => showView("home"));
     $("aiSectionOpenChat")?.addEventListener("click", () => openAiChat());
 

@@ -38,7 +38,7 @@
   })();
 </script>
 <meta content="Нислэг, буудал, галт тэрэг, үзвэр, eSIM, виз, маршрут — Монгол хэлээр. QPay-р захиалаарай." name="description"/>
-<link rel="stylesheet" href="/travel-platform.css"/>
+<link rel="stylesheet" href="/travel-platform.css?v=18"/>
 <style>
     :root{
       --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280;
@@ -1851,12 +1851,12 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/booking.js?v=17"></script>
 <script src="/js/ai-local-responses.js"></script>
 <script src="/ai-agent.js?v=7"></script>
-<script src="/travel-assistant.js?v=2"></script>
+<script src="/travel-assistant.js?v=3"></script>
 
 <div class="tp-assist-dock" id="tpAssistDock">
 <div class="tp-chat-widget tp-chat-dock" id="aiChatWidget">
-<div class="tp-chat" id="aiChat" aria-live="polite"></div>
-<form id="aiAgentForm" class="tp-chat-composer" autocomplete="off">
+<div class="tp-chat travel-chat-messages" id="aiChat" aria-live="polite"></div>
+<form id="aiAgentForm" class="tp-chat-composer travel-chat-input" autocomplete="off">
 <textarea class="tp-ai-box tp-chat-input" id="aiAgentInput" rows="2" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Асуултаа бичээрэй… Enter = илгээх, Shift+Enter = шинэ мөр"></textarea>
 <button type="submit" class="tp-btn primary tp-chat-send" aria-label="Илгээх">➤</button>
 </form>
@@ -1867,9 +1867,10 @@ document.addEventListener("DOMContentLoaded", () => {
 </button>
 </div>
 
-<div class="tp-assist-backdrop" id="travelAssistBackdrop" aria-hidden="true"></div>
-<aside class="tp-assist-panel" id="travelAssistPanel" role="dialog" aria-labelledby="assistPanelTitle" aria-modal="true">
+<div class="tp-assist-backdrop travel-chat-backdrop" id="travelAssistBackdrop" aria-hidden="true"></div>
+<aside class="tp-assist-panel travel-chat-panel" id="travelAssistPanel" role="dialog" aria-labelledby="assistPanelTitle" aria-modal="true">
 <button type="button" class="tp-assist-close" id="travelAssistClose" aria-label="Хаах">×</button>
+<button type="button" class="tp-assist-expand" id="travelAssistExpand" aria-label="Бүтэн дэлгэцээр харах">⤢</button>
 <header class="tp-assist-header">
 <h2 id="assistPanelTitle">Аяллын зөвлөх</h2>
 <p id="assistPanelSubtitle">Та аялал, буудал, нислэг, eSIM, виз, даатгалын талаар асуугаарай.</p>
