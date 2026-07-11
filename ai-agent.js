@@ -216,7 +216,15 @@
     };
   }
 
+  function mergePageContext() {
+    const hotel = window.TravelBooking?.getHotelSearchContext?.() || window.HotelDestinationSelect?.getContext?.() || {};
+    if (hotel.city_id || hotel.country_id) {
+      lastContext = { ...lastContext, ...hotel };
+    }
+  }
+
   async function fetchRemoteTravelResponse(message) {
+    mergePageContext();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REMOTE_TIMEOUT_MS);
     try {
@@ -256,6 +264,7 @@
   }
 
   async function resolveTravelResponse(message) {
+    mergePageContext();
     if (USE_REMOTE) {
       const remote = await fetchRemoteTravelResponse(message);
       if (remote) return remote;

@@ -289,18 +289,16 @@
 <div class="tp-form-grid tp-form-grid-3">
 <div class="tp-field"><label>Улс</label><select data-field="country" id="hotelCountrySelect">
 <option value="china" selected>🇨🇳 Хятад</option>
-<option value="thailand">🇹🇭 Тайланд</option>
-<option value="vietnam">🇻🇳 Вьетнам</option>
-<option value="japan">🇯🇵 Япон</option>
-<option value="korea">🇰🇷 Солонгос</option>
-<option value="singapore">🇸🇬 Сингапур</option>
-<option value="malaysia">🇲🇾 Малайз</option>
-<option value="indonesia">🇮🇩 Индонез</option>
-<option value="uae">🇦🇪 АНЭУ</option>
-<option value="turkey">🇹🇷 Турк</option>
 </select></div>
-<div class="tp-field"><label>Хот</label><input type="text" data-loc="city" id="hotelCityInput" data-field="city" data-loc-types="city,airport" data-loc-hidden="city_id" data-loc-country-select="#hotelCountrySelect" value="Шанхай" placeholder="Шанхай, Bangkok, Tokyo, PEK…" autocomplete="off"></div>
-<div class="tp-field"><label>Байршил / бүс</label><input type="text" data-loc="area" id="hotelAreaInput" data-field="area" data-loc-types="district,landmark" data-loc-hidden="area_id" data-loc-city-context="#hotelCityInput" placeholder="Disneyland, Wangfujing, Sukhumvit…" autocomplete="off"></div>
+<div class="tp-field"><label>Хот</label>
+<div class="tp-city-combo-wrap" id="hotelCitySelectWrap">
+<input type="text" id="hotelCityComboInput" placeholder="Хот сонгох эсвэл хайх…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="hotelCityDropdown" value="Шанхай">
+<input type="hidden" data-field="city_id" id="hotelCityIdInput" value="shanghai">
+<input type="hidden" data-field="city" id="hotelCityValueInput" value="Shanghai">
+<div class="tp-loc-dropdown tp-city-dropdown" id="hotelCityDropdown" role="listbox" aria-hidden="true"></div>
+</div>
+</div>
+<div class="tp-field"><label>Байршил / бүс</label><input type="text" data-loc="area" id="hotelAreaInput" data-field="area" data-loc-types="district,landmark" data-loc-hidden="area_id" data-loc-city-context="#hotelCityComboInput" placeholder="Disneyland, Wangfujing, Sukhumvit…" autocomplete="off"></div>
 </div>
 <div class="tp-form-grid tp-form-grid-3" style="margin-top:10px">
 <div class="tp-field"><label>Ирэх</label><input data-field="checkin" type="date"></div>
@@ -362,7 +360,7 @@
 <button type="button" class="tp-hotel-filters-close" id="hotelFiltersClose" aria-label="Хаах">×</button>
 </div>
 <div class="tp-hotel-filters-body">
-<div class="tp-field"><label>Дүүрэг / бүс</label><input data-filter="district" data-loc="filter-district" data-loc-types="district,landmark" data-loc-hidden="filter_district_id" data-loc-city-context="#hotelCityInput" placeholder="Wangfujing, Pudong…" autocomplete="off"></div>
+<div class="tp-field"><label>Дүүрэг / бүс</label><input data-filter="district" data-loc="filter-district" data-loc-types="district,landmark" data-loc-hidden="filter_district_id" data-loc-city-context="#hotelCityComboInput" placeholder="Wangfujing, Pudong…" autocomplete="off"></div>
 <div class="tp-field"><label>Ойролцоох газар</label><input data-filter="nearLandmark" placeholder="The Bund, Grand Palace…"></div>
 <div class="tp-field"><label>Хайх үг</label><input data-filter="keyword" placeholder="Буудлын нэр…"></div>
 <div class="tp-field"><label>Үнэ (₮) — доод</label><input data-filter="priceMinMnt" type="number" min="0" step="10000" placeholder="500000"></div>
@@ -1846,11 +1844,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/data/hotel-fallback.js?v=1"></script>
 <script src="/data/mock-search-results.js?v=2"></script>
 <script src="/js/travel-images.js?v=2"></script>
-<script src="/js/travel-data-loader.js?v=2"></script>
+<script src="/data/asia-destinations.js?v=1"></script>
+<script src="/js/travel-data-loader.js?v=3"></script>
 <script src="/location-autocomplete.js"></script>
-<script src="/booking.js?v=17"></script>
+<script src="/js/hotel-destination-select.js?v=1"></script>
+<script src="/booking.js?v=18"></script>
 <script src="/js/ai-local-responses.js"></script>
-<script src="/ai-agent.js?v=8"></script>
+<script src="/ai-agent.js?v=9"></script>
 <script src="/travel-assistant.js?v=3"></script>
 
 <div class="tp-assist-dock" id="tpAssistDock">

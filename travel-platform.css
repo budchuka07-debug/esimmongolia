@@ -1983,3 +1983,19 @@ body.tp-assist-open .tp-assist-dock .tp-chat-dock {
   padding: 4px 8px;
   border-radius: 6px;
 }
+
+/* Hotel city searchable combobox */
+.tp-city-combo-wrap {
+  position: relative;
+  width: 100%;
+}
+.tp-city-combo-wrap > input[type="text"] {
+  width: 100%;
+}
+.tp-city-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 10020;
+}

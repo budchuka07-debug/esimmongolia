@@ -86,10 +86,50 @@
     return res.json();
   }
 
+  let dataSource = "local_fallback";
+
+  function mergeAsiaFallback(supabaseLoaded) {
+    const asia = root.ASIA_DESTINATIONS;
+    if (!asia) {
+      dataSource = supabaseLoaded && countries.length ? "supabase" : "local_fallback";
+      return;
+    }
+    const localCountries = asia.getCountries();
+    const localCities = asia.getCities();
+    if (!countries.length) {
+      countries = localCountries;
+      cities = localCities;
+      dataSource = "local_fallback";
+      return;
+    }
+    const countryIds = new Set(countries.map((c) => c.id));
+    localCountries.forEach((c) => {
+      if (!countryIds.has(c.id)) countries.push(c);
+    });
+    const cityIds = new Set(cities.map((c) => c.id));
+    localCities.forEach((c) => {
+      if (!cityIds.has(c.id)) cities.push(c);
+    });
+    countries = countries.map((c) => {
+      const local = asia.getCountry(c.id);
+      if (!local) return c;
+      return { ...c, name_mn: local.name_mn || c.name_mn, name_en: local.name_en || c.name_en };
+    });
+    dataSource = supabaseLoaded ? "hybrid" : "local_fallback";
+  }
+
   async function bootstrap() {
-    const data = await fetchCatalog();
-    countries = data.countries || [];
-    cities = data.cities || [];
+    let data = { countries: [], cities: [], destinations: [], chinaCities: [] };
+    let supabaseLoaded = false;
+    try {
+      data = await fetchCatalog();
+      countries = data.countries || [];
+      cities = data.cities || [];
+      supabaseLoaded = countries.length > 0;
+    } catch (err) {
+      console.error("[TravelCatalog]", err);
+    }
+    mergeAsiaFallback(supabaseLoaded);
     rebuildIndex();
     return data;
   }
@@ -97,8 +137,26 @@
   root.TravelCatalog = {
     countries: () => countries,
     cities: () => cities,
+    hotelCountries: () => {
+      const ids = root.ASIA_DESTINATIONS?.HOTEL_COUNTRY_IDS || [];
+      const byId = Object.fromEntries(countries.map((c) => [c.id, c]));
+      return ids.map((id) => byId[id]).filter(Boolean);
+    },
+    citiesByCountry: (countryId) => {
+      const asia = root.ASIA_DESTINATIONS;
+      const order = asia?.COUNTRY_DEFS?.find((c) => c.id === countryId)?.cityIds;
+      const remote = cities.filter((c) => c.country_id === countryId);
+      if (order?.length) {
+        const remoteById = Object.fromEntries(remote.map((c) => [c.id, c]));
+        return order.map((id) => remoteById[id] || asia?.getCity(id)).filter(Boolean);
+      }
+      return remote.length ? remote : (asia?.getCitiesByCountry(countryId) || []);
+    },
+    getDataSource: () => dataSource,
     ready: bootstrap().catch((err) => {
       console.error("[TravelCatalog]", err);
+      mergeAsiaFallback(false);
+      rebuildIndex();
       return { countries: [], cities: [], destinations: [], chinaCities: [] };
     }),
     searchLocations(q, opts) {

@@ -661,6 +661,13 @@
       if (!params.city_id && params.city) params.city_id = norm(params.city) || "";
     } else if (type === "hotel" || type === "attraction") {
       if (!params.city_id && params.city) params.city_id = norm(params.city) || "";
+      if (params.city_id) {
+        const c = window.TRAVEL_CITIES?.getCity(params.city_id);
+        if (c?.name_en) params.city = c.name_en;
+      }
+      if (type === "hotel" && params.country && !params.country_id) {
+        params.country_id = params.country;
+      }
     }
     return params;
   }
@@ -912,6 +919,7 @@
         console.log("Hotel search clicked", searchParams);
         hotelResultsPage = 1;
         lastHotelSearchParams = searchParams;
+        window.HotelDestinationSelect?.syncUrlParams?.();
         const payload = await fetchHotelResults(searchParams, 1);
         console.log("Hotel results", payload.results, payload.meta);
         renderHotelResults(payload.results || [], payload.meta || {});
@@ -1913,24 +1921,10 @@
     const eng = window.LOCATION_ENGINE;
     if (!eng) return;
     window.LocationAutocomplete?.initAll();
+  }
 
-    const countrySel = $("hotelCountrySelect");
-    const cityInput = $("hotelCityInput");
-    if (countrySel && cityInput) {
-      countrySel.addEventListener("change", () => {
-        const cid = countrySel.value;
-        const hits = eng.search("", { types: ["city"], country_id: cid, limit: 1 });
-        if (hits[0]?.city_id) {
-          const c = eng.getCity(hits[0].city_id);
-          cityInput.value = c?.name_mn || hits[0].title;
-          const hidden = cityInput.parentElement?.querySelector('[data-field="city_id"]');
-          if (hidden) hidden.value = hits[0].city_id;
-          cityInput.dataset.resolvedCityId = hits[0].city_id;
-        }
-        updateHotelDistrictList(cityInput.value);
-      });
-    }
-    cityInput?.addEventListener("change", () => updateHotelDistrictList(cityInput.value));
+  function initHotelDestinationSelect() {
+    return window.HotelDestinationSelect?.init?.();
   }
 
   function initCityDatalists() {
@@ -1952,6 +1946,9 @@
     setTab,
     renderFlightResults,
     renderTransportResults,
+    updateHotelDistrictList,
+    getHotelSearchContext: () => window.HotelDestinationSelect?.getContext?.() || {},
+    getRoutePlanUrl: () => window.HotelDestinationSelect?.getRouteUrl?.() || "/marshrut.html",
     STATUS_LABELS,
     SERVICE_TYPES,
     BOOKING_TITLES
@@ -1963,21 +1960,12 @@
   }
 
   function initHotelCountrySelect() {
-    const sel = $("hotelCountrySelect");
-    if (!sel) return;
-    const list = window.TravelCatalog?.countries() || [];
-    if (!list.length) return;
-    const current = sel.value;
-    sel.innerHTML = list.map((c) =>
-      `<option value="${c.id}">${c.flag || ""} ${c.name_mn}</option>`
-    ).join("");
-    if (current) sel.value = current;
-    else if (list.some((c) => c.id === "china")) sel.value = "china";
+    /* Populated by HotelDestinationSelect.init() */
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     await initDailyRates();
-    initHotelCountrySelect();
+    await initHotelDestinationSelect();
     renderDestinations();
     renderChinaCities();
     bindServices();
@@ -1986,7 +1974,8 @@
     initHotelDetailModal();
     initCityDatalists();
     initHotelFiltersUI();
-    setTab("flight");
+    const urlTab = new URLSearchParams(location.search).get("tab");
+    setTab(urlTab === "hotel" ? "hotel" : "flight");
 
     if (location.hash === "#esim") {
       document.querySelector("#esim")?.scrollIntoView({ behavior: "smooth" });
