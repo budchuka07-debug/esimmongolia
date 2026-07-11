@@ -242,7 +242,15 @@
       });
       let data = {};
       try {
-        data = await res.json();
+        data = await (async () => {
+          const ct = res.headers.get("content-type") || "";
+          if (!ct.includes("application/json")) {
+            const text = await res.text().catch(() => "");
+            console.error("[AI] non-JSON response", res.status, text.slice(0, 200));
+            return { success: false };
+          }
+          return res.json();
+        })();
       } catch (_) {
         return null;
       }

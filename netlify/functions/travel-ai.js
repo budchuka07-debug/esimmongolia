@@ -419,34 +419,47 @@ async function handleHotelSearch(body) {
   const devLog = { tool: "search_hotels_full", supabase_count: 0, mock_count: 0 };
   try {
     const payload = await tools.searchHotelsFull(body, devLog);
+    const hotels = payload.hotels || payload.results || [];
     console.log("[travel-ai]", JSON.stringify({
       action: "search_hotels",
       city_id: body.city_id,
-      supabase_count: devLog.supabase_count,
-      mock_count: devLog.mock_count,
-      total: payload.results?.length || 0
+      real_count: payload.real_count ?? devLog.supabase_count,
+      mock_count: payload.mock_count ?? devLog.mock_count,
+      source: payload.source,
+      total: hotels.length
     }));
 
     if (!payload.success) {
       return fail(payload.error || "hotel_search_failed", {
         action: "search_hotels",
+        hotels: [],
         results: [],
+        real_count: 0,
+        mock_count: 0,
+        source: "error",
         meta: payload.meta || {}
       });
     }
 
     return ok({
       action: "search_hotels",
-      results: payload.results || [],
+      hotels,
+      results: hotels,
+      real_count: payload.real_count ?? devLog.supabase_count,
+      mock_count: payload.mock_count ?? devLog.mock_count,
+      source: payload.source || payload.meta?.source || "local_mock",
       meta: payload.meta || {},
-      supabase_count: devLog.supabase_count,
-      mock_count: devLog.mock_count
+      supabase_count: payload.real_count ?? devLog.supabase_count
     });
   } catch (err) {
     console.error("[travel-ai] hotel search failed", err.message);
     return fail(err.message || "hotel_search_error", {
       action: "search_hotels",
+      hotels: [],
       results: [],
+      real_count: 0,
+      mock_count: 0,
+      source: "error",
       meta: {}
     });
   }

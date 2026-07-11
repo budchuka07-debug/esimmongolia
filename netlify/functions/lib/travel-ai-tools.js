@@ -3,15 +3,59 @@
  */
 const { getSupabase } = require("./supabase-client");
 const { buildCityIndex, normalizeCityInput, countrySlug, mapFlight } = require("./travel-data-lib");
-const { hybridHotelSearch, sortHotels } = require("./hotel-search-lib");
+const { hybridHotelSearch, sortHotels, TARGET_TOTAL } = require("./hotel-search-lib");
+const { NEEDS_CHECK_MSG } = require("./hotel-mock");
 const { buildOfflineSearchCtx, resolveOfflineCitySlug } = require("./asia-catalog-fallback");
 const consultant = require("./ai-consultant");
 const { getChinaPlans } = require("../china-plans");
 
-const AI_MIN_HOTELS = 20;
 const AI_DISPLAY_HOTELS = 5;
-const UI_MIN_HOTELS = 30;
-const UI_PAGE_SIZE = 12;
+const UI_TARGET_HOTELS = TARGET_TOTAL;
+const UI_PAGE_SIZE = TARGET_TOTAL;
+
+async function buildSearchCtxFast(sb, citySlug, cityInput) {
+  const slug = citySlug || resolveOfflineCitySlug(cityInput);
+  if (!slug) return null;
+
+  const offline = buildOfflineSearchCtx(slug);
+  if (!offline) return null;
+
+  if (!sb) return { ...offline, resolvedSlug: slug };
+
+  try {
+    const { data: city, error } = await withTimeout(
+      sb.from("esm_cities")
+        .select("id, slug, name_mn, name_en, name_local, country_id, aliases, esm_countries(*)")
+        .eq("slug", slug)
+        .eq("active", true)
+        .maybeSingle(),
+      1500
+    );
+
+    if (!error && city) {
+      const country = city.esm_countries;
+      return {
+        rawCities: [city],
+        countryById: country ? { [city.country_id]: country } : offline.countryById,
+        aliasIndex: offline.aliasIndex,
+        cityRow: city,
+        countryRow: country || offline.countryRow,
+        resolvedSlug: slug
+      };
+    }
+  } catch (err) {
+    console.warn("[travel-ai-tools] fast city lookup:", err.message);
+  }
+
+  return { ...offline, resolvedSlug: slug };
+}
+
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
+  ]);
+}
 
 async function loadCityMaps(sb) {
   const { data: cities } = await sb.from("esm_cities").select("*, esm_countries(*)");
@@ -42,7 +86,7 @@ async function loadCityMaps(sb) {
 }
 
 function mapHotelForAi(h) {
-  const isMock = h.is_mock || h.source === "ai_mock";
+  const isMock = h.is_mock || h.source === "mock" || h.source === "ai_mock";
   return {
     id: h.id,
     name: h.name || h.name_en,
@@ -57,8 +101,23 @@ function mapHotelForAi(h) {
     image_url: h.image_url || h.cover_image || h.image,
     source: isMock ? "mock" : "supabase",
     is_mock: isMock,
-    availability_status: isMock ? "check_on_request" : (h.availability_status || "check_on_request")
+    availability_status: "check_on_request",
+    needs_check_message: isMock ? NEEDS_CHECK_MSG : undefined
   };
+}
+
+function enrichHotelResults(results) {
+  return (results || []).map((h) => {
+    const isMock = h.is_mock || h.source === "mock" || h.source === "ai_mock";
+    if (!isMock) return h;
+    return {
+      ...h,
+      source: "mock",
+      is_mock: true,
+      availability_status: "check_on_request",
+      needs_check_message: NEEDS_CHECK_MSG
+    };
+  });
 }
 
 function intentToSearchParams(intent) {
@@ -71,9 +130,9 @@ function intentToSearchParams(intent) {
     minStars: intent.stars || "",
     priceMinMnt: intent.budget_min || "",
     priceMaxMnt: intent.budget_max || "",
-    minTarget: AI_MIN_HOTELS,
+    minTarget: UI_TARGET_HOTELS,
     page: 1,
-    pageSize: AI_MIN_HOTELS,
+    pageSize: AI_DISPLAY_HOTELS,
     sort: intent.wants_cheaper ? "price_asc" : "recommended"
   };
   if (intent.facilities?.includes("metro_nearby")) params.nearMetro = "1";
@@ -84,24 +143,7 @@ function intentToSearchParams(intent) {
 }
 
 async function buildSearchCtx(sb, citySlug, cityInput) {
-  const slug = citySlug || resolveOfflineCitySlug(cityInput);
-  if (!slug) return null;
-
-  if (sb) {
-    try {
-      const ctx = await loadCityMaps(sb);
-      const resolved = slug || normalizeCityInput(cityInput, ctx.aliasIndex);
-      if (ctx.rawCities.some((c) => c.slug === resolved)) {
-        return { ...ctx, resolvedSlug: resolved };
-      }
-    } catch (err) {
-      console.warn("[travel-ai-tools] loadCityMaps failed:", err.message);
-    }
-  }
-
-  const offline = buildOfflineSearchCtx(slug);
-  if (!offline) return null;
-  return { ...offline, resolvedSlug: slug };
+  return buildSearchCtxFast(sb, citySlug, cityInput);
 }
 
 function formToSearchParams(form) {
@@ -127,7 +169,7 @@ function formToSearchParams(form) {
     sort: form.sort || "recommended",
     page: Number(form.page || 1),
     pageSize: Number(form.pageSize || UI_PAGE_SIZE),
-    minTarget: UI_MIN_HOTELS
+    minTarget: UI_TARGET_HOTELS
   };
 }
 
@@ -146,20 +188,32 @@ async function searchHotelsFull(form, log) {
 
   params._resolvedCitySlug = ctx.resolvedSlug || params.city_id;
   params.city_id = params._resolvedCitySlug;
+  params.page = Number(form.page || 1);
+  params.pageSize = Math.max(Number(form.pageSize || UI_PAGE_SIZE), UI_TARGET_HOTELS);
+  params.minTarget = UI_TARGET_HOTELS;
 
   const payload = await hybridHotelSearch(sb, params, ctx);
+  const hotels = enrichHotelResults(payload.results || []);
+  const realCount = payload.meta?.real_count ?? payload.meta?.supabase_count ?? 0;
+  const mockCount = payload.meta?.mock_count ?? hotels.filter((h) => h.is_mock).length;
+
   log.tool = "search_hotels_full";
-  log.supabase_count = payload.meta?.supabase_count ?? 0;
-  log.mock_count = payload.meta?.mock_count ?? 0;
+  log.supabase_count = realCount;
+  log.mock_count = mockCount;
 
   return {
     success: true,
     error: null,
-    results: payload.results || [],
+    hotels,
+    results: hotels,
+    real_count: realCount,
+    mock_count: mockCount,
+    source: payload.meta?.source || "local_mock",
     meta: {
       ...payload.meta,
-      supabase_count: log.supabase_count,
-      mock_count: log.mock_count
+      real_count: realCount,
+      mock_count: mockCount,
+      supabase_count: realCount
     }
   };
 }
@@ -362,14 +416,19 @@ async function runTool(name, args, intent, log) {
 }
 
 function hotelsToCards(hotelResult) {
-  return (hotelResult.hotels || []).map((h) => ({
-    type: "hotel",
-    title: h.name,
-    subtitle: `${h.city}${h.district ? ` · ${h.district}` : ""} · ${h.stars || 3}★`,
-    detail: h.description?.slice(0, 120) || "Үнэ болон өрөөний боломж захиалга баталгаажуулах үед шалгагдана.",
-    price: h.price_per_night ? `${Number(h.price_per_night).toLocaleString("mn-MN")}₮/шөнө` : "",
-    badge: h.source === "supabase" ? "Баталгаажсан" : null
-  }));
+  return (hotelResult.hotels || []).map((h) => {
+    const isMock = h.is_mock || h.source === "mock";
+    return {
+      type: "hotel",
+      title: h.name,
+      subtitle: `${h.city}${h.district ? ` · ${h.district}` : ""} · ${h.stars || 3}★`,
+      detail: isMock
+        ? NEEDS_CHECK_MSG
+        : (h.description?.slice(0, 120) || NEEDS_CHECK_MSG),
+      price: h.price_per_night ? `${Number(h.price_per_night).toLocaleString("mn-MN")}₮/шөнө` : "",
+      badge: isMock ? null : "Баталгаажсан"
+    };
+  });
 }
 
 function flightsToCards(flightResult) {

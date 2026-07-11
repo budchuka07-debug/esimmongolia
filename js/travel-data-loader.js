@@ -6,6 +6,21 @@
   const TRAVEL_AI_URL = "/.netlify/functions/travel-ai";
   const SEARCH_URL = "/.netlify/functions/travel-search";
 
+  async function parseJsonResponse(res) {
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      const text = await res.text().catch(() => "");
+      console.error("[TravelSearch] non-JSON response", res.status, text.slice(0, 200));
+      return { success: false, error: "non_json_response", status: res.status };
+    }
+    try {
+      return await res.json();
+    } catch (err) {
+      console.error("[TravelSearch] JSON parse failed", err);
+      return { success: false, error: "invalid_json" };
+    }
+  }
+
   let countries = [];
   let cities = [];
   let cityById = {};
@@ -313,18 +328,37 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "search_hotels", ...(formData || {}) })
         });
-        const data = await res.json();
-        if (!data.success) {
-          return { results: [], meta: { error: data.error || "hotel_search_failed", ...(data.meta || {}) } };
+        const data = await parseJsonResponse(res);
+        if (!res.ok || data.success === false) {
+          return {
+            results: [],
+            meta: {
+              error: data.error || (res.ok ? "hotel_search_failed" : `http_${res.status}`),
+              real_count: data.real_count ?? 0,
+              mock_count: data.mock_count ?? 0,
+              source: data.source || "error",
+              ...(data.meta || {})
+            }
+          };
         }
-        const results = (data.results || []).map((item) => {
+        const raw = data.hotels || data.results || [];
+        const results = raw.map((item) => {
           if (item.final_price_mnt != null && item.final_price_mnt > 0) return item;
           if (item.price_per_night != null && item.price_per_night > 0) {
             return { ...item, final_price_mnt: item.price_per_night };
           }
           return root.TRAVEL_DATA.priceItem(item);
         });
-        return { results, meta: { ...(data.meta || {}), source: data.meta?.source || "travel-ai" } };
+        return {
+          results,
+          meta: {
+            ...(data.meta || {}),
+            source: data.source || data.meta?.source || "travel-ai",
+            real_count: data.real_count ?? data.meta?.real_count ?? 0,
+            mock_count: data.mock_count ?? data.meta?.mock_count ?? 0,
+            supabase_count: data.real_count ?? data.meta?.supabase_count ?? 0
+          }
+        };
       } catch (err) {
         console.error("[TravelSearch] hotel via travel-ai failed", err);
         return { results: [], meta: { error: "hotel_search_error" } };
@@ -336,9 +370,12 @@
       if (v != null && v !== "") params.set(k, v);
     });
     const res = await fetch(`${SEARCH_URL}?${params}`);
-    const data = await res.json();
-    if (!data.success) {
-      return { results: [], meta: { error: data.error || "api_error", ...(data.meta || {}) } };
+    const data = await parseJsonResponse(res);
+    if (!res.ok || data.success === false) {
+      return {
+        results: [],
+        meta: { error: data.error || `http_${res.status}`, ...(data.meta || {}) }
+      };
     }
     const results = (data.results || []).map((item) => {
       if (item.final_price_mnt != null && item.final_price_mnt > 0) return item;

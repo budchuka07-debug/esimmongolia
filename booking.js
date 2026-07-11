@@ -794,7 +794,7 @@
   }
 
   async function fetchHotelResults(searchParams, page = 1) {
-    const payload = await apiSearch("hotel", { ...searchParams, page, pageSize: 12 });
+    const payload = await apiSearch("hotel", { ...searchParams, page, pageSize: 36 });
     return {
       results: payload.results || [],
       meta: {
@@ -1058,7 +1058,7 @@
   }
 
   function renderHotelCard(h) {
-    const isMock = h.is_mock === true || h.source === "ai_mock";
+    const isMock = h.is_mock === true || h.source === "mock" || h.source === "ai_mock";
     const badges = (h.facilities || h.amenities || h.badges || []).slice(0, 3).map((b) => `<span class="tp-badge">${b}</span>`).join("");
     const dist = formatHotelDist(h);
     const areaLine = [h.area_name || h.district].filter(Boolean).join(" · ");

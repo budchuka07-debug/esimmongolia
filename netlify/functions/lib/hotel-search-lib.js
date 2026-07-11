@@ -5,9 +5,11 @@ const { mapHotel, countrySlug } = require("./travel-data-lib");
 const { normalizeHotelKey, getMockPoolForCity, filterMockPool, NEEDS_CHECK_MSG } = require("./hotel-mock");
 const { buildOfflineSearchCtx } = require("./asia-catalog-fallback");
 
-const MIN_TARGET = 30;
+const SUPABASE_SUFFICIENT = 12;
+const TARGET_TOTAL = 36;
 const MAX_TOTAL = 48;
-const DEFAULT_PAGE_SIZE = 12;
+const DEFAULT_PAGE_SIZE = 36;
+const SUPABASE_QUERY_MS = 2500;
 
 function enrichSupabaseHotel(mapped, nights, cityRow, country) {
   const amenities = mapped.amenities || [];
@@ -38,7 +40,7 @@ function enrichSupabaseHotel(mapped, nights, cityRow, country) {
     image_url: mapped.cover_image || mapped.image,
     source: "supabase",
     is_mock: false,
-    availability_status: "available",
+    availability_status: "check_on_request",
     verified: true,
     estimated: false,
     nights,
@@ -149,6 +151,13 @@ async function fetchSupabaseHotels(sb, params, ctx, cityRow, country) {
   return results;
 }
 
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("supabase_timeout")), ms))
+  ]);
+}
+
 async function mockOnlyHotelSearch(params, ctx) {
   const citySlug = params.city_id || params._resolvedCitySlug;
   const offlineCtx = ctx?.cityRow ? ctx : buildOfflineSearchCtx(citySlug);
@@ -162,8 +171,8 @@ async function mockOnlyHotelSearch(params, ctx) {
   const nights = Number(params.days || 5);
   const sort = params.sort || "recommended";
   const page = Math.max(1, Number(params.page || 1));
-  const pageSize = Math.min(DEFAULT_PAGE_SIZE, Number(params.pageSize || DEFAULT_PAGE_SIZE));
-  const minTarget = Number(params.minTarget) > 0 ? Number(params.minTarget) : MIN_TARGET;
+  const pageSize = Math.min(MAX_TOTAL, Math.max(1, Number(params.pageSize || DEFAULT_PAGE_SIZE)));
+  const minTarget = Number(params.minTarget) > 0 ? Number(params.minTarget) : TARGET_TOTAL;
 
   const mockCtx = {
     citySlug,
@@ -172,7 +181,7 @@ async function mockOnlyHotelSearch(params, ctx) {
     countrySlug: countryId
   };
 
-  const { pool, generator } = await getMockPoolForCity(mockCtx);
+  const { pool, generator } = getMockPoolForCity(mockCtx);
   let merged = filterMockPool(pool, params).slice(0, minTarget);
   merged = sortHotels(merged, sort);
   const total = merged.length;
@@ -187,9 +196,10 @@ async function mockOnlyHotelSearch(params, ctx) {
       cityInput: params.city,
       countryId,
       nights,
-      source: "mock_fallback",
-      supabase_count: 0,
+      source: "local_mock",
+      real_count: 0,
       mock_count: merged.length,
+      supabase_count: 0,
       mock_generator: generator,
       total,
       page,
@@ -237,10 +247,49 @@ async function hybridHotelSearch(sb, params, ctx) {
   const nights = Number(params.days || 5);
   const sort = params.sort || "recommended";
   const page = Math.max(1, Number(params.page || 1));
-  const pageSize = Math.min(DEFAULT_PAGE_SIZE, Number(params.pageSize || DEFAULT_PAGE_SIZE));
+  const pageSize = Math.min(MAX_TOTAL, Math.max(1, Number(params.pageSize || DEFAULT_PAGE_SIZE)));
 
-  const verified = await fetchSupabaseHotels(sb, params, ctx, cityRow, country);
+  const verified = await withTimeout(
+    fetchSupabaseHotels(sb, params, ctx, cityRow, country),
+    SUPABASE_QUERY_MS
+  ).catch((err) => {
+    console.warn("[hotel-search] Supabase fetch skipped:", err.message);
+    return [];
+  });
   const supabaseCount = verified.length;
+  const targetTotal = Number(params.minTarget) > 0 ? Number(params.minTarget) : TARGET_TOTAL;
+
+  if (supabaseCount >= SUPABASE_SUFFICIENT) {
+    let merged = sortHotels(verified, sort);
+    const total = merged.length;
+    const start = (page - 1) * pageSize;
+    const pageResults = merged.slice(start, start + pageSize);
+
+    return {
+      results: pageResults.map((h) => ({ ...h, nights })),
+      meta: {
+        cityId: citySlug,
+        cityName: cityRow.name_mn || citySlug,
+        cityInput: params.city,
+        countryId,
+        nights,
+        source: "supabase",
+        real_count: supabaseCount,
+        mock_count: 0,
+        supabase_count: supabaseCount,
+        mock_generator: null,
+        total,
+        page,
+        pageSize,
+        hasMore: start + pageSize < total,
+        maxResults: total,
+        minTarget: targetTotal,
+        filters: params,
+        formData: params,
+        subtitle: NEEDS_CHECK_MSG
+      }
+    };
+  }
 
   const mockCtx = {
     citySlug,
@@ -249,28 +298,22 @@ async function hybridHotelSearch(sb, params, ctx) {
     countrySlug: countryId
   };
 
-  const { pool, generator } = await getMockPoolForCity(mockCtx);
+  const { pool, generator } = getMockPoolForCity(mockCtx);
   let mockFiltered = filterMockPool(pool, params);
   mockFiltered = deduplicateHotels(verified, mockFiltered);
 
-  const minTarget = Number(params.minTarget) > 0 ? Number(params.minTarget) : MIN_TARGET;
-  const maxTotal = Number(params.maxResults) > 0 ? Number(params.maxResults) : MAX_TOTAL;
-  const needMock = Math.max(0, minTarget - verified.length);
-  let mockSelected = mockFiltered.slice(0, Math.max(needMock, 0));
+  const needMock = Math.max(0, targetTotal - supabaseCount);
+  const mockSelected = mockFiltered.slice(0, needMock);
 
   let merged = [...verified, ...mockSelected];
-  if (merged.length < minTarget && mockFiltered.length > mockSelected.length) {
-    const extra = mockFiltered.slice(mockSelected.length, minTarget - verified.length + mockSelected.length);
-    merged = [...verified, ...mockSelected, ...extra];
-  }
-
   merged = sortHotels(merged, sort);
-  merged = merged.slice(0, maxTotal);
+  merged = merged.slice(0, targetTotal);
 
   const mockCount = merged.filter((h) => h.is_mock).length;
   const total = merged.length;
   const start = (page - 1) * pageSize;
   const pageResults = merged.slice(start, start + pageSize);
+  const sourceLabel = supabaseCount > 0 ? "supabase+local_mock" : "local_mock";
 
   return {
     results: pageResults.map((h) => ({ ...h, nights })),
@@ -280,16 +323,17 @@ async function hybridHotelSearch(sb, params, ctx) {
       cityInput: params.city,
       countryId,
       nights,
-      source: "hybrid",
-      supabase_count: supabaseCount,
+      source: sourceLabel,
+      real_count: supabaseCount,
       mock_count: mockCount,
+      supabase_count: supabaseCount,
       mock_generator: generator,
       total,
       page,
       pageSize,
       hasMore: start + pageSize < total,
-      maxResults: MAX_TOTAL,
-      minTarget,
+      maxResults: TARGET_TOTAL,
+      minTarget: targetTotal,
       filters: params,
       formData: params,
       subtitle: NEEDS_CHECK_MSG
@@ -299,9 +343,11 @@ async function hybridHotelSearch(sb, params, ctx) {
 
 module.exports = {
   hybridHotelSearch,
-  MIN_TARGET,
+  SUPABASE_SUFFICIENT,
+  TARGET_TOTAL,
   MAX_TOTAL,
   DEFAULT_PAGE_SIZE,
+  SUPABASE_QUERY_MS,
   enrichSupabaseHotel,
   sortHotels,
   deduplicateHotels
