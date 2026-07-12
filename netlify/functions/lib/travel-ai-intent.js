@@ -64,7 +64,9 @@ function detectIntent(text, partial) {
   const t = text.toLowerCase();
   if (/esim|интернет|интернэт|дата/i.test(t)) return "esim_search";
   if (/нислэг|нисэх|flight/i.test(t)) return "flight_search";
-  if (/үзвэр|музей|disneyland|дисней|тур|aquarium|аквариум|theme park|парк|үзэх газар|sightseeing|attraction/i.test(t)) return "attraction_search";
+  if (/\d+\s*(-|–)?\s*өдөр|\d+\s*day/i.test(t) && /үзвэр|attraction|sightseeing|аялал/i.test(t)) return "itinerary";
+  if (/бороо|бороотой|rainy|indoor/i.test(t) && /үзвэр|attraction|музей|museum/i.test(t)) return "attraction_search";
+  if (/үзвэр|музей|disneyland|дисней|тур|aquarium|аквариум|theme park|парк|үзэх газар|sightseeing|attraction|the bund|yu garden|pattaya|паттай/i.test(t)) return "attraction_search";
   if (/маршрут|төлөвлө|itinerary|өдөр өдр/i.test(t)) return "itinerary";
   if (/буудал|hotel|зочид/i.test(t)) return "hotel_search";
   if (/арай хямд|хямд|үнэ бага|cheaper|budget/i.test(t) && (partial.city_id || partial.city)) return "hotel_search";
@@ -93,13 +95,18 @@ function parseMessage(message) {
   if (/disneyland|дисней/i.test(hay)) facilities.push("near_attraction");
 
   const wantsDisney = /disneyland|дисней/i.test(hay);
+  const wantsRainy = /бороо|бороотой|rainy/i.test(hay);
+  const itineraryDays = Number((hay.match(/(\d+)\s*(-|–)?\s*өдөр/) || text.match(/(\d+)\s*day/i) || [])[1]) || null;
   let category = null;
   if (/музей|museum/i.test(hay)) category = "museum";
   else if (/theme|парк|disneyland|дисней/i.test(hay)) category = "theme_park";
   else if (/үнэгүй|free/i.test(hay)) category = "free";
   else if (/хүүхэд|гэр бүл|family/i.test(hay)) category = "family";
-  else if (/шөнө|night/i.test(hay)) category = "night_activity";
+  else if (/шөнө|night|walking street/i.test(hay)) category = "night_activity";
   else if (/зах|shopping|худалдаа/i.test(hay)) category = "shopping";
+  else if (/эрэг|beach|jomtien/i.test(hay)) category = "beach";
+  else if (/landmark|bund|tower|pearl/i.test(hay)) category = "landmark";
+  else if (/аквариум|aquarium/i.test(hay)) category = "aquarium";
 
   const partial = {
     country: cityMatch?.country || null,
@@ -113,10 +120,12 @@ function parseMessage(message) {
     district,
     facilities,
     category,
-    keyword: wantsDisney ? "Disneyland" : null,
+    keyword: wantsDisney ? "Disneyland" : (/pattaya|паттай/i.test(hay) ? null : null),
     attraction: wantsDisney ? "Disneyland" : null,
     family_friendly: /хүүхэд|гэр бүл|family/i.test(hay),
     free_only: /үнэгүй|free/i.test(hay),
+    indoor: wantsRainy ? "1" : "",
+    itinerary_days: itineraryDays,
     ...budget,
     month: month ? Number(month) : null,
     day: day ? Number(day) : null,
@@ -152,7 +161,9 @@ function mergeIntent(prevContext, message) {
     keyword: fresh.keyword || prev.keyword || null,
     attraction: fresh.attraction || prev.attraction || null,
     family_friendly: fresh.family_friendly || prev.family_friendly || false,
-    free_only: fresh.free_only || prev.free_only || false
+    free_only: fresh.free_only || prev.free_only || false,
+    indoor: fresh.indoor || prev.indoor || "",
+    itinerary_days: fresh.itinerary_days || prev.itinerary_days || null
   };
   if (fresh.wants_cheaper) merged.intent = "hotel_search";
   if (fresh.intent === "attraction_search") merged.intent = "attraction_search";

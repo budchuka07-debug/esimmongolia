@@ -28,6 +28,9 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <title>Монголчуудын гадаад аяллын AI платформ | eSIM Mongolia</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin=""/>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='22' font-size='14' text-anchor='middle' fill='white' font-family='system-ui,sans-serif' font-weight='700'%3Ee%3C/text%3E%3C/svg%3E"/>
     <script data-noptimize="1" data-cfasync="false" data-wpfc-render="false">
   (function () {
@@ -38,7 +41,7 @@
   })();
 </script>
 <meta content="Нислэг, буудал, галт тэрэг, үзвэр, eSIM, виз, маршрут — Монгол хэлээр. QPay-р захиалаарай." name="description"/>
-<link rel="stylesheet" href="/travel-platform.css?v=18"/>
+<link rel="stylesheet" href="/travel-platform.css?v=19"/>
 <style>
     :root{
       --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280;
@@ -223,7 +226,7 @@
 <a href="/hotels.html">🏨 Буудал</a>
 <a href="/marshrut.html">🗺 Маршрут</a>
 <a href="/china/">🇨🇳 Хятад</a>
-<a href="/aylal.html">🎫 Үзвэр</a>
+<a href="/?tab=attraction">🎫 Үзвэр</a>
 <a href="/qpay.html">QPay</a>
 <a class="primary" href="#esim">📶 eSIM</a>
 </div>
@@ -341,20 +344,7 @@
 </div>
 <div class="tp-form-grid tp-form-grid-3" style="margin-top:10px">
 <div class="tp-field"><label>Ангилал</label><select data-field="category" id="attractionCategorySelect">
-<option value="all">Бүх үзвэр</option>
-<option value="history_culture">Түүх, соёл</option>
-<option value="museum">Музей</option>
-<option value="temple">Сүм, хийд</option>
-<option value="nature">Байгаль</option>
-<option value="theme_park">Зугаа цэнгэлийн парк</option>
-<option value="zoo">Амьтны хүрээлэн</option>
-<option value="aquarium">Аквариум</option>
-<option value="shopping">Худалдаа, зах</option>
-<option value="city_view">Хотын үзэмж</option>
-<option value="night_activity">Шөнийн аялал</option>
-<option value="family">Хүүхэдтэй гэр бүл</option>
-<option value="free">Үнэгүй үзвэр</option>
-<option value="day_trip">Өдрийн аялал</option>
+<option value="all">🎫 Бүх үзвэр</option>
 </select></div>
 <div class="tp-field"><label>Зочид</label><input data-field="people" data-field-alt="visitors" type="number" value="2" min="1"></div>
 <div class="tp-field"><label>Очих огноо</label><input data-field="visit_date" type="date"></div>
@@ -386,6 +376,27 @@
 </div>
 
 <div id="resultsContainer" class="tp-results-container" style="display:none;margin-top:16px">
+<aside class="tp-hotel-filters" id="attractionFiltersSidebar" aria-label="Үзвэрийн шүүлтүүр" style="display:none">
+<div class="tp-hotel-filters-head">
+<h4>Шүүлтүүр</h4>
+<button type="button" class="tp-hotel-filters-close" id="attractionFiltersClose" aria-label="Хаах">×</button>
+</div>
+<div class="tp-hotel-filters-body">
+<div class="tp-field"><label>Үнэ (₮) — доод</label><input data-afilter="priceMinMnt" type="number" min="0" step="10000" placeholder="0"></div>
+<div class="tp-field"><label>Үнэ (₮) — дээд</label><input data-afilter="priceMaxMnt" type="number" min="0" step="10000" placeholder="500000"></div>
+<div class="tp-field"><label>Алдартай (доод оноо)</label><input data-afilter="minPopularity" type="number" min="0" max="100" placeholder="40"></div>
+<div class="tp-filter-checks">
+<label class="tp-check"><input type="checkbox" data-afilter="freeOnly" value="1"> 🆓 Үнэгүй</label>
+<label class="tp-check"><input type="checkbox" data-afilter="familyFriendly" value="1"> 👨‍👩‍👧 Гэр бүл</label>
+<label class="tp-check"><input type="checkbox" data-afilter="indoor" value="1"> 🏠 Дотор</label>
+<label class="tp-check"><input type="checkbox" data-afilter="outdoor" value="1"> 🌳 Гадаа</label>
+<label class="tp-check"><input type="checkbox" data-afilter="openNow" value="1"> 🕐 Одоо нээлттэй</label>
+<label class="tp-check"><input type="checkbox" data-afilter="bookingRequired" value="1"> 🎫 Захиалга шаардлагатай</label>
+</div>
+<button type="button" class="tp-btn primary tp-btn-block" id="attractionApplyFilters">Шүүлтүүр хэрэглэх</button>
+<button type="button" class="tp-btn tp-btn-block" id="attractionClearFilters">Цэвэрлэх</button>
+</div>
+</aside>
 <aside class="tp-hotel-filters" id="hotelFiltersSidebar" aria-label="Шүүлтүүр">
 <div class="tp-hotel-filters-head">
 <h4>Шүүлтүүр</h4>
@@ -417,20 +428,22 @@
 </aside>
 <div class="tp-results-main" id="resultsMain">
 <div class="tp-hotel-toolbar" id="attractionToolbar" style="display:none">
+<button type="button" class="tp-btn tp-btn-filter-mob" id="attractionFilterOpen">☰ Шүүлтүүр</button>
 <select class="tp-hotel-sort" id="attractionSortSelect" data-filter="sort">
 <option value="recommended">Санал болгох</option>
-<option value="price_asc">Үнэ — багаас их</option>
-<option value="popular">Алдартай</option>
+<option value="popularity">Алдартай</option>
+<option value="price_low">Үнэ — багаас их</option>
+<option value="price_high">Үнэ — ихээс бага</option>
+<option value="nearest">Ойролцоо</option>
+<option value="newest">Шинэ</option>
 <option value="family">Гэр бүлд тохиромжтой</option>
 </select>
 <button type="button" class="tp-btn" id="attractionMapToggle">🗺 Газраар харах</button>
 </div>
-<div class="tp-hotel-map-placeholder" id="attractionMapPlaceholder" style="display:none" aria-hidden="true">
+<div class="tp-hotel-map-placeholder tp-attraction-map-wrap" id="attractionMapPlaceholder" style="display:none" aria-hidden="true">
 <div class="tp-map-mock-inner">
-<span class="tp-map-mock-pin">📍</span>
-<p>Үзвэрүүдийн байршил</p>
-<p class="tp-muted" id="attractionMapNote">Ойролцоо координат (mock)</p>
-<div class="tp-map-mock-grid" id="attractionMapPins"></div>
+<p class="tp-muted" id="attractionMapNote">Үзвэрүүдийн байршил — дарж дэлгэрэнгүй</p>
+<div id="attractionMapCanvas" class="tp-attraction-map-canvas"></div>
 </div>
 </div>
 <div class="tp-hotel-toolbar" id="hotelToolbar" style="display:none">
@@ -456,6 +469,7 @@
 <div id="mockResults"></div>
 </div>
 </div>
+<div class="tp-filters-overlay" id="attractionFiltersOverlay" style="display:none"></div>
 <div class="tp-filters-overlay" id="hotelFiltersOverlay" style="display:none"></div>
 </div>
 
@@ -1895,10 +1909,14 @@ document.addEventListener("DOMContentLoaded", () => {
 <script src="/js/travel-images.js?v=2"></script>
 <script src="/data/asia-destinations.js?v=1"></script>
 <script src="/location-autocomplete.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
+<script src="/js/attraction-categories.js?v=1"></script>
+<script src="/js/attraction-module.js?v=1"></script>
 <script src="/js/hotel-destination-select.js?v=1"></script>
 <script src="/js/attraction-destination-select.js?v=1"></script>
 <script src="/js/travel-data-loader.js?v=6"></script>
-<script src="/booking.js?v=21"></script>
+<script src="/booking.js?v=22"></script>
 <script src="/js/ai-local-responses.js"></script>
 <script src="/ai-agent.js?v=10"></script>
 <script src="/travel-assistant.js?v=3"></script>
@@ -2011,6 +2029,13 @@ document.addEventListener("DOMContentLoaded", () => {
 <div id="bookingStepSuccess" style="display:none">
   <div id="bookingSuccessBox"></div>
 </div>
+</div>
+
+<div class="tp-modal-bd" id="attractionDetailModalBd"></div>
+<div class="tp-modal tp-modal-wide" id="attractionDetailModal" style="position:fixed;display:none">
+<button type="button" class="tp-modal-close" id="attractionDetailModalClose" aria-label="Хаах">×</button>
+<h3>Үзвэрийн дэлгэрэнгүй</h3>
+<div id="attractionDetailBody" class="tp-attraction-detail-body"></div>
 </div>
 
 <div class="tp-modal-bd" id="hotelDetailModalBd"></div>

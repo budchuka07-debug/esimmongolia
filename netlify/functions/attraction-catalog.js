@@ -101,6 +101,31 @@ exports.handler = async (event) => {
     });
   } catch (err) {
     console.error("[attraction-catalog]", err.message);
+    try {
+      const { buildOfflineSearchCtx } = require("./lib/asia-catalog-fallback");
+      const { hybridAttractionSearch: hybrid } = require("./lib/attraction-search-lib");
+      const citySlug = parsed.params.city_id || parsed.params.city || "shanghai";
+      const offline = buildOfflineSearchCtx(citySlug);
+      if (offline) {
+        const payload = await hybrid(null, { ...parsed.params, city_id: citySlug, page: 1, pageSize: 12, minTarget: 60 }, offline);
+        const attractions = payload.attractions || [];
+        return respond({
+          success: true,
+          error: null,
+          attractions,
+          results: attractions,
+          real_count: 0,
+          mock_count: attractions.length,
+          total: payload.meta?.total ?? attractions.length,
+          source: "local_mock",
+          meta: payload.meta,
+          categories: ATTRACTION_CATEGORIES,
+          elapsed_ms: Date.now() - started
+        });
+      }
+    } catch (fallbackErr) {
+      console.error("[attraction-catalog] fallback failed", fallbackErr.message);
+    }
     return respond({
       success: false,
       error: err.message || "attraction_search_error",

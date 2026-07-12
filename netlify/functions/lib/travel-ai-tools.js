@@ -297,6 +297,7 @@ async function searchAttractions(intent, log) {
     priceMaxMnt: intent.budget_max || "",
     familyFriendly: intent.family_friendly ? "1" : "",
     freeOnly: intent.free_only ? "1" : "",
+    indoor: intent.indoor || "",
     sort: intent.sort || "recommended",
     page: 1,
     pageSize: AI_DISPLAY_ATTRACTIONS,

@@ -332,11 +332,17 @@ function buildLocalReply(message, intent, toolResults) {
 
   if (intent.intent === "itinerary" && toolResults.create_itinerary) {
     const it = toolResults.create_itinerary;
+    const attrs = toolResults.search_attractions?.attractions || [];
+    const attrLines = attrs.length
+      ? ["", "**Топ үзвэрүүд:**", ...attrs.map((x, i) =>
+          `${i + 1}. **${x.name}** — ${x.category_label_mn || x.category || ""}`
+        ), ""]
+      : [];
     return {
-      reply: `🗺 ${it.summary}\n\n${(it.itinerary || []).join("\n")}`,
+      reply: [`🗺 ${it.summary}`, ...attrLines, ...(it.itinerary || [])].join("\n"),
       cards: cardsFromToolResults(toolResults),
       quickReplies: consultant.QUICK_REPLIES?.slice(0, 4) || [],
-      ctas: [],
+      ctas: [{ id: "attraction_search", label: "Үзвэр хайх" }],
       context: intent
     };
   }

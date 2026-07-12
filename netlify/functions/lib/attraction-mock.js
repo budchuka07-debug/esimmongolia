@@ -6,21 +6,24 @@ const { FALLBACK } = require("./travel-images");
 const NEEDS_CHECK_MSG = "Тасалбарын үнэ, ажиллах цагийг захиалга хийхийн өмнө дахин шалгана.";
 
 const ATTRACTION_CATEGORIES = [
-  { value: "all", label_mn: "Бүх үзвэр" },
-  { value: "history_culture", label_mn: "Түүх, соёл" },
-  { value: "museum", label_mn: "Музей" },
-  { value: "temple", label_mn: "Сүм, хийд" },
-  { value: "nature", label_mn: "Байгаль" },
-  { value: "theme_park", label_mn: "Зугаа цэнгэлийн парк" },
-  { value: "zoo", label_mn: "Амьтны хүрээлэн" },
-  { value: "aquarium", label_mn: "Аквариум" },
-  { value: "shopping", label_mn: "Худалдаа, зах" },
-  { value: "city_view", label_mn: "Хотын үзэмж" },
-  { value: "night_activity", label_mn: "Шөнийн аялал" },
-  { value: "family", label_mn: "Хүүхэдтэй гэр бүл" },
-  { value: "free", label_mn: "Үнэгүй үзвэр" },
-  { value: "day_trip", label_mn: "Өдрийн аялал" }
+  { value: "all", icon: "🎫", label_mn: "Бүх үзвэр" },
+  { value: "history_culture", icon: "🏛️", label_mn: "Түүх, соёл" },
+  { value: "museum", icon: "🎨", label_mn: "Музей" },
+  { value: "temple", icon: "🏯", label_mn: "Сүм, хийд" },
+  { value: "nature", icon: "🌳", label_mn: "Байгаль" },
+  { value: "theme_park", icon: "🎡", label_mn: "Зугаа цэнгэлийн парк" },
+  { value: "shopping", icon: "🛍", label_mn: "Худалдаа, зах" },
+  { value: "night_activity", icon: "🌃", label_mn: "Шөнийн аялал" },
+  { value: "family", icon: "👨‍👩‍👧", label_mn: "Хүүхэдтэй гэр бүл" },
+  { value: "free", icon: "🆓", label_mn: "Үнэгүй үзвэр" },
+  { value: "landmark", icon: "📸", label_mn: "Дурсгалт газар" },
+  { value: "beach", icon: "🏖", label_mn: "Далайн эрэг" },
+  { value: "mountain", icon: "🏔", label_mn: "Уул" },
+  { value: "zoo", icon: "🦁", label_mn: "Амьтны хүрээлэн" },
+  { value: "aquarium", icon: "🐠", label_mn: "Аквариум" }
 ];
+
+const CATEGORY_ALIASES = { city_view: "landmark", day_trip: "nature" };
 
 const CATEGORY_IMAGES = {
   history_culture: "/images/routes/china/forbidden-city.jpg",
@@ -31,11 +34,12 @@ const CATEGORY_IMAGES = {
   zoo: "/images/routes/china/panda.jpg",
   aquarium: "/images/routes/china/bund-night.jpg",
   shopping: "/images/routes/china/nanjing-road.jpg",
-  city_view: "/images/routes/china/shanghai-bund.jpg",
+  landmark: "/images/routes/china/shanghai-bund.jpg",
   night_activity: "/images/routes/china/bund-night.jpg",
   family: "/images/routes/china/disney.jpg",
   free: "/images/routes/china/yu-garden.jpg",
-  day_trip: "/images/routes/china/west-lake.jpg"
+  beach: "/images/routes/vietnam/hoian.jpg",
+  mountain: "/images/routes/china/west-lake.jpg"
 };
 
 const CITY_CENTERS = {
@@ -48,22 +52,23 @@ const CITY_CENTERS = {
   hanoi: { lat: 21.0285, lng: 105.8542 },
   ho_chi_minh: { lat: 10.8231, lng: 106.6297 },
   dubai: { lat: 25.2048, lng: 55.2708 },
-  istanbul: { lat: 41.0082, lng: 28.9784 }
+  istanbul: { lat: 41.0082, lng: 28.9784 },
+  pattaya: { lat: 12.9236, lng: 100.8825 }
 };
 
 const CITY_ATTRACTIONS = {
   shanghai: [
     { name_en: "Shanghai Disneyland", name_mn: "Шанхай Disneyland", category: "theme_park", district: "Pudong", price: 285000, duration: "1 өдөр", family_friendly: true, indoor: false },
-    { name_en: "The Bund", name_mn: "The Bund (Вайтан)", category: "city_view", district: "Huangpu", price: 0, duration: "2–3 цаг", family_friendly: true, free_entry: true, indoor: false },
+    { name_en: "The Bund", name_mn: "The Bund (Вайтан)", category: "landmark", district: "Huangpu", price: 0, duration: "2–3 цаг", family_friendly: true, free_entry: true, indoor: false },
     { name_en: "Yu Garden", name_mn: "Ю Хуцин", category: "history_culture", district: "Huangpu", price: 45000, duration: "2 цаг", family_friendly: true },
     { name_en: "Shanghai Museum", name_mn: "Шанхайн музей", category: "museum", district: "Huangpu", price: 0, duration: "2–3 цаг", free_entry: true, indoor: true },
-    { name_en: "Shanghai Tower Observatory", name_mn: "Шанхай Тауэр", category: "city_view", district: "Pudong", price: 195000, duration: "1.5 цаг", indoor: true },
+    { name_en: "Shanghai Tower Observatory", name_mn: "Шанхай Тауэр", category: "landmark", district: "Pudong", price: 195000, duration: "1.5 цаг", indoor: true },
     { name_en: "Nanjing Road", name_mn: "Нанжин зам", category: "shopping", district: "Huangpu", price: 0, duration: "2–4 цаг", free_entry: true, indoor: false },
-    { name_en: "Zhujiajiao Water Town", name_mn: "Жужяцзяо усан хот", category: "day_trip", district: "Qingpu", price: 85000, duration: "Өдрийн аялал", family_friendly: true, indoor: false },
+    { name_en: "Zhujiajiao Water Town", name_mn: "Жужяцзяо усан хот", category: "nature", district: "Qingpu", price: 85000, duration: "Өдрийн аялал", family_friendly: true, indoor: false },
     { name_en: "Shanghai Ocean Aquarium", name_mn: "Шанхайн далайн аквариум", category: "aquarium", district: "Pudong", price: 165000, duration: "2 цаг", family_friendly: true, indoor: true },
     { name_en: "Shanghai Natural History Museum", name_mn: "Байгалийн түүхийн музей", category: "museum", district: "Jing'an", price: 55000, duration: "2 цаг", family_friendly: true, indoor: true },
     { name_en: "Tianzifang", name_mn: "Тяньцзыфан", category: "shopping", district: "Huangpu", price: 0, duration: "2 цаг", free_entry: true, indoor: false },
-    { name_en: "Oriental Pearl Tower", name_mn: "Ориентал Пёрл цамхаг", category: "city_view", district: "Pudong", price: 175000, duration: "1.5 цаг", indoor: true },
+    { name_en: "Oriental Pearl Tower", name_mn: "Ориентал Пёрл цамхаг", category: "landmark", district: "Pudong", price: 175000, duration: "1.5 цаг", indoor: true },
     { name_en: "Xintiandi", name_mn: "Шинь Тяньди", category: "history_culture", district: "Huangpu", price: 0, duration: "2 цаг", free_entry: true, indoor: false },
     { name_en: "Jing'an Temple", name_mn: "Жиньань сүм", category: "temple", district: "Jing'an", price: 35000, duration: "1 цаг", indoor: true },
     { name_en: "Shanghai Zoo", name_mn: "Шанхайн амьтны хүрээлэн", category: "zoo", district: "Changning", price: 45000, duration: "3 цаг", family_friendly: true, indoor: false },
@@ -92,12 +97,38 @@ const CITY_ATTRACTIONS = {
   tokyo: [
     { name_en: "Senso-ji Temple", name_mn: "Сэнсө-жи сүм", category: "temple", district: "Asakusa", price: 0, duration: "2 цаг", free_entry: true, indoor: false },
     { name_en: "teamLab Planets", name_mn: "teamLab Planets", category: "museum", district: "Toyosu", price: 285000, duration: "2 цаг", family_friendly: true, indoor: true },
-    { name_en: "Tokyo Skytree", name_mn: "Tokyo Skytree", category: "city_view", district: "Sumida", price: 195000, duration: "1.5 цаг", indoor: true }
+    { name_en: "Tokyo Skytree", name_mn: "Tokyo Skytree", category: "landmark", district: "Sumida", price: 195000, duration: "1.5 цаг", indoor: true }
   ],
   seoul: [
     { name_en: "Gyeongbokgung Palace", name_mn: "Гёнбокгун ордон", category: "history_culture", district: "Jongno", price: 45000, duration: "2 цаг", indoor: false },
-    { name_en: "N Seoul Tower", name_mn: "N Seoul Tower", category: "city_view", district: "Yongsan", price: 125000, duration: "2 цаг", indoor: true },
+    { name_en: "N Seoul Tower", name_mn: "N Seoul Tower", category: "landmark", district: "Yongsan", price: 125000, duration: "2 цаг", indoor: true },
     { name_en: "Lotte World", name_mn: "Lotte World", category: "theme_park", district: "Songpa", price: 245000, duration: "1 өдөр", family_friendly: true, indoor: true }
+  ],
+  pattaya: [
+    { name_en: "Sanctuary of Truth", name_mn: "Үнэний ариун газар", category: "temple", district: "North Pattaya", price: 95000, duration: "2 цаг", indoor: false },
+    { name_en: "Nong Nooch Tropical Garden", name_mn: "Нонг Нуч цэцэрлэг", category: "nature", district: "Sattahip", price: 125000, duration: "3 цаг", family_friendly: true, indoor: false },
+    { name_en: "Coral Island (Koh Larn)", name_mn: "Корал арал", category: "beach", district: "Koh Larn", price: 85000, duration: "Өдрийн аялал", family_friendly: true, indoor: false },
+    { name_en: "Tiger Park Pattaya", name_mn: "Барсын парк", category: "zoo", district: "South Pattaya", price: 145000, duration: "2 цаг", family_friendly: true, indoor: false },
+    { name_en: "Ramayana Water Park", name_mn: "Рамаяна усан парк", category: "theme_park", district: "Na Jomtien", price: 195000, duration: "1 өдөр", family_friendly: true, indoor: false },
+    { name_en: "Walking Street", name_mn: "Walking Street", category: "night_activity", district: "South Pattaya", price: 0, duration: "2–3 цаг", free_entry: true, indoor: false },
+    { name_en: "Pattaya Floating Market", name_mn: "Усан зах", category: "shopping", district: "Sukhumvit", price: 65000, duration: "2 цаг", family_friendly: true, indoor: false },
+    { name_en: "Mini Siam", name_mn: "Мини Сиам", category: "landmark", district: "North Pattaya", price: 75000, duration: "2 цаг", family_friendly: true, indoor: false },
+    { name_en: "Big Buddha Hill", name_mn: "Их Будда", category: "temple", district: "Pratumnak", price: 0, duration: "1.5 цаг", free_entry: true, indoor: false },
+    { name_en: "Jomtien Beach", name_mn: "Жомтьен эрэг", category: "beach", district: "Jomtien", price: 0, duration: "3 цаг", family_friendly: true, free_entry: true, indoor: false },
+    { name_en: "Art in Paradise", name_mn: "Art in Paradise", category: "museum", district: "North Pattaya", price: 85000, duration: "2 цаг", family_friendly: true, indoor: true },
+    { name_en: "Pattaya Viewpoint", name_mn: "Паттайагийн үзэмж", category: "landmark", district: "Pratumnak", price: 0, duration: "1 цаг", free_entry: true, indoor: false },
+    { name_en: "Underwater World Pattaya", name_mn: "Underwater World", category: "aquarium", district: "South Pattaya", price: 115000, duration: "2 цаг", family_friendly: true, indoor: true },
+    { name_en: "Cartoon Network Amazone", name_mn: "Cartoon Network Amazone", category: "theme_park", district: "Sattahip", price: 175000, duration: "1 өдөр", family_friendly: true, indoor: false },
+    { name_en: "Pattaya Beach", name_mn: "Паттайа эрэг", category: "beach", district: "Central Pattaya", price: 0, duration: "3 цаг", family_friendly: true, free_entry: true, indoor: false },
+    { name_en: "Silverlake Vineyard", name_mn: "Silverlake винярд", category: "nature", district: "Sattahip", price: 55000, duration: "2 цаг", indoor: false },
+    { name_en: "Ripley's Believe It or Not", name_mn: "Ripley's музей", category: "museum", district: "Central Pattaya", price: 95000, duration: "1.5 цаг", family_friendly: true, indoor: true },
+    { name_en: "Pattaya Dolphin World", name_mn: "Дельфины шоу", category: "family", district: "North Pattaya", price: 135000, duration: "2 цаг", family_friendly: true, indoor: true },
+    { name_en: "Khao Chi Chan (Buddha Mountain)", name_mn: "Будда уул", category: "mountain", district: "Sattahip", price: 0, duration: "1 цаг", free_entry: true, indoor: false },
+    { name_en: "Terminal 21 Pattaya", name_mn: "Terminal 21", category: "shopping", district: "Central Pattaya", price: 0, duration: "2 цаг", free_entry: true, indoor: true },
+    { name_en: "Pattaya Night Bazaar", name_mn: "Шөнийн зах", category: "night_activity", district: "Central Pattaya", price: 0, duration: "2 цаг", free_entry: true, indoor: false },
+    { name_en: "Sriracha Tiger Zoo", name_mn: "Sriracha Tiger Zoo", category: "zoo", district: "Sriracha", price: 125000, duration: "3 цаг", family_friendly: true, indoor: false },
+    { name_en: "Four Regions Floating Market", name_mn: "Дөрвөн бүсийн зах", category: "shopping", district: "Sukhumvit", price: 55000, duration: "2 цаг", family_friendly: true, indoor: false },
+    { name_en: "Wat Phra Yai", name_mn: "Ват Пхра Яй", category: "temple", district: "Big Buddha Hill", price: 0, duration: "1 цаг", free_entry: true, indoor: false }
   ]
 };
 
@@ -110,11 +141,12 @@ const GENERIC_BY_CATEGORY = {
   zoo: { prefix: "City", suffix: "Zoo", price: 48000 },
   aquarium: { prefix: "Ocean", suffix: "Aquarium", price: 155000 },
   shopping: { prefix: "Central", suffix: "Market District", price: 0 },
-  city_view: { prefix: "Sky", suffix: "Observation Deck", price: 165000 },
+  landmark: { prefix: "Iconic", suffix: "Landmark", price: 165000 },
   night_activity: { prefix: "Night", suffix: "Experience", price: 115000 },
   family: { prefix: "Family", suffix: "Activity Center", price: 95000 },
   free: { prefix: "Public", suffix: "Square", price: 0 },
-  day_trip: { prefix: "Scenic", suffix: "Day Trip", price: 85000 }
+  beach: { prefix: "Coastal", suffix: "Beach", price: 0 },
+  mountain: { prefix: "Scenic", suffix: "Mountain View", price: 45000 }
 };
 
 function hashCode(str) {
@@ -132,12 +164,17 @@ function roundMnt(n) {
   return Math.round(n / 1000) * 1000;
 }
 
+function normalizeCategory(cat) {
+  return CATEGORY_ALIASES[cat] || cat || "history_culture";
+}
+
 function categoryLabelMn(value) {
-  return ATTRACTION_CATEGORIES.find((c) => c.value === value)?.label_mn || value;
+  const v = normalizeCategory(value);
+  return ATTRACTION_CATEGORIES.find((c) => c.value === v)?.label_mn || value;
 }
 
 function categoryImage(category) {
-  return CATEGORY_IMAGES[category] || FALLBACK.attraction;
+  return CATEGORY_IMAGES[normalizeCategory(category)] || FALLBACK.attraction;
 }
 
 function cityCenter(citySlug) {
@@ -159,7 +196,7 @@ function buildMockRecord(ctx, tpl, index) {
   const district = tpl.district || `${cityName} Center`;
   const coords = approxCoords(citySlug, index, district);
   const price = tpl.price ?? 50000;
-  const category = tpl.category || "history_culture";
+  const category = normalizeCategory(tpl.category || "history_culture");
   const short = `${cityName} хотын ${district} бүсийн ${categoryLabelMn(category).toLowerCase()}. ${NEEDS_CHECK_MSG}`;
 
   return {
@@ -177,6 +214,7 @@ function buildMockRecord(ctx, tpl, index) {
     district,
     category,
     category_label_mn: categoryLabelMn(category),
+    category_icon: ATTRACTION_CATEGORIES.find((c) => c.value === category)?.icon || "🎫",
     description: short,
     description_mn: short,
     short_description: short,
@@ -223,10 +261,10 @@ function generateGeneric(ctx, index) {
     category: cat,
     district,
     price,
-    duration: cat === "day_trip" ? "Өдрийн аялал" : "2 цаг",
-    family_friendly: cat === "family" || cat === "theme_park" || cat === "zoo",
-    free_entry: cat === "free" || price === 0,
-    indoor: !["nature", "day_trip", "city_view"].includes(cat)
+    duration: cat === "beach" || cat === "mountain" ? "3 цаг" : "2 цаг",
+    family_friendly: cat === "family" || cat === "theme_park" || cat === "zoo" || cat === "beach",
+    free_entry: cat === "free" || cat === "beach" || price === 0,
+    indoor: !["nature", "beach", "mountain", "landmark"].includes(cat)
   }, index);
 }
 
@@ -249,7 +287,7 @@ function matchesCategory(item, category) {
   if (!category || category === "all") return true;
   if (category === "family") return !!item.family_friendly;
   if (category === "free") return !!item.free_entry;
-  return item.category === category;
+  return normalizeCategory(item.category) === normalizeCategory(category);
 }
 
 function filterMockPool(pool, params) {
@@ -286,19 +324,22 @@ function filterMockPool(pool, params) {
 }
 
 function getMockPoolForSearch(ctx, params, targetCount) {
-  const poolSize = Math.max(targetCount, 48);
+  const poolSize = Math.max(targetCount, 60);
   const pool = generateMockPool(ctx, poolSize);
-  return { pool: filterMockPool(pool, params), generator: "local_template" };
+  const filtered = filterMockPool(pool, params);
+  return { pool: filtered.length ? filtered : pool, generator: "local_template" };
 }
 
 module.exports = {
   NEEDS_CHECK_MSG,
   ATTRACTION_CATEGORIES,
+  CATEGORY_ALIASES,
   CATEGORY_IMAGES,
   generateMockPool,
   filterMockPool,
   getMockPoolForSearch,
   categoryLabelMn,
+  normalizeCategory,
   categoryImage,
   cityCenter
 };
