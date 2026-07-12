@@ -26,7 +26,7 @@
 <html lang="mn">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <title>Монголчуудын гадаад аяллын AI платформ | eSIM Mongolia</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin=""/>
@@ -42,6 +42,8 @@
 </script>
 <meta content="Нислэг, буудал, галт тэрэг, үзвэр, eSIM, виз, маршрут — Монгол хэлээр. QPay-р захиалаарай." name="description"/>
 <link rel="stylesheet" href="/travel-platform.css?v=19"/>
+<link rel="stylesheet" href="/css/capacitor-mobile.css"/>
+<script src="/js/api-config.js"></script>
 <style>
     :root{
       --bg:#f6f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280;
@@ -2050,6 +2052,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <button type="button" class="primary" onclick="TravelBooking.openBookingForm('full', {}, 'Бүтэн аяллын захиалга')">Захиалах</button>
 <a href="#esim">📶 eSIM</a>
 </div>
+<script src="/js/capacitor-app.js" defer></script>
 </body>
 </html>
 

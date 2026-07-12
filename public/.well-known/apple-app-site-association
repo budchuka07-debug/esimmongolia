@@ -1,0 +1,23 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.esimmongolia.app",
+        "paths": [
+          "/",
+          "/index.html",
+          "/china.html",
+          "/china/*",
+          "/hotels.html",
+          "/marshrut.html",
+          "/qpay.html",
+          "/esim.html",
+          "/*?tab=*",
+          "/*?orderId=*",
+          "/*?app_payment=*"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+node_modules/
+www/
+android/
+ios/
+.capacitor/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+
+# Mobile signing / secrets (never commit)
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+firebase-service-account.json
+.env
+.env.*
+!.env.example

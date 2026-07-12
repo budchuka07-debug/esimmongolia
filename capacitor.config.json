@@ -1,0 +1,46 @@
+{
+  "appId": "com.esimmongolia.app",
+  "appName": "eSIM Mongolia",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https",
+    "hostname": "app.esimmongolia.local",
+    "allowNavigation": [
+      "esimmongolia.com",
+      "*.esimmongolia.com",
+      "merchant.qpay.mn",
+      "*.qpay.mn",
+      "qpay.mn"
+    ]
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "scrollEnabled": true,
+    "allowsLinkPreview": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#2563eb",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": true
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#2563eb"
+    }
+  }
+}
